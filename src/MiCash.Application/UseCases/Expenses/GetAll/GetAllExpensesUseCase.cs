@@ -1,0 +1,32 @@
+﻿using AutoMapper;
+using MiCash.Communication.Responses;
+using MiCash.Domain.Repositories.Expenses;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MiCash.Application.UseCases.Expenses.GetAll
+{
+    public class GetAllExpensesUseCase : IGetAllExpensesUseCase
+    {
+        private readonly IExpensesReadOnlyRepository _repository;
+        private readonly IMapper _mapper;
+        public GetAllExpensesUseCase (IExpensesReadOnlyRepository repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+
+        }
+        public async Task<ResponseExpensesJson> Execute ()
+        {
+            var result = await _repository.GetAll();
+
+            return new ResponseExpensesJson
+            {
+                Expenses = _mapper.Map<List<ResponseShortExpenseJson>>(result)
+            };
+        }
+    }
+}
