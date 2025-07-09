@@ -1,5 +1,7 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Repositories.Users;
+using MiCash.Domain.Security.Cryptography;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,8 @@ namespace MiCash.Infrastructure
         {
             AddDbContext(services, configuration);
             AddRepositories (services);
+
+            services.AddScoped<IPasswordEncripter , Infrastructure.Security.BCrypt>();
         }
 
         private static void AddRepositories (IServiceCollection services)
@@ -23,6 +27,8 @@ namespace MiCash.Infrastructure
             services.AddScoped<IExpensesWriteOnlyRepository, ExpensesRepository>();
             services.AddScoped<IExpensesUpdateOnlyRepository, ExpensesRepository>();
             services.AddScoped<IUnitOfWork , UnitOfWork>();
+            services.AddScoped<IUserReadOnlyRepository , UserRepository>();
+            services.AddScoped<IUserWriteOnlyRepository , UserRepository>();
         }
         private static void AddDbContext ( IServiceCollection services, IConfiguration configuration )
         {

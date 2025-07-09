@@ -2,6 +2,9 @@ using MiCash.API.Filters;
 using MiCash.API.Middleware;
 using MiCash.Infrastructure;
 using MiCash.Application;
+using MiCash.Infrastructure.DataAccess;
+using MiCash.Infrastructure.Migrations;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,4 +37,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await MigrateDataBase();
+
 app.Run();
+
+async Task MigrateDataBase ()
+{
+    await using var scope = app.Services.CreateAsyncScope();
+
+    await DataBaseMigration.MigrationDataBase(scope.ServiceProvider);
+
+}
