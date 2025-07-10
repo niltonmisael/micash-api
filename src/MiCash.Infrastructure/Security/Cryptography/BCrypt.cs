@@ -1,7 +1,7 @@
 ﻿using MiCash.Domain.Security.Cryptography;
 using BC = BCrypt.Net.BCrypt;
 
-namespace MiCash.Infrastructure.Security
+namespace MiCash.Infrastructure.Security.Cryptography
 {
     internal class BCrypt : IPasswordEncripter
     {
@@ -11,5 +11,8 @@ namespace MiCash.Infrastructure.Security
 
             return passwordHash;
         }
+
+        public bool Verify( string password, string passwordHash ) => BC.Verify( password, passwordHash );
+       
     }
 }

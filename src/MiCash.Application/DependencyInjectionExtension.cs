@@ -6,6 +6,7 @@ using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Application.UseCases.Expenses.Update;
+using MiCash.Application.UseCases.Login;
 using MiCash.Application.UseCases.Users.Register;
 using MiCash.Domain.Repositories.Expenses;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGenerateExpensesReportExcelUseCase , GenerateExpensesReportExcelUseCase>();
             services.AddScoped<IGenerateExpensesReportPdfUseCase , GenerateExpensesReportPdfUseCase>();
             services.AddScoped<IRegisterUserUseCase , RegisterUserUseCase>();
+            services.AddScoped<IDoLoginUseCase , DoLoginUseCase>();
            
         }
     }

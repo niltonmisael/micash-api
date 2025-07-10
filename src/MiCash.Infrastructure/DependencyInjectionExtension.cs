@@ -2,8 +2,10 @@
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
+using MiCash.Domain.Security.Tokens;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
+using MiCash.Infrastructure.Security.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +19,9 @@ namespace MiCash.Infrastructure
         {
             AddDbContext(services, configuration);
             AddRepositories (services);
+            AddToken(services , configuration);
 
-            services.AddScoped<IPasswordEncripter , Infrastructure.Security.BCrypt>();
+            services.AddScoped<IPasswordEncripter , Security.Cryptography.BCrypt>();
         }
 
         private static void AddRepositories (IServiceCollection services)
@@ -29,6 +32,13 @@ namespace MiCash.Infrastructure
             services.AddScoped<IUnitOfWork , UnitOfWork>();
             services.AddScoped<IUserReadOnlyRepository , UserRepository>();
             services.AddScoped<IUserWriteOnlyRepository , UserRepository>();
+        }
+        private static void AddToken(this IServiceCollection services, IConfiguration configuration )
+        {
+            var expirationTimeMinutes = configuration.GetValue<uint>("Settings:Jwt:ExpiresMinutes");
+            var signingKey = configuration.GetValue<string>("Settings:Jwt:SingingKey");
+
+            services.AddScoped<IAccessTokenGenerator>(config => new JwtTokenGenerator(expirationTimeMinutes, signingKey!));        
         }
         private static void AddDbContext ( IServiceCollection services, IConfiguration configuration )
         {

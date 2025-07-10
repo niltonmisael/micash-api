@@ -5,6 +5,7 @@ using MiCash.Communication.Responses;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
+using MiCash.Domain.Security.Tokens;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 using Microsoft.Extensions.Options;
@@ -23,14 +24,16 @@ namespace MiCash.Application.UseCases.Users.Register
         private readonly IUserReadOnlyRepository _userReadOnlyRepository;
         private readonly IUserWriteOnlyRepository _userWriteOnlyRepository;
         private readonly IUnitOfWork _unitOfWork; 
+        private readonly IAccessTokenGenerator _tokenGenerator;
 
-        public RegisterUserUseCase (IMapper mapper, IPasswordEncripter passwordEncripter, IUserReadOnlyRepository userReadOnlyRepository,IUserWriteOnlyRepository userWriteOnlyRepository, IUnitOfWork unitOfWork)
+        public RegisterUserUseCase (IMapper mapper, IPasswordEncripter passwordEncripter, IUserReadOnlyRepository userReadOnlyRepository,IUserWriteOnlyRepository userWriteOnlyRepository, IUnitOfWork unitOfWork, IAccessTokenGenerator tokenGenerator)
         {
             _mapper = mapper;
             _passwordEncripter = passwordEncripter;
             _userReadOnlyRepository = userReadOnlyRepository;
             _userWriteOnlyRepository = userWriteOnlyRepository;
-            _unitOfWork = unitOfWork;   
+            _unitOfWork = unitOfWork;  
+            _tokenGenerator = tokenGenerator;
         }
 
         public async Task<ResponseRegisteredUserJson> Execute ( RequestRegisterUserJson request )
@@ -49,6 +52,7 @@ namespace MiCash.Application.UseCases.Users.Register
             return new ResponseRegisteredUserJson
             {
                 Name = user.Name ,
+                Token = _tokenGenerator.Generate(user)
             };
         }
 

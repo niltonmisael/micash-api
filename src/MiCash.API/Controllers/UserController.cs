@@ -16,7 +16,7 @@ namespace MiCash.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register ([FromServices] RegisterUserUseCase useCase,  [FromBody] RequestRegisterUserJson request)
+        public async Task<IActionResult> Register ([FromServices] IRegisterUserUseCase useCase,  [FromBody] RequestRegisterUserJson request)
         {
             var response = await useCase.Execute(request);
 
