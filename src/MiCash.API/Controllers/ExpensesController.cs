@@ -6,6 +6,7 @@ using MiCash.Application.UseCases.Expenses.Update;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
 using MiCash.Exception.ExceptionBase;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
 
@@ -13,6 +14,7 @@ namespace MiCash.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ExpensesController : ControllerBase
     {
         [HttpPost]
