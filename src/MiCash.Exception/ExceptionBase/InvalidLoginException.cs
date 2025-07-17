@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace MiCash.Exception.ExceptionBase
 {
-    public class InvalidLoginExeception : MiCashException
+    public class InvalidLoginException : MiCashException
     {
-        public InvalidLoginExeception () : base(ResourseErrorMessages.EMAIL_OR_PASSWORD_INVALID)
+        public InvalidLoginException () : base(ResourseErrorMessages.EMAIL_OR_PASSWORD_INVALID)
         {
         }
 

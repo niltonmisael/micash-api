@@ -18,6 +18,7 @@ namespace MiCash.Application.UseCases.Users
                 .NotEmpty()
                 .WithMessage(ResourseErrorMessages.EMAIL_EMPTY)
                 .EmailAddress()
+                .When(user => string.IsNullOrWhiteSpace(user.Email) == false, ApplyConditionTo.CurrentValidator)
                 .WithMessage(ResourseErrorMessages.EMAIL_INVALID);
             RuleFor(user => user.Password).SetValidator(new PasswordValidator<RequestRegisterUserJson>());
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MiCash.Application.AutoMapper
 {
-    class AutoMapping : Profile
+    public class AutoMapping : Profile
     {
         public AutoMapping ()
         {

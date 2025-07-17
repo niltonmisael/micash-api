@@ -31,13 +31,13 @@ namespace MiCash.Application.UseCases.Login
 
             if ( user == null ) {
 
-                throw new InvalidLoginExeception();
+                throw new InvalidLoginException();
             }
 
             var passwordMatch = _passwordEncryption.Verify(request.Password, user.Password);
 
             if ( passwordMatch == false ) {
-                throw new InvalidLoginExeception();
+                throw new InvalidLoginException();
             }
 
             return new ResponseRegisteredUserJson
