@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MiCash.Infrastructure.DataAccess
 {
-    internal class MiCashDbContext : DbContext
+    public class MiCashDbContext : DbContext
     {
         public MiCashDbContext ( DbContextOptions options ) : base( options ) 
         {

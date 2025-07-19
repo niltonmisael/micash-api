@@ -5,6 +5,7 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
+using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Security.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,9 +18,14 @@ namespace MiCash.Infrastructure
     {
         public static void AddInfrastructure (this IServiceCollection services, IConfiguration configuration)
         {
-            AddDbContext(services, configuration);
+            //AddDbContext(services, configuration);
             AddRepositories (services);
             AddToken(services , configuration);
+
+            if ( configuration.IsTestEnvironment() == false ) {
+
+                AddDbContext(services , configuration);
+            }
 
             services.AddScoped<IPasswordEncripter , Security.Cryptography.BCrypt>();
         }
@@ -43,7 +49,7 @@ namespace MiCash.Infrastructure
         private static void AddDbContext ( IServiceCollection services, IConfiguration configuration )
         {
             var connectionString = configuration.GetConnectionString("Connection");
-            
+
             services.AddDbContext<MiCashDbContext>(config => config.UseNpgsql(connectionString));
         }
     }

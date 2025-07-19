@@ -1,6 +1,7 @@
 using MiCash.API.Filters;
 using MiCash.API.Middleware;
 using MiCash.Infrastructure;
+using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Migrations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -84,7 +85,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await MigrateDataBase();
+if(builder.Configuration.IsTestEnvironment() == false ) {
+     
+    await MigrateDataBase();
+
+}
+
 
 app.Run();
 
@@ -95,3 +101,5 @@ async Task MigrateDataBase ()
     await DataBaseMigration.MigrationDataBase(scope.ServiceProvider);
 
 }
+
+public partial class Program { }
