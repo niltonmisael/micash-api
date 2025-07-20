@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Responses;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Services.LoggedUser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,15 +14,19 @@ namespace MiCash.Application.UseCases.Expenses.GetAll
     {
         private readonly IExpensesReadOnlyRepository _repository;
         private readonly IMapper _mapper;
-        public GetAllExpensesUseCase (IExpensesReadOnlyRepository repository, IMapper mapper)
+        private readonly ILoggedUser _loggedUser;
+        public GetAllExpensesUseCase (IExpensesReadOnlyRepository repository, IMapper mapper, ILoggedUser loggedUser)
         {
             _repository = repository;
             _mapper = mapper;
+            _loggedUser = loggedUser;
 
         }
         public async Task<ResponseExpensesJson> Execute ()
         {
-            var result = await _repository.GetAll();
+            var userLogged = await _loggedUser.Get();
+
+            var result = await _repository.GetAll(userLogged);
 
             return new ResponseExpensesJson
             {

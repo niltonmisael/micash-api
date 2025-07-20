@@ -3,10 +3,12 @@ using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
+using MiCash.Domain.Services.LoggedUser;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Security.Tokens;
+using MiCash.Infrastructure.Services.LoggedUser;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +30,7 @@ namespace MiCash.Infrastructure
             }
 
             services.AddScoped<IPasswordEncripter , Security.Cryptography.BCrypt>();
+            services.AddScoped<ILoggedUser ,LoggedUser>();
         }
 
         private static void AddRepositories (IServiceCollection services)

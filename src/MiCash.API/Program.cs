@@ -1,5 +1,7 @@
 using MiCash.API.Filters;
 using MiCash.API.Middleware;
+using MiCash.API.Token;
+using MiCash.Domain.Security.Tokens;
 using MiCash.Infrastructure;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Migrations;
@@ -49,6 +51,10 @@ builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)))
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
+builder.Services.AddScoped<ITokenProvider , HttpContextTokenValue>();
+
+builder.Services.AddHttpContextAccessor();
 
 var signingKey = builder.Configuration.GetValue<string>("Settings:Jwt:SingingKey");
 

@@ -4,6 +4,7 @@ using MiCash.Communication.Responses;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception.ExceptionBase;
 
 namespace MiCash.Application.UseCases.Expenses.Register
@@ -13,24 +14,29 @@ namespace MiCash.Application.UseCases.Expenses.Register
         private readonly IExpensesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILoggedUser _loggedUser;
 
-        public RegisterExpenseUseCase ( IExpensesWriteOnlyRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+        public RegisterExpenseUseCase ( IExpensesWriteOnlyRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ILoggedUser loggedUser)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _loggedUser = loggedUser;
         }
 
         public async Task<ResponseRegisteredExpenseJson> Execute (RequestExpenseJson request) 
         {
             Validate(request);
 
-            var entity = _mapper.Map<Expense>(request);
+            var loggedUser = _loggedUser.Get();
 
-             await _repository.Add(entity);
-             await _unitOfWork.Commit();
+            var expense = _mapper.Map<Expense>(request);
+            expense.UserId = loggedUser.Id;
 
-            return _mapper.Map<ResponseRegisteredExpenseJson>(entity);
+            await _repository.Add(expense);
+            await _unitOfWork.Commit();
+
+            return _mapper.Map<ResponseRegisteredExpenseJson>(expense);
 
         }
 

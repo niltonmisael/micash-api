@@ -9,8 +9,8 @@ namespace MiCash.Domain.Repositories.Expenses
 {
     public interface IExpensesReadOnlyRepository
     {
-        public Task<List<Expense>> GetAll ();
-        public Task<Expense?> GetById ( long id );
+        public Task<List<Expense>> GetAll (User user);
+        public Task<Expense?> GetById (User user ,long id );
         public Task<List<Expense>> FilterByMonth(DateOnly date);
     }
 }
