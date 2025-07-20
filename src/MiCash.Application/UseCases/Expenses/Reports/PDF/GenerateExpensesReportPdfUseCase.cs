@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MiCash.Domain.Extensions;
+using MiCash.Domain.Services.LoggedUser;
 
 namespace MiCash.Application.UseCases.Expenses.Reports.PDF
 {
@@ -24,27 +25,32 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
     {
         private const string CURRENCY_SYBOL = "R$";
         private const int HEIGHT_ROW_EXPENSE_TABLE = 25;
-        private readonly IExpensesReadOnlyRepository _repository;
 
-        public GenerateExpensesReportPdfUseCase (IExpensesReadOnlyRepository repository)
+        private readonly IExpensesReadOnlyRepository _repository;
+        private readonly ILoggedUser _loggedUser;
+
+        public GenerateExpensesReportPdfUseCase (IExpensesReadOnlyRepository repository, ILoggedUser loggedUser)
         {
             _repository = repository;
+            _loggedUser = loggedUser;
 
             GlobalFontSettings.FontResolver = new ExpensesReportFontResolver();
         }
 
         public async Task<byte[]> Execute (DateOnly month )
         {
-            var expenses = await _repository.FilterByMonth( month );
+            var loggedUser = await _loggedUser.Get();
+
+            var expenses = await _repository.FilterByMonth( loggedUser ,month );
 
             if ( expenses.Count == 0 ) {
                 return [];
             }
 
-            var document = CreateDocument(month);
+            var document = CreateDocument( loggedUser.Name ,month);
             var page = CreatePage(document);
 
-            CreateHeaderWithProfileAndName( page );
+            CreateHeaderWithProfileAndName(loggedUser.Name , page );
 
             var totalExpenses = expenses.Sum(expense => expense.Amount);
 
@@ -100,12 +106,12 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
             return RenderDocument(document);
         }
 
-        private Document CreateDocument ( DateOnly month )
+        private Document CreateDocument ( string author , DateOnly month )
         {
             var document = new Document ();
 
             document.Info.Title = $"{ResourceReportGenerationMessages.EXPENSE_FOR} {month:Y}";
-            document.Info.Author = "Misael";
+            document.Info.Author = author;
 
             var style = document.Styles["Normal"];
             style!.Font.Name = FontHelper.RALEWAY_REGULAR;
@@ -129,7 +135,7 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
 
         }
 
-        private void CreateHeaderWithProfileAndName (Section page)
+        private void CreateHeaderWithProfileAndName (string name, Section page)
         {
             var table = page.AddTable();
             table.AddColumn();
@@ -144,7 +150,7 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
 
             row.Cells[0].AddImage(pathFile);
 
-            row.Cells[1].AddParagraph("Hey, Misael");
+            row.Cells[1].AddParagraph($"Hey, {name}");
             row.Cells[1].Format.Font = new Font { Name = FontHelper.RALEWAY_BLACK , Size = 16 };
             row.Cells[1].VerticalAlignment = MigraDoc.DocumentObjectModel.Tables.VerticalAlignment.Center;
         }
@@ -161,7 +167,7 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
             paragraph.AddLineBreak();
 
             
-            paragraph.AddFormattedText($"{CURRENCY_SYBOL} {totalExpenses}" , new Font { Name = FontHelper.WORKSANS_BLACK , Size = 50 });
+            paragraph.AddFormattedText($"{CURRENCY_SYBOL} {totalExpenses:f2}" , new Font { Name = FontHelper.WORKSANS_BLACK , Size = 50 });
         }
 
         private Table CreateExpenseTable (Section page)
@@ -202,7 +208,7 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
 
         private void AddAmountForExpense(Cell row, decimal amount )
         {
-            row.AddParagraph($"-{CURRENCY_SYBOL} {amount}");
+            row.AddParagraph($"-{CURRENCY_SYBOL} {amount:f2}");
             row.Format.Font = new Font { Name = FontHelper.WORKSANS_REGULAR , Size = 14 , Color = ColorsHelper.BLACK };
             row.Shading.Color = ColorsHelper.WHITE;
             row.VerticalAlignment = VerticalAlignment.Center;
