@@ -48,14 +48,27 @@ namespace WebAPI.Test
         
         private void StartDataBase (MiCashDbContext dbContext, IPasswordEncripter passwordEncripter )
         {
+            AddUsers( dbContext, passwordEncripter );
+            AddExpenses(dbContext , _user);
+
+            dbContext.SaveChanges();
+        }
+        
+        private void AddUsers(MiCashDbContext dbContext, IPasswordEncripter passwordEncripter )
+        {
             _user = UserBuilder.Build();
             _password = _user.Password;
 
             _user.Password = passwordEncripter.Encrypt(_user.Password);
 
             dbContext.Users.Add(_user);
+        }
 
-            dbContext.SaveChanges();
+        private void AddExpenses(MiCashDbContext dbContext, User user )
+        {
+            var expense = ExpenseBuilder.Build(user);
+
+            dbContext.Expenses.Add(expense);
         }
     }
    
