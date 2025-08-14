@@ -3,14 +3,18 @@ using FluentAssertions;
 using MiCash.Communication.Requests;
 using MiCash.Exception;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using WebAPI.Test.InlineData;
 
 namespace WebAPI.Test.Users.Register
 {
@@ -29,9 +33,6 @@ namespace WebAPI.Test.Users.Register
         {
             var request = RequestRegisterUserJsonBuilder.Build();
 
-            var httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri("http://localhost:5203");
-
             var result = await _httpClient.PostAsJsonAsync(METHOD , request);
 
             result.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -44,11 +45,14 @@ namespace WebAPI.Test.Users.Register
             response.RootElement.GetProperty("token").GetString().Should().NotBeNullOrEmpty();
         }
 
-        [Fact]
-        public async Task Error_Empty_Name ()
+        [Theory]
+        [ClassData(typeof(CultureInlineDataTest))]
+        public async Task Error_Empty_Name (string cultureInfo)
         {
             var request = RequestRegisterUserJsonBuilder.Build();
             request.Name = string.Empty;
+
+            _httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureInfo));
 
             var result = await _httpClient.PostAsJsonAsync(METHOD, request);
 
@@ -60,7 +64,9 @@ namespace WebAPI.Test.Users.Register
 
             var errors = response.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            //errors.Should().HaveCount(1).And.Contain(error => error.GetString().Equals(ResourseErrorMessages.NAME_EMPTY));
+            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("NAME_EMPTY", new CultureInfo(cultureInfo));
+
+            errors.Should().HaveCount(1).And.Contain(error => error.GetString()!.Equals(expectedMessage));
         }
     }
 }

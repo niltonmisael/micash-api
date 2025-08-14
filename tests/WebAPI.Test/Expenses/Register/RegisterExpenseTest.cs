@@ -9,8 +9,11 @@ namespace WebAPI.Test.Expenses.Register
     {
         private const string METHOD = "api/Expenses";
 
+        private readonly string _token;
+
         public RegisterExpenseTest(CustomWebApplicationFactory webApplicationFactory): base(webApplicationFactory) 
         {
+            _token = webApplicationFactory.GetToken();
         }
 
         [Fact]
@@ -18,7 +21,7 @@ namespace WebAPI.Test.Expenses.Register
         {
             var request = RequestRegisterExpenseJsonBuilder.Build();
 
-            var result = await DoPost(METHOD, request);
+            var result = await DoPost(requestUri: METHOD, request: request, token: _token);
 
             result.StatusCode.Should().Be(HttpStatusCode.Created);
             

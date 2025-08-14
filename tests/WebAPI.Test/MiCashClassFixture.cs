@@ -29,7 +29,7 @@ namespace WebAPI.Test
             return await _httpClient.PostAsJsonAsync(requestUri , request);
             
         }
-        protected async Task<HttpResponseMessage> DoGet ( string requestUri  , string token = "" , string culture = "pt-BR" )
+        protected async Task<HttpResponseMessage> DoGet ( string requestUri  , string token , string culture = "pt-BR" )
         {
 
             AuthorizeRequest(token);
@@ -41,7 +41,8 @@ namespace WebAPI.Test
 
         private void AuthorizeRequest ( string token )
         {
-            if ( string.IsNullOrEmpty(token) ) {
+            if ( string.IsNullOrWhiteSpace(token) ) {
+
                 return;
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer" , token);

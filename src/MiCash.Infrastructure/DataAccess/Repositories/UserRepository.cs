@@ -30,7 +30,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         public async Task<User?> GetUserByEmail ( string email )
         {
-            return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.Equals(email));
+            return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.Email == email);
         }
     }
 }

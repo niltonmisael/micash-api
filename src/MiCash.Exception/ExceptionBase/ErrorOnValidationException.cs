@@ -11,9 +11,9 @@ namespace MiCash.Exception.ExceptionBase
     {
         private readonly List<string> _errors;
 
-        public override int StatusCode => (int)HttpStatusCode.BadRequest;
+        public override int StatusCode => ( int ) HttpStatusCode.BadRequest;
 
-        public ErrorOnValidationException(List<string> errorMessages) : base (string.Empty)
+        public ErrorOnValidationException ( List<string> errorMessages ) : base(string.Empty)
         {
             _errors = errorMessages;
         }

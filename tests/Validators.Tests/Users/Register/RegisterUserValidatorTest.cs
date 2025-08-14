@@ -62,7 +62,7 @@ namespace Validators.Tests.Users.Register
 
             //Assert
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.NAME_EMPTY));
+            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.EMAIL_EMPTY));
         }
 
         [Fact]

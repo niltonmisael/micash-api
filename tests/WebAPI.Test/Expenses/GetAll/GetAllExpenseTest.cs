@@ -19,18 +19,20 @@ namespace WebAPI.Test.Expenses.GetAll
             _token = webApplicationFactory.GetToken();
         }
 
+        [Fact]
         public async Task Success ()
         {
-            var result = await DoGet( requestUri: METHOD, token: _token );
+            var result = await DoGet(requestUri: METHOD , token: _token);
 
             result.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var body = await result.Content.ReadAsStringAsync();
 
-            var response = JsonDocument.Parse( body );
+            var response = JsonDocument.Parse(body);
 
             response.RootElement.GetProperty("expenses").EnumerateArray().Should().NotBeNullOrEmpty();
-            
+
+
         }
     }
 }

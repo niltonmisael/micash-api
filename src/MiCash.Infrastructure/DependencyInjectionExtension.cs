@@ -20,7 +20,9 @@ namespace MiCash.Infrastructure
     {
         public static void AddInfrastructure (this IServiceCollection services, IConfiguration configuration)
         {
-            //AddDbContext(services, configuration);
+            services.AddScoped<IPasswordEncripter , Security.Cryptography.BCrypt>();
+            services.AddScoped<ILoggedUser ,LoggedUser>();
+            
             AddRepositories (services);
             AddToken(services , configuration);
 
@@ -29,8 +31,6 @@ namespace MiCash.Infrastructure
                 AddDbContext(services , configuration);
             }
 
-            services.AddScoped<IPasswordEncripter , Security.Cryptography.BCrypt>();
-            services.AddScoped<ILoggedUser ,LoggedUser>();
         }
 
         private static void AddRepositories (IServiceCollection services)

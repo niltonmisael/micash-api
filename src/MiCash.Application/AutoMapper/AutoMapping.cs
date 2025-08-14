@@ -20,8 +20,8 @@ namespace MiCash.Application.AutoMapper
         private void RequestToEntity ()
         {
             CreateMap<RequestExpenseJson , Expense>();
-            CreateMap<RequestRegisterUserJson , User>()
-                .ForMember(dest => dest.Password , config => config.Ignore());
+            CreateMap<RequestRegisterUserJson , User>();
+        
 
         }
 
@@ -29,7 +29,7 @@ namespace MiCash.Application.AutoMapper
         {
             CreateMap<Expense , ResponseRegisteredExpenseJson>();
             CreateMap<Expense , ResponseShortExpenseJson>();
-            CreateMap<Expense , ResponseExpensesJson>();
+            CreateMap<Expense , ResponseExpenseJson>();
 
         }
     }

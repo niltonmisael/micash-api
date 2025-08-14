@@ -14,7 +14,7 @@ namespace MiCash.API.Token
         {
             var authorization = _contextAccessor.HttpContext!.Request.Headers.Authorization.ToString ();
 
-            return authorization["Bearer ".Length..].Trim ();
+            return authorization["Bearer ".Length..].Trim();
         }
     }
 }

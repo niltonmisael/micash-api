@@ -30,7 +30,7 @@ namespace MiCash.Infrastructure
         {
             services.AddScoped<IRegisterExpenseUseCase , RegisterExpenseUseCase>();
             services.AddScoped<IGetAllExpensesUseCase , GetAllExpensesUseCase>();
-            services.AddScoped<IGetByIdUseCase , GetByIdUseCase>();
+            services.AddScoped<IGetExpenseByIdUseCase , GetExpenseByIdUseCase>();
             services.AddScoped<IDeleteExpenseUseCase, DeleteExpenseUseCase>();
             services.AddScoped<IUpdateExpenseUseCase, UpdateExpenseUseCase>();
             services.AddScoped<IGenerateExpensesReportExcelUseCase , GenerateExpensesReportExcelUseCase>();

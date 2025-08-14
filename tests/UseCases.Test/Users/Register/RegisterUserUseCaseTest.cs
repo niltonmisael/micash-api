@@ -62,17 +62,17 @@ namespace UseCases.Test.Users.Register
         private RegisterUserUseCase CreateUseCase ( string? email = null)
         {
             var mapper = MapperBuilder.Build();
-            var passwordEncripter = new PasswordEncrypterBuilder();
+            var passwordEncripter = new PasswordEncrypterBuilder().Build();
             var writeRepository = UserWriteOnlyRepositoryBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
             var tokenGenerator = JwtTokenGeneratorBuilder.Build();
-            var readRepository = new UserReadOnlyRepositoryBuilder().Build();
+            var readRepository = new UserReadOnlyRepositoryBuilder();
 
             if ( string.IsNullOrWhiteSpace(email) == false) {
                 readRepository.ExistActiveUserWithEmail(email);
             }
 
-            return new RegisterUserUseCase(mapper, passwordEncripter.Build(), readRepository, writeRepository , unitOfWork , tokenGenerator);
+            return new RegisterUserUseCase(mapper, passwordEncripter, readRepository.Build(), writeRepository , unitOfWork , tokenGenerator);
 
         }
 

@@ -14,19 +14,19 @@ using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Expenses.GetById
 {
-    class GetByIdUseCase : IGetByIdUseCase
+    public class GetExpenseByIdUseCase : IGetExpenseByIdUseCase
     {
         private readonly IExpensesReadOnlyRepository _repository;
         private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
 
-        public GetByIdUseCase (IExpensesReadOnlyRepository repository, IMapper mapper, ILoggedUser loggedUser)
+        public GetExpenseByIdUseCase (IExpensesReadOnlyRepository repository, IMapper mapper, ILoggedUser loggedUser)
         {
             _repository = repository;
             _mapper = mapper;
             _loggedUser = loggedUser;
         }
-        public async Task<ResponseExpensesJson> Execute (long id )
+        public async Task<ResponseExpenseJson> Execute (long id )
         {
             var loggedUser = await _loggedUser.Get();
 
@@ -37,7 +37,7 @@ namespace MiCash.Application.UseCases.Expenses.GetById
                 throw new NotFoundException(ResourseErrorMessages.EXPENSE_NOT_FOUND);
             }
 
-            return _mapper.Map<ResponseExpensesJson>(result);
+            return _mapper.Map<ResponseExpenseJson>(result);
         }
     }
 }

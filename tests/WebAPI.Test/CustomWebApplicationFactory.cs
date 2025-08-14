@@ -17,6 +17,7 @@ namespace WebAPI.Test
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
+        private Expense _expense;
         private User _user;
         private string _password;
         private string _token;
@@ -45,6 +46,7 @@ namespace WebAPI.Test
         public string GetEmail () => _user.Email;
         public string GetPassword () => _password;
         public string GetToken () => _token;
+        public long GetExpenseId () => _expense.Id;
         
         private void StartDataBase (MiCashDbContext dbContext, IPasswordEncripter passwordEncripter )
         {

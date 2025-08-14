@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Expenses.GetById
 {
-    public interface IGetByIdUseCase
+    public interface IGetExpenseByIdUseCase
     {
-        public Task<ResponseExpensesJson> Execute(long id);   
+        public Task<ResponseExpenseJson> Execute(long id);   
     }
 }
