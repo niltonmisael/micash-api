@@ -13,13 +13,13 @@ namespace WebAPI.Test.Expenses.Register
 
         public RegisterExpenseTest(CustomWebApplicationFactory webApplicationFactory): base(webApplicationFactory) 
         {
-            _token = webApplicationFactory.GetToken();
+            _token = webApplicationFactory.User_Team_Member.GetToken();
         }
 
         [Fact]
         public async Task Success ()
         {
-            var request = RequestRegisterExpenseJsonBuilder.Build();
+            var request = RequestExpenseJsonBuilder.Build();
 
             var result = await DoPost(requestUri: METHOD, request: request, token: _token);
 

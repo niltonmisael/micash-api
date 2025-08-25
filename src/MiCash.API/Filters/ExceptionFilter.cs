@@ -27,7 +27,7 @@ namespace MiCash.API.Filters
             var errorResponse = new ResponseErrorJson(miCash!.GetErrors());
 
             context.HttpContext.Response.StatusCode = miCash.StatusCode;
-            context.Result = new BadRequestObjectResult(errorResponse);
+            context.Result = new ObjectResult(errorResponse);
 
 
         }

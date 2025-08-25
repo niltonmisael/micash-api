@@ -18,7 +18,7 @@ namespace Validators.Tests.Expenses.Register
         {
             //Arrange
             var validador = new ExpensesValidator();
-            var request = RequestRegisterExpenseJsonBuilder.Build();
+            var request = RequestExpenseJsonBuilder.Build();
 
             //Act
             var result = validador.Validate(request);

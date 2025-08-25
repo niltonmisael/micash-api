@@ -46,10 +46,9 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         public async Task<List<Expense>> FilterByMonth ( User user, DateOnly date )
         {
-            var startDate = new DateTime(year: date.Year , month: date.Month , day: 1).Date;
-
+            var startDate = new DateTime(date.Year , date.Month , 1 , 0 , 0 , 0 , DateTimeKind.Utc);
             var daysInMonth = DateTime.DaysInMonth(year: date.Year , month: date.Month);
-            var endDate = new DateTime(year: date.Year , month: date.Month , day: daysInMonth, hour: 23, minute: 59, second: 59);
+            var endDate = new DateTime(date.Year , date.Month , daysInMonth , 23 , 59 , 59 , DateTimeKind.Utc);
 
             return await _dbContext
                 .Expenses

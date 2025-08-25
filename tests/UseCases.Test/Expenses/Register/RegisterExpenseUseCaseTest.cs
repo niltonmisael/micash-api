@@ -23,7 +23,7 @@ namespace UseCases.Test.Expenses.Register
         public async Task Success ()
         {
             var loggedUser = UserBuilder.Build();
-            var request = RequestRegisterExpenseJsonBuilder.Build();
+            var request = RequestExpenseJsonBuilder.Build();
             var useCase = CreateUseCase(loggedUser);
 
             var result = await useCase.Execute(request);
@@ -37,7 +37,7 @@ namespace UseCases.Test.Expenses.Register
         public async Task Error_Title_Empty ()
         {
             var loggedUser = UserBuilder.Build();
-            var request = RequestRegisterExpenseJsonBuilder.Build();
+            var request = RequestExpenseJsonBuilder.Build();
             request.Title = string.Empty;
 
             var useCase = CreateUseCase(loggedUser);

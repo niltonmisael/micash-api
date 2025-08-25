@@ -32,6 +32,12 @@ namespace CommonTestUtilities.Repositories
             return this;
         }
 
+        public ExpenseReadOnlyRepositoryBuilder FilterByMonth (User user, List<Expense> expenses)
+        {
+            _repository.Setup(repository => repository.FilterByMonth(user, It.IsAny<DateOnly>())).ReturnsAsync(expenses);
+            return this;
+        }
+
         public IExpensesReadOnlyRepository Build() => _repository.Object;
     }
 }

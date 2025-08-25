@@ -9,16 +9,10 @@ using System.Threading.Tasks;
 
 namespace CommonTestUtilities.Requests
 {
-    public class RequestRegisterExpenseJsonBuilder
+    public class RequestExpenseJsonBuilder
     {
         public static RequestExpenseJson Build ()
         {
-            //var faker = new Faker();
-            //var request = new RequestRegisterExpenseJson
-            //{
-            //    Title = faker.Commerce.Product() ,
-            //    Date = faker.Date.Past() ,
-            //};
             return new Faker<RequestExpenseJson>()
                 .RuleFor(r => r.Title , faker => faker.Commerce.ProductName())
                 .RuleFor(r => r.Description , faker => faker.Commerce.ProductDescription())

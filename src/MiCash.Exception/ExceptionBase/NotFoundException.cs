@@ -11,7 +11,6 @@ namespace MiCash.Exception.ExceptionBase
     {
         public NotFoundException (string message) : base(message)
         {
-            
         }
 
         public override int StatusCode => (int)HttpStatusCode.NotFound;

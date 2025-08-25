@@ -10,21 +10,21 @@ using System.Threading.Tasks;
 
 namespace WebAPI.Test.Login.DoLogin
 {
-    public class DoLoginTest : IClassFixture<CustomWebApplicationFactory>
+    public class DoLoginTest : MiCashClassFixture
     {
         private const string METHOD = "api/Login";
 
-        private readonly HttpClient _httpClient;
         private readonly string _email;
         private readonly string _name;
         private readonly string _password;
 
-        public DoLoginTest (CustomWebApplicationFactory webApplicationFactory)
+        public DoLoginTest (CustomWebApplicationFactory webApplicationFactory) : base (webApplicationFactory) 
         {
-            _httpClient = webApplicationFactory.CreateClient ();
-            _email = webApplicationFactory.GetEmail();
-            _name = webApplicationFactory.GetName();
-            _password = webApplicationFactory.GetPassword();
+           
+            _email = webApplicationFactory.User_Team_Member.GetEmail();
+            _name = webApplicationFactory.User_Team_Member.GetName();
+            _password = webApplicationFactory.User_Team_Member.GetPassword();
+            
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace WebAPI.Test.Login.DoLogin
                 Email = _email ,
                 Password = _password
             };
-            var response = await _httpClient.PostAsJsonAsync(METHOD , request);
+            var response = await DoPost(METHOD , request);
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
             var resposeBody = await response.Content.ReadAsStreamAsync();
