@@ -153,4 +153,7 @@
   <data name="EMAIL_OR PASSWORD_INVALID" xml:space="preserve">
     <value>Email ou senha incorreto</value>
   </data>
+  <data name="PASSWORD_DIFFERENT_CURRENT_PASSWORD" xml:space="preserve">
+    <value>A senha inserida é diferente da senha atual</value>
+  </data>
 </root>

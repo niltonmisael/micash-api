@@ -41,6 +41,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IUnitOfWork , UnitOfWork>();
             services.AddScoped<IUserReadOnlyRepository , UserRepository>();
             services.AddScoped<IUserWriteOnlyRepository , UserRepository>();
+            services.AddScoped<IUserUpdateOnlyRepository , UserRepository>();
         }
         private static void AddToken(this IServiceCollection services, IConfiguration configuration )
         {

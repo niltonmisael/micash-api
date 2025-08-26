@@ -1,6 +1,7 @@
 ﻿using CommonTestUtilities.Requests;
 using FluentAssertions;
 using MiCash.Application.UseCases.Users;
+using MiCash.Application.UseCases.Users.Register;
 using MiCash.Exception;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,6 @@ namespace Validators.Tests.Users.Register
         [InlineData("")]
         [InlineData("       ")]
         [InlineData(null)]
-
         public void Error_Name_Invalid ( string name)
         {
             //Arrange
