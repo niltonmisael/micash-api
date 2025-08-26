@@ -1,6 +1,8 @@
-﻿using MiCash.Application.UseCases.Users.Register;
+﻿using MiCash.Application.UseCases.Users.Profile;
+using MiCash.Application.UseCases.Users.Register;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,6 +24,16 @@ namespace MiCash.API.Controllers
 
             return Created(string.Empty, response);
             
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ResponseUserProfileJson) , StatusCodes.Status200OK)]
+        [Authorize]
+        public async Task<IActionResult> GetProfile ( [FromServices] IGetUserProfileUseCase useCase)
+        {
+            var response = await useCase.Execute();
+
+            return Ok(response);
         }
     }
 }
