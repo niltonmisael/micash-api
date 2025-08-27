@@ -104,7 +104,7 @@ async Task MigrateDataBase ()
 {
     await using var scope = app.Services.CreateAsyncScope();
 
-    await DataBaseMigration.MigrationDataBase(scope.ServiceProvider);
+    await DataBaseMigration.MigrateDatabase(scope.ServiceProvider);
 
 }
 

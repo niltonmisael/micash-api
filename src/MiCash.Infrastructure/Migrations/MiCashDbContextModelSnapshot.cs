@@ -63,6 +63,27 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("expenses");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Tag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ExpenseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpenseId");
+
+                    b.ToTable("Tags", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -110,6 +131,22 @@ namespace MiCash.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.Tag", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.Expense", "Expense")
+                        .WithMany("Tags")
+                        .HasForeignKey("ExpenseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Expense");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
+                {
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }
