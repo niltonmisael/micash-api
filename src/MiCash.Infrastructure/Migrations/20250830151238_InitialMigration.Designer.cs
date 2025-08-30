@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiCash.Infrastructure.Migrations
 {
     [DbContext(typeof(MiCashDbContext))]
-    [Migration("20250827211320_InitialAndTagsIntoExpenses")]
-    partial class InitialAndTagsIntoExpenses
+    [Migration("20250830151238_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -84,7 +84,7 @@ namespace MiCash.Infrastructure.Migrations
 
                     b.HasIndex("ExpenseId");
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("tags", (string)null);
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>

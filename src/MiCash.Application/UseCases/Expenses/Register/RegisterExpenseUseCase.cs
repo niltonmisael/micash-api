@@ -42,7 +42,7 @@ namespace MiCash.Application.UseCases.Expenses.Register
 
         private void Validate ( RequestExpenseJson request )
         {
-            var validator = new ExpensesValidator();
+            var validator = new ExpenseValidator();
 
             var result = validator.Validate(request);
 

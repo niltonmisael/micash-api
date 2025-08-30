@@ -39,6 +39,7 @@ namespace WebAPI.Test.Expenses.GetById
             response.RootElement.GetProperty("description").GetString().Should().NotBeNullOrWhiteSpace();
             response.RootElement.GetProperty("date").GetDateTime().Should().NotBeAfter(DateTime.Today);
             response.RootElement.GetProperty("amount").GetDecimal().Should().BeGreaterThan(0);
+            response.RootElement.GetProperty("tags").EnumerateArray().Should().NotBeNullOrEmpty();
             
 
             var paymentType = response.RootElement.GetProperty("paymentType").GetInt32();

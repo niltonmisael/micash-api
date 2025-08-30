@@ -22,7 +22,7 @@ namespace MiCash.Infrastructure.DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Tag>().ToTable("Tags");
+            modelBuilder.Entity<Tag>().ToTable("tags");
         }
 
     }

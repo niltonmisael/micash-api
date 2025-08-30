@@ -24,11 +24,16 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         async Task<Expense?> IExpensesReadOnlyRepository.GetById ( User user, long id )
         {
-            return await _dbContext.Expenses.FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
+            return await _dbContext.Expenses
+                .Include(expense => expense.Tags)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
         }
         async Task<Expense?> IExpensesUpdateOnlyRepository.GetById ( User user, long id )
         {
-            return await _dbContext.Expenses.FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
+            return await _dbContext.Expenses
+                .Include (expense => expense.Tags)
+                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
         }
 
         public async Task Delete (long id )

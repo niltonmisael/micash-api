@@ -7,13 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiCash.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialAndTagsIntoExpenses : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "users",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
@@ -30,7 +30,7 @@ namespace MiCash.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Expenses",
+                name: "expenses",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
@@ -54,7 +54,7 @@ namespace MiCash.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tags",
+                name: "tags",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -64,9 +64,9 @@ namespace MiCash.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.PrimaryKey("PK_tags", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tags_expenses_ExpenseId",
+                        name: "FK_tags_expenses_ExpenseId",
                         column: x => x.ExpenseId,
                         principalTable: "expenses",
                         principalColumn: "id",
@@ -79,8 +79,8 @@ namespace MiCash.Infrastructure.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_ExpenseId",
-                table: "Tags",
+                name: "IX_tags_ExpenseId",
+                table: "tags",
                 column: "ExpenseId");
         }
 
@@ -88,13 +88,13 @@ namespace MiCash.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "tags");
 
             migrationBuilder.DropTable(
-                name: "Expenses");
+                name: "expenses");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "users");
         }
     }
 }

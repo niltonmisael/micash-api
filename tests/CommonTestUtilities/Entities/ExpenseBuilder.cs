@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Enums;
+using Tag = MiCash.Domain.Enums.Tag;
 
 namespace CommonTestUtilities.Entities
 {
@@ -34,7 +35,13 @@ namespace CommonTestUtilities.Entities
                 .RuleFor(r => r.Date , faker => faker.Date.Past())
                 .RuleFor(r => r.Amount , faker => faker.Random.Decimal(min: 1 , max: 1000))
                 .RuleFor(r => r.PaymentType , faker => faker.PickRandom<PaymentType>())
-                .RuleFor(r => r.UserId , _ => user.Id);
+                .RuleFor(r => r.UserId , _ => user.Id)
+                .RuleFor(r => r.Tags , faker => faker.Make(1 , () => new MiCash.Domain.Entities.Tag
+                {
+                    Id = 1 ,
+                    Value = faker.PickRandom<Tag>(),
+                    ExpenseId = 1
+                }));
         }
     }
 }

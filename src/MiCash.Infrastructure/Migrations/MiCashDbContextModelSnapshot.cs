@@ -81,7 +81,7 @@ namespace MiCash.Infrastructure.Migrations
 
                     b.HasIndex("ExpenseId");
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("tags", (string)null);
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
