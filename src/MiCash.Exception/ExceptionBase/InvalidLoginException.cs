@@ -9,9 +9,7 @@ namespace MiCash.Exception.ExceptionBase
 {
     public class InvalidLoginException : MiCashException
     {
-        public InvalidLoginException () : base(ResourseErrorMessages.EMAIL_OR_PASSWORD_INVALID)
-        {
-        }
+        public InvalidLoginException () : base(ResourseErrorMessages.EMAIL_OR_PASSWORD_INVALID) { }
 
         public override int StatusCode => (int)HttpStatusCode.Unauthorized;
 
