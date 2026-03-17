@@ -12,7 +12,7 @@ using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+Console.WriteLine($"ENV: {builder.Environment.EnvironmentName}");
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer(); 
@@ -103,9 +103,25 @@ app.Run();
 async Task MigrateDataBase ()
 {
     await using var scope = app.Services.CreateAsyncScope();
+    var serviceProvider = scope.ServiceProvider;
 
-    await DataBaseMigration.MigrateDatabase(scope.ServiceProvider);
+    for ( int i = 1; i <= 5; i++ ) {
+        try {
+            Console.WriteLine($"Tentando conectar no banco (tentativa {i})...");
 
+            await DataBaseMigration.MigrateDatabase(serviceProvider);
+
+            Console.WriteLine("Banco conectado e migrations aplicadas!");
+            break;
+        } catch ( Exception ex ) {
+            Console.WriteLine($"Erro ao conectar: {ex.Message}");
+
+            if ( i == 5 )
+                throw;
+
+            await Task.Delay(3000);
+        }
+    }
 }
 
 public partial class Program { }

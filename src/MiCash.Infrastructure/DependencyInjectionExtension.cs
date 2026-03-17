@@ -52,7 +52,7 @@ namespace MiCash.Infrastructure
         }
         private static void AddDbContext ( IServiceCollection services, IConfiguration configuration )
         {
-            var connectionString = configuration.GetConnectionString("Connection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<MiCashDbContext>(config => config.UseNpgsql(connectionString));
         }

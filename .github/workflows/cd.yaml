@@ -1,0 +1,89 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: minha-api
+  ECS_CLUSTER: meu-cluster
+  ECS_SERVICE: minha-api-service
+  CONTAINER_NAME: minha-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # 🔐 Credenciais AWS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 🔑 Login no ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 🐳 Build da imagem
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=${{ github.ref_name }}
+          docker build -f .deployment/Dockerfile -t $ECR_REPOSITORY:$IMAGE_TAG .
+
+      # 🏷️ Tag para ECR
+      - name: Tag image
+        run: |
+          IMAGE_TAG=${{ github.ref_name }}
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # 🚀 Push para ECR
+      - name: Push image to ECR
+        run: |
+          IMAGE_TAG=${{ github.ref_name }}
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # 📄 Atualizar Task Definition
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $ECS_SERVICE \
+            --query taskDefinition > task-def.json
+
+      - name: Update image in task definition
+        run: |
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.ref_name }}
+
+          cat task-def.json | jq \
+            --arg IMAGE "$IMAGE_URI" \
+            '.containerDefinitions[0].image = $IMAGE
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+            > new-task-def.json
+
+      - name: Register new task definition
+        id: register-task
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json > task-output.json
+
+          TASK_DEF_ARN=$(cat task-output.json | jq -r '.taskDefinition.taskDefinitionArn')
+          echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+
+      # 🔄 Atualizar serviço ECS
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --task-definition ${{ steps.register-task.outputs.task_def_arn }} \
+            --force-new-deployment
