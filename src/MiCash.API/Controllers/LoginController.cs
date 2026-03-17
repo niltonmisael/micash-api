@@ -1,7 +1,6 @@
 ﻿using MiCash.Application.UseCases.Login;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MiCash.API.Controllers
