@@ -6,10 +6,7 @@ using MiCash.Application.UseCases.Users.Update;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using System.Reflection.Metadata.Ecma335;
 
 namespace MiCash.API.Controllers
 {
