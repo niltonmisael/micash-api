@@ -10,6 +10,8 @@ namespace MiCash.Domain.Entities
         public long Id { get; set; }
         [Column("name")]
         public string Name { get; set; } = string.Empty;
+        [Column("phone")]
+        public string Phone { get; set; } = string.Empty;
         [Column("email")]
         public string Email { get; set; } = string.Empty;
         [Column("password")]
@@ -17,7 +19,7 @@ namespace MiCash.Domain.Entities
         [Column("user_identifier")]
         public Guid UserIdentifier { get; set; }
         [Column("role")]
-        public string Role { get; set; } = Roles.TEAM_MEMBER;
+        public string Role { get; set; } = Roles.PREMIUM;
         
     }
 }

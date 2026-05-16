@@ -8,12 +8,6 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Users.Register
 {
@@ -47,7 +41,6 @@ namespace MiCash.Application.UseCases.Users.Register
             await _userWriteOnlyRepository.Add(user);
 
             await _unitOfWork.Commit();
-
 
             return new ResponseRegisteredUserJson
             {

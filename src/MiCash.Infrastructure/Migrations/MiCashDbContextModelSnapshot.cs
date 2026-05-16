@@ -108,6 +108,11 @@ namespace MiCash.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password");
 
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text")

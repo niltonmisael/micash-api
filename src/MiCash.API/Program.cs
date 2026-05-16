@@ -14,7 +14,9 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 Console.WriteLine($"ENV: {builder.Environment.EnvironmentName}");
 builder.Services.AddControllers();
-
+builder.Services.AddRouting(config => {
+    config.LowercaseUrls = true;
+});
 builder.Services.AddEndpointsApiExplorer(); 
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(config => {
@@ -51,7 +53,14 @@ builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)))
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowFrontend" , policy => {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddScoped<ITokenProvider , HttpContextTokenValue>();
 
 builder.Services.AddHttpContextAccessor();
@@ -82,6 +91,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<CultureMiddleware>();
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 

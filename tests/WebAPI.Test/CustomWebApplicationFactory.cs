@@ -85,7 +85,7 @@ namespace WebAPI.Test
             IPasswordEncripter passwordEncripter ,
             IAccessTokenGenerator accessTokenGenerator )
         {
-            var user = UserBuilder.Build(Roles.ADMIN);
+            var user = UserBuilder.Build(Roles.PREMIUM);
             user.Id = 2;
 
             var password = user.Password;

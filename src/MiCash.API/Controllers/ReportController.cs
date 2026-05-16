@@ -10,7 +10,7 @@ namespace MiCash.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = Roles.ADMIN)]
+    [Authorize(Roles = Roles.PREMIUM)]
     public class ReportController : ControllerBase
     {
 
