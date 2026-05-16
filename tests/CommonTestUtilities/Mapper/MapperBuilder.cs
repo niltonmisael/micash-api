@@ -15,7 +15,7 @@ namespace CommonTestUtilities.Mapper
             var mapper = new MapperConfiguration(config => 
             {
                 config.AddProfile(new AutoMapping());
-            });
+            }, null);
 
             return mapper.CreateMapper();
         }

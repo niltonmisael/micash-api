@@ -28,7 +28,9 @@ namespace MiCash.Infrastructure
 
         private static void AddAutoMapping (IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(AutoMapping));
+            services.AddAutoMapper(config => {
+                config.AddMaps(typeof(AutoMapping).Assembly);
+            });
         }
         private static void AddUseCase (IServiceCollection services)
         {
