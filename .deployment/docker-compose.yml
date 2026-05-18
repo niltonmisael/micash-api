@@ -13,7 +13,7 @@ services:
       - "5433:5432"
 
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
     restart: unless-stopped
 
@@ -26,6 +26,7 @@ services:
     networks:
       - micash-network
 
+
   redis:
     image: redis:7
     container_name: micash-redis
@@ -34,7 +35,7 @@ services:
       - "6379:6379"
 
     volumes:
-      - ./data/redis:/data
+      - redis_data:/data
 
     command: redis-server --appendonly yes
 
@@ -48,9 +49,9 @@ services:
 
     networks:
       - micash-network
-    
-  otel-collector:
 
+
+  otel-collector:
     image: otel/opentelemetry-collector-contrib:0.102.1
     container_name: micash-otel-collector
 
@@ -68,10 +69,11 @@ services:
     depends_on:
       - tempo
 
+    restart: unless-stopped
+
     networks:
       - micash-network
 
-    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:11.1.0
@@ -81,11 +83,11 @@ services:
       - "3000:3000"
 
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
 
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
 
     depends_on:
       - loki
@@ -97,6 +99,7 @@ services:
     networks:
       - micash-network
 
+
   prometheus:
     image: prom/prometheus:v2.53.0
     container_name: micash-prometheus
@@ -106,12 +109,13 @@ services:
 
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./data/prometheus:/prometheus
+      - prometheus_data:/prometheus
 
     restart: unless-stopped
 
     networks:
       - micash-network
+
 
   loki:
     image: grafana/loki:2.9.8
@@ -124,12 +128,13 @@ services:
 
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
-      - ./data/loki:/loki
+      - loki_data:/loki
 
     restart: unless-stopped
 
     networks:
       - micash-network
+
 
   tempo:
     image: grafana/tempo:2.5.0
@@ -138,17 +143,28 @@ services:
     ports:
       - "3200:3200"
 
-    command: [ "-config.file=/etc/tempo.yml" ]
+    command:
+      - "-config.file=/etc/tempo.yml"
 
     volumes:
       - ./tempo/tempo.yml:/etc/tempo.yml
-      - ./data/tempo:/var/tempo
+      - tempo_data:/var/tempo
 
     restart: unless-stopped
 
     networks:
       - micash-network
 
+
 networks:
   micash-network:
     driver: bridge
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
+  prometheus_data:
+  loki_data:
+  tempo_data:
