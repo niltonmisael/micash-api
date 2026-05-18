@@ -1,6 +1,7 @@
 ﻿using MiCash.Application.AutoMapper;
 using MiCash.Application.UseCases.Auth.Login;
 using MiCash.Application.UseCases.Auth.Logout;
+using MiCash.Application.UseCases.Categories.Create;
 using MiCash.Application.UseCases.Expenses.Delete;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -15,7 +16,6 @@ using MiCash.Application.UseCases.Users.Delete;
 using MiCash.Application.UseCases.Users.Profile;
 using MiCash.Application.UseCases.Users.Register;
 using MiCash.Application.UseCases.Users.Update;
-using MiCash.Domain.Repositories.Expenses;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -52,6 +52,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IDeleteUserAccountUseCase , DeleteUserAccountUseCase>();
             services.AddScoped<ILogoutUseCase , LogoutUseCase>();
             services.AddScoped<IRefreshTokenUseCase , RefreshTokenUseCase>();
+            services.AddScoped<ICreateCaterogyUseCase,  CreateCaterogyUseCase>();
 
         }
     }

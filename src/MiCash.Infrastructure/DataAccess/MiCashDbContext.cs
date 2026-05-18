@@ -1,11 +1,5 @@
 ﻿using MiCash.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Replication.PgOutput;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Infrastructure.DataAccess
 {
@@ -17,6 +11,7 @@ namespace MiCash.Infrastructure.DataAccess
         }
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )
         {

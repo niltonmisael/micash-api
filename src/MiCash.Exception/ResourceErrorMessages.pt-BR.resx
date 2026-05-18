@@ -165,4 +165,10 @@
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Usuário não encontrado </value>
   </data>
+  <data name="COLOR_REQUIRED" xml:space="preserve">
+    <value>Cor e obrigatório</value>
+  </data>
+  <data name="ICON_REQUIRED" xml:space="preserve">
+    <value>Ícone é obrigatório</value>
+  </data>
 </root>

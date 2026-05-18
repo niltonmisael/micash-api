@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Requests;
+using MiCash.Communication.Requests.Categories;
 using MiCash.Communication.Responses;
 using MiCash.Domain.Entities;
 
@@ -22,7 +23,7 @@ namespace MiCash.Application.AutoMapper
             CreateMap<Communication.Enums.Tag , Tag>()
                 .ForMember(dest => dest.Value , config => config.MapFrom(source => source));
         
-
+            CreateMap<RequestCreateCategoryJson , Category>();
         }
 
         private void EntityToResponse ()

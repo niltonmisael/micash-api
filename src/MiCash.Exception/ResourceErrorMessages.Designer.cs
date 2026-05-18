@@ -70,6 +70,15 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Color is required..
+        /// </summary>
+        public static string COLOR_REQUIRED {
+            get {
+                return ResourceManager.GetString("COLOR_REQUIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Email already registered.
         /// </summary>
         public static string EMAIL_ALREADY_REGISTERED {
@@ -120,6 +129,15 @@ namespace MiCash.Exception {
         public static string EXPENSES_CANNOT_FOR_THE_FUTURE {
             get {
                 return ResourceManager.GetString("EXPENSES_CANNOT_FOR_THE_FUTURE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Icon is required.
+        /// </summary>
+        public static string ICON_REQUIRED {
+            get {
+                return ResourceManager.GetString("ICON_REQUIRED", resourceCulture);
             }
         }
         
