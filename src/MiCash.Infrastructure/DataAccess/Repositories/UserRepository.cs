@@ -1,11 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Users;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Infrastructure.DataAccess.Repositories
 {
@@ -37,6 +32,11 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
         public async Task<User> GetById ( long id )
         {
             return await _dbContext.Users.FirstAsync(user => user.Id == id);
+        }
+
+        public async Task<User?> GetByUserIdentifier ( Guid userIdentifier )
+        {
+            return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.UserIdentifier == userIdentifier);
         }
 
         public async Task<User?> GetUserByEmail ( string email )

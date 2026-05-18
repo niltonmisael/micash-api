@@ -1,6 +1,5 @@
 ﻿using Bogus;
 using MiCash.Communication.Requests;
-using System.Net.NetworkInformation;
 
 namespace CommonTestUtilities.Requests
 {
@@ -11,6 +10,7 @@ namespace CommonTestUtilities.Requests
             return new Faker<RequestRegisterUserJson>()
                 .RuleFor(user => user.Name , faker => faker.Person.FirstName)
                 .RuleFor(user => user.Email , ( faker , user ) => faker.Internet.Email(user.Email))
+                .RuleFor(user => user.Phone , faker => faker.Phone.PhoneNumber("###########"))
                 .RuleFor(user => user.Password , faker => faker.Internet.Password(prefix: "!Aa1"));
         }
     }

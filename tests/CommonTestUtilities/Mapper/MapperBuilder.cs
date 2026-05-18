@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MiCash.Application.AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CommonTestUtilities.Mapper
 {
@@ -14,8 +10,8 @@ namespace CommonTestUtilities.Mapper
         {
             var mapper = new MapperConfiguration(config => 
             {
-                config.AddProfile(new AutoMapping());
-            }, null);
+                config.AddMaps(typeof(AutoMapping).Assembly);
+            }, NullLoggerFactory.Instance);
 
             return mapper.CreateMapper();
         }

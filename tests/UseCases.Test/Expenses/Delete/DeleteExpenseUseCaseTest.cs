@@ -37,7 +37,7 @@ namespace UseCases.Test.Expenses.Delete
 
             var result = await act.Should().ThrowAsync<NotFoundException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.EXPENSE_NOT_FOUND));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EXPENSE_NOT_FOUND));
         }
 
         private DeleteExpenseUseCase CreateUseCase (User user, Expense? expense = null )

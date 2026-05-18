@@ -38,7 +38,7 @@ namespace Validators.Tests.Users.ChangePassword
             var result = validator.Validate(request);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.INVALID_PASSWORD));
+            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.INVALID_PASSWORD));
         }
     }
 }

@@ -42,7 +42,7 @@ namespace UseCases.Test.Users.Update
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.NAME_EMPTY));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.NAME_EMPTY));
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace UseCases.Test.Users.Update
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.EMAIL_ALREADY_REGISTERED));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
         }
 
         private UpdateUserUseCase CreateUseCase ( User user , string? email = null )

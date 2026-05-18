@@ -11,7 +11,7 @@ namespace WebAPI.Test.Users.Profile
 {
     public class GetUserProfileTest : MiCashClassFixture
     {
-        private const string METHOD = "api/User";
+        private const string METHOD = "api/user/profile";
 
         private readonly string _token;
         private readonly string _userName;

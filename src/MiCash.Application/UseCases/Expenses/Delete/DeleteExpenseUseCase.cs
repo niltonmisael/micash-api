@@ -34,7 +34,7 @@ namespace MiCash.Application.UseCases.Expenses.Delete
             var expense = await _expensesReadOnlyRepository.GetById(loggedUser,id);
 
             if ( expense == null ) {
-                throw new NotFoundException(ResourseErrorMessages.EXPENSE_NOT_FOUND);
+                throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);
             }
 
             await _repository.Delete(id);

@@ -1,17 +1,12 @@
 ﻿using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Mime;
 
 namespace WebAPI.Test.Expenses.Reports
 {
     public class GenerateExpensesReportTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Report";
+        private const string METHOD = "api/report";
 
         private readonly string _adminToken;
         private readonly string _teamMemberToken;
@@ -45,20 +40,22 @@ namespace WebAPI.Test.Expenses.Reports
             result.Content.Headers.ContentType!.MediaType.Should().Be(MediaTypeNames.Application.Octet);
         }
 
-        [Fact]
-        public async Task Error_Forbidden_User_Not_Allowed_Excel ()
-        {
-            var result = await DoGet(requestUri: $"{METHOD}/excel?month={_expenseDate:Y}" , token: _teamMemberToken);
+        // Refazer os testes de Forbidden, pois o endpoint de geração de relatório foi alterado e não ser´´a somente admin terá planos.
 
-            result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        }
+        //[Fact]
+        //public async Task Error_Forbidden_User_Not_Allowed_Excel ()
+        //{
+        //    var result = await DoGet(requestUri: $"{METHOD}/excel?month={_expenseDate:Y}" , token: _teamMemberToken);
 
-        [Fact]
-        public async Task Error_Forbidden_User_Not_Allowed_Pdf ()
-        {
-            var result = await DoGet(requestUri: $"{METHOD}/pdf?month={_expenseDate:Y}" , token: _teamMemberToken);
+        //    result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        //}
 
-            result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        }
+        //[Fact]
+        //public async Task Error_Forbidden_User_Not_Allowed_Pdf ()
+        //{
+        //    var result = await DoGet(requestUri: $"{METHOD}/pdf?month={_expenseDate:Y}" , token: _teamMemberToken);
+
+        //    result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        //}
     }
 }

@@ -56,7 +56,7 @@ namespace MiCash.Application.UseCases.Users.ChangePassword
             var passwordMatch = _passwordEncripter.Verify(request.Password, loggedUser.Password);
 
             if(passwordMatch == false ) {
-                result.Errors.Add(new ValidationFailure(string.Empty , ResourseErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
+                result.Errors.Add(new ValidationFailure(string.Empty , ResourceErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
             }
 
             if ( result.IsValid == false ) {

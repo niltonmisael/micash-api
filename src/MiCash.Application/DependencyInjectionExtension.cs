@@ -1,4 +1,6 @@
 ﻿using MiCash.Application.AutoMapper;
+using MiCash.Application.UseCases.Auth.Login;
+using MiCash.Application.UseCases.Auth.Logout;
 using MiCash.Application.UseCases.Expenses.Delete;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -6,7 +8,8 @@ using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Application.UseCases.Expenses.Update;
-using MiCash.Application.UseCases.Login;
+using MiCash.Application.UseCases.Login.Logout;
+using MiCash.Application.UseCases.Login.Refresh;
 using MiCash.Application.UseCases.Users.ChangePassword;
 using MiCash.Application.UseCases.Users.Delete;
 using MiCash.Application.UseCases.Users.Profile;
@@ -47,7 +50,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IUpdateUserUseCase , UpdateUserUseCase>();
             services.AddScoped<IChangePasswordUseCase , ChangePasswordUseCase>();
             services.AddScoped<IDeleteUserAccountUseCase , DeleteUserAccountUseCase>();
-           
+            services.AddScoped<ILogoutUseCase , LogoutUseCase>();
+            services.AddScoped<IRefreshTokenUseCase , RefreshTokenUseCase>();
+
         }
     }
 }

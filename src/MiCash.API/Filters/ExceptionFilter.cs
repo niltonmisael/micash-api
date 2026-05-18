@@ -34,7 +34,7 @@ namespace MiCash.API.Filters
 
         private void ThrowUnkownError ( ExceptionContext context )
         {
-            var errorResponse = new ResponseErrorJson(ResourseErrorMessages.UNKNOWN_ERROR);
+            var errorResponse = new ResponseErrorJson(ResourceErrorMessages.UNKNOWN_ERROR);
 
             context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Result = new ObjectResult(errorResponse);

@@ -18,7 +18,9 @@ namespace MiCash.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ResponseRegisteredExpenseJson),StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson),StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register ( [FromServices] IRegisterExpenseUseCase useCase ,[FromBody] RequestExpenseJson request )
+        public async Task<IActionResult> Register ( 
+            [FromServices] IRegisterExpenseUseCase useCase ,
+            [FromBody] RequestExpenseJson request )
         {
                 var response = await useCase.Execute(request);
 
@@ -40,7 +42,9 @@ namespace MiCash.API.Controllers
         [Route("{id}")]
         [ProducesResponseType(typeof(ResponseExpensesJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById ( [FromServices] IGetExpenseByIdUseCase useCase, [FromRoute] long id )
+        public async Task<IActionResult> GetById ( 
+            [FromServices] IGetExpenseByIdUseCase useCase, 
+            [FromRoute] long id )
         {
             var response = await useCase.Execute(id);
 
@@ -63,7 +67,10 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(typeof(ResponseExpensesJson) , StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update ( [FromServices] IUpdateExpenseUseCase useCase , [FromRoute] long id, [FromBody] RequestExpenseJson request)
+        public async Task<IActionResult> Update ( 
+            [FromServices] IUpdateExpenseUseCase useCase , 
+            [FromRoute] long id, 
+            [FromBody] RequestExpenseJson request)
         {
             await useCase.Execute(id, request);
 

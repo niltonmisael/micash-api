@@ -44,7 +44,7 @@ namespace WebAPI.Test.Expenses.Delete
             var response = await JsonDocument.ParseAsync(body);
             var errors = response.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("EXPENSE_NOT_FOUND" , new CultureInfo(culture));
+            var expectedMessage = ResourceErrorMessages.ResourceManager.GetString("EXPENSE_NOT_FOUND" , new CultureInfo(culture));
 
             errors.Should().HaveCount(1).And.Contain(error => error.GetString()!.Equals(expectedMessage));
         }

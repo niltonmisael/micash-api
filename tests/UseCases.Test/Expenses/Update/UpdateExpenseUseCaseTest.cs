@@ -55,7 +55,7 @@ namespace UseCases.Test.Expenses.Update
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.TITLE_REQUIRED));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.TITLE_REQUIRED));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace UseCases.Test.Expenses.Update
 
             var result = await act.Should().ThrowAsync<NotFoundException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.EXPENSE_NOT_FOUND));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EXPENSE_NOT_FOUND));
         }
 
         private UpdateExpenseUseCase CreateUseCase ( User user , Expense? expense = null )

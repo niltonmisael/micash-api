@@ -10,7 +10,7 @@ namespace WebAPI.Test.Users.Delete
 {
     public class DeleteUserTest : MiCashClassFixture
     {
-        private const string METHOD = "api/User";
+        private const string METHOD = "api/user/delete";
 
         private readonly string _token;
 

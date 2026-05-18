@@ -46,7 +46,7 @@ namespace UseCases.Test.Expenses.Register
 
             var result = act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            await result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.TITLE_REQUIRED));
+            await result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.TITLE_REQUIRED));
 
         }
 
