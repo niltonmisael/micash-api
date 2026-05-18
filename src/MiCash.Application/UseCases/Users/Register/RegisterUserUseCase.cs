@@ -6,14 +6,10 @@ using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
+using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Models;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Users.Register
 {
@@ -25,8 +21,19 @@ namespace MiCash.Application.UseCases.Users.Register
         private readonly IUserWriteOnlyRepository _userWriteOnlyRepository;
         private readonly IUnitOfWork _unitOfWork; 
         private readonly IAccessTokenGenerator _tokenGenerator;
+        private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+        private readonly IRedisCacheService _redisCacheService;
 
-        public RegisterUserUseCase (IMapper mapper, IPasswordEncripter passwordEncripter, IUserReadOnlyRepository userReadOnlyRepository,IUserWriteOnlyRepository userWriteOnlyRepository, IUnitOfWork unitOfWork, IAccessTokenGenerator tokenGenerator)
+        public RegisterUserUseCase (
+            IMapper mapper, 
+            IPasswordEncripter passwordEncripter, 
+            IUserReadOnlyRepository userReadOnlyRepository,
+            IUserWriteOnlyRepository userWriteOnlyRepository, 
+            IUnitOfWork unitOfWork, 
+            IAccessTokenGenerator tokenGenerator,
+            IRefreshTokenGenerator refreshTokenGenerator ,
+            IRedisCacheService redisCacheService
+        )
         {
             _mapper = mapper;
             _passwordEncripter = passwordEncripter;
@@ -34,6 +41,8 @@ namespace MiCash.Application.UseCases.Users.Register
             _userWriteOnlyRepository = userWriteOnlyRepository;
             _unitOfWork = unitOfWork;  
             _tokenGenerator = tokenGenerator;
+            _refreshTokenGenerator = refreshTokenGenerator;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ResponseRegisteredUserJson> Execute ( RequestRegisterUserJson request )
@@ -48,11 +57,28 @@ namespace MiCash.Application.UseCases.Users.Register
 
             await _unitOfWork.Commit();
 
+            var token = _tokenGenerator.Generate(user);
+
+            var refreshToken = _refreshTokenGenerator.Generate();
+
+            var refreshTokenData = new RefreshTokenData
+            {
+                UserIdentifier = user.UserIdentifier,
+                Token = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+            };
+
+            await _redisCacheService.SetAsync(
+                key: $"refreshToken:{refreshToken}" ,
+                value: refreshTokenData,
+                expiration: TimeSpan.FromDays(7)
+            );
 
             return new ResponseRegisteredUserJson
             {
                 Name = user.Name ,
-                Token = _tokenGenerator.Generate(user)
+                Token = token ,
+                RefreshToken = refreshToken ,
             };
         }
 
@@ -63,7 +89,7 @@ namespace MiCash.Application.UseCases.Users.Register
             var emailExist = await _userReadOnlyRepository.ExistActiveUserWithEmail(request.Email);
 
             if ( emailExist ) {
-                result.Errors.Add(new ValidationFailure(string.Empty , ResourseErrorMessages.EMAIL_ALREADY_REGISTERED));
+                result.Errors.Add(new ValidationFailure(string.Empty , ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
             }
 
             if ( result.IsValid == false ) {

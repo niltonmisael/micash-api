@@ -15,7 +15,7 @@ namespace MiCash.API.Controllers
     public class UserController : ControllerBase
     {
 
-        [HttpPost]
+        [HttpPost("register")]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register ([FromServices] IRegisterUserUseCase useCase,  [FromBody] RequestRegisterUserJson request)
@@ -26,7 +26,7 @@ namespace MiCash.API.Controllers
             
         }
 
-        [HttpGet]
+        [HttpGet("profile")]
         [ProducesResponseType(typeof(ResponseUserProfileJson) , StatusCodes.Status200OK)]
         [Authorize]
         public async Task<IActionResult> GetProfile ( [FromServices] IGetUserProfileUseCase useCase)
@@ -36,7 +36,7 @@ namespace MiCash.API.Controllers
             return Ok(response);
         }
 
-        [HttpPut]
+        [HttpPut("update")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
@@ -58,7 +58,7 @@ namespace MiCash.API.Controllers
             return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("delete")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteProfile ( [FromServices] IDeleteUserAccountUseCase useCase )

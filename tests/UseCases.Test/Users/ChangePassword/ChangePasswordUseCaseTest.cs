@@ -47,7 +47,7 @@ namespace UseCases.Test.Users.ChangePassword
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
             result.Where(e => e.GetErrors().Count == 1 &&
-                    e.GetErrors().Contains(ResourseErrorMessages.INVALID_PASSWORD));
+                    e.GetErrors().Contains(ResourceErrorMessages.INVALID_PASSWORD));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace UseCases.Test.Users.ChangePassword
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
             result.Where(e => e.GetErrors().Count == 1 &&
-                    e.GetErrors().Contains(ResourseErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
+                    e.GetErrors().Contains(ResourceErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
         }
 
         private static ChangePasswordUseCase CreateUseCase ( User user , string? password = null )

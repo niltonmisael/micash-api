@@ -1,19 +1,9 @@
 ﻿using CommonTestUtilities.Requests;
 using FluentAssertions;
-using MiCash.Communication.Requests;
 using MiCash.Exception;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using WebAPI.Test.InlineData;
 
 namespace WebAPI.Test.Users.Register
@@ -21,7 +11,7 @@ namespace WebAPI.Test.Users.Register
     public class RegisterUserTest : MiCashClassFixture
     {
 
-        private const string METHOD = "api/User";
+        private const string METHOD = "api/user/register";
         
 
         public RegisterUserTest ( CustomWebApplicationFactory webApplicationFactory ) : base( webApplicationFactory )
@@ -62,7 +52,7 @@ namespace WebAPI.Test.Users.Register
 
             var errors = response.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("NAME_EMPTY", new CultureInfo(culture));
+            var expectedMessage = ResourceErrorMessages.ResourceManager.GetString("NAME_EMPTY", new CultureInfo(culture));
 
             errors.Should().HaveCount(1).And.Contain(error => error.GetString()!.Equals(expectedMessage));
         }

@@ -36,7 +36,7 @@ namespace Validators.Tests.Users.Update
             var result = validator.Validate(request);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.NAME_EMPTY));
+            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.NAME_EMPTY));
         }
 
         [Theory]
@@ -52,7 +52,7 @@ namespace Validators.Tests.Users.Update
             var result = validator.Validate(request);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.EMAIL_EMPTY));
+            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.EMAIL_EMPTY));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Validators.Tests.Users.Update
             var result = validator.Validate(request);
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourseErrorMessages.EMAIL_INVALID));
+            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.EMAIL_INVALID));
         }
     }
 }

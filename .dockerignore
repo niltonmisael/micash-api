@@ -6,3 +6,51 @@ Dockerfile
 docker-compose.yml
 tests/
 .vs/
+
+# =========================
+# Git
+# =========================
+.git
+.gitignore
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+bin/
+obj/
+
+# =========================
+# VSCode / Rider
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Deployment Persistent Data
+# =========================
+.deployment/data/
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Redis
+# =========================
+*.rdb
+*.aof
+
+# =========================
+# Environment
+# =========================
+.env
+.env.local
+.env.production
+
+# =========================
+# Docker Compose Override
+# =========================
+docker-compose.override.yml

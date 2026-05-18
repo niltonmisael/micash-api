@@ -1,5 +1,5 @@
-
 services:
+
   postgres:
     image: postgres:15
     container_name: micash-postgres
@@ -13,9 +13,142 @@ services:
       - "5433:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
 
-    restart: always
+    restart: unless-stopped
 
-volumes:
-  postgres_data:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - micash-network
+
+  redis:
+    image: redis:7
+    container_name: micash-redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - ./data/redis:/data
+
+    command: redis-server --appendonly yes
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - micash-network
+    
+  otel-collector:
+
+    image: otel/opentelemetry-collector-contrib:0.102.1
+    container_name: micash-otel-collector
+
+    command:
+      - "--config=/etc/otel-collector-config.yaml"
+
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "9464:9464"
+
+    depends_on:
+      - tempo
+
+    networks:
+      - micash-network
+
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: micash-grafana
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+
+    restart: unless-stopped
+
+    networks:
+      - micash-network
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: micash-prometheus
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+
+    restart: unless-stopped
+
+    networks:
+      - micash-network
+
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: micash-loki
+
+    ports:
+      - "3100:3100"
+
+    command: -config.file=/etc/loki/local-config.yaml
+
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - ./data/loki:/loki
+
+    restart: unless-stopped
+
+    networks:
+      - micash-network
+
+  tempo:
+    image: grafana/tempo:2.5.0
+    container_name: micash-tempo
+
+    ports:
+      - "3200:3200"
+
+    command: [ "-config.file=/etc/tempo.yml" ]
+
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo.yml
+      - ./data/tempo:/var/tempo
+
+    restart: unless-stopped
+
+    networks:
+      - micash-network
+
+networks:
+  micash-network:
+    driver: bridge

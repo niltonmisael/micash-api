@@ -1,4 +1,5 @@
-﻿using CommonTestUtilities.Cryptography;
+﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.Cryptography;
 using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
@@ -7,11 +8,6 @@ using FluentAssertions;
 using MiCash.Application.UseCases.Users.Register;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCases.Test.Users.Register
 {
@@ -27,6 +23,7 @@ namespace UseCases.Test.Users.Register
 
             result.Should().NotBeNull();
             result.Name.Should().Be(request.Name);
+            result.RefreshToken.Should().NotBeNullOrWhiteSpace();
             result.Token.Should().NotBeNullOrWhiteSpace();
         }
 
@@ -42,7 +39,7 @@ namespace UseCases.Test.Users.Register
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.NAME_EMPTY));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.NAME_EMPTY));
         }
 
         [Fact]
@@ -56,7 +53,7 @@ namespace UseCases.Test.Users.Register
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourseErrorMessages.EMAIL_ALREADY_REGISTERED));
+            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
         }
 
         private RegisterUserUseCase CreateUseCase ( string? email = null)
@@ -67,12 +64,23 @@ namespace UseCases.Test.Users.Register
             var unitOfWork = UnitOfWorkBuilder.Build();
             var tokenGenerator = JwtTokenGeneratorBuilder.Build();
             var readRepository = new UserReadOnlyRepositoryBuilder();
+            var refreshTokenGenerator = RefreshTokenGeneratorBuilder.Build();
+            var redisCacheService = new RedisCacheServiceBuilder();
 
             if ( string.IsNullOrWhiteSpace(email) == false) {
                 readRepository.ExistActiveUserWithEmail(email);
             }
 
-            return new RegisterUserUseCase(mapper, passwordEncripter, readRepository.Build(), writeRepository , unitOfWork , tokenGenerator);
+            return new RegisterUserUseCase(
+                mapper, 
+                passwordEncripter, 
+                readRepository.Build(), 
+                writeRepository , 
+                unitOfWork , 
+                tokenGenerator,
+                refreshTokenGenerator,
+                redisCacheService.Build()
+                );
 
         }
 

@@ -2,17 +2,12 @@
 using CommonTestUtilities.Cryptography;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CommonTestUtilities.Entities
 {
     public class UserBuilder
     {
-        public static User Build (string role = Roles.TEAM_MEMBER)
+        public static User Build (string role = Roles.PREMIUM)
         {
             var passwordEncripter = new PasswordEncrypterBuilder().Build();
 

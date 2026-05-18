@@ -19,32 +19,32 @@ namespace MiCash.Application.UseCases.Users
         public override bool IsValid ( ValidationContext<T> context , string password )
         {
             if ( string.IsNullOrWhiteSpace(password) ) {
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY, ResourseErrorMessages.INVALID_PASSWORD );
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY, ResourceErrorMessages.INVALID_PASSWORD );
                 return false;
             }
 
             if ( password.Length < 8 ) {
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourseErrorMessages.INVALID_PASSWORD);
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourceErrorMessages.INVALID_PASSWORD);
                 return false;
             }
 
             if ( Regex.IsMatch(password, @"[A-Z]+") == false ) {
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourseErrorMessages.INVALID_PASSWORD);
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourceErrorMessages.INVALID_PASSWORD);
                 return false;
             }
 
             if ( Regex.IsMatch(password , @"[a-z]+") == false ) {
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourseErrorMessages.INVALID_PASSWORD);
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourceErrorMessages.INVALID_PASSWORD);
                 return false;
             }
 
             if ( Regex.IsMatch(password , @"[0-9]+") == false ) {
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourseErrorMessages.INVALID_PASSWORD);
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourceErrorMessages.INVALID_PASSWORD);
                 return false;
             }
 
             if ( Regex.IsMatch(password , @"[\!\?\*\.]+") == false ) { //Da pra acrescentar
-                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourseErrorMessages.INVALID_PASSWORD);
+                context.MessageFormatter.AppendArgument(ERROR_MESSAGE_KEY , ResourceErrorMessages.INVALID_PASSWORD);
                 return false;
             }
 

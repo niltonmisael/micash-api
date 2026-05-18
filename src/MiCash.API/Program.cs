@@ -1,3 +1,4 @@
+using MiCash.API.Extensions;
 using MiCash.API.Filters;
 using MiCash.API.Middleware;
 using MiCash.API.Token;
@@ -8,13 +9,20 @@ using MiCash.Infrastructure.Migrations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
 Console.WriteLine($"ENV: {builder.Environment.EnvironmentName}");
+builder.Host.UseSerilog(( context , configuration ) => {
+    configuration.ReadFrom.Configuration(
+        context.Configuration);
+});
 builder.Services.AddControllers();
-
+builder.Services.AddRouting(config => {
+    config.LowercaseUrls = true;
+});
 builder.Services.AddEndpointsApiExplorer(); 
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(config => {
@@ -48,10 +56,29 @@ builder.Services.AddSwaggerGen(config => {
     });
 });
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
-
+builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+var allowedOrigins =
+    builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>();
 
+builder.Services.AddCors(options => {
+
+    var isInMemoryTest =
+        builder.Configuration.GetValue<bool>("InMemoryTest");
+
+    if ( isInMemoryTest ) {
+        return;
+    }
+    options.AddPolicy("AllowFrontend" , policy => {
+        policy
+            .WithOrigins(allowedOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddScoped<ITokenProvider , HttpContextTokenValue>();
 
 builder.Services.AddHttpContextAccessor();
@@ -71,6 +98,7 @@ builder.Services.AddAuthentication(config => {
     };
 });
 
+
 var app = builder.Build();
 
 
@@ -80,12 +108,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseSerilogRequestLogging();
 app.UseMiddleware<CultureMiddleware>();
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+//app.UseHttpsRedirection(); provavelmente usar quando cmc a usar o NGINX
 
 app.UseAuthorization();
 

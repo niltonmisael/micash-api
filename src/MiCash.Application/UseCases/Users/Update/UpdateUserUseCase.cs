@@ -58,7 +58,7 @@ namespace MiCash.Application.UseCases.Users.Update
 
                 var userExist = await _userReadOnlyRepository.ExistActiveUserWithEmail(request.Email);
                 if(userExist) {
-                    result.Errors.Add(new ValidationFailure(string.Empty , ResourseErrorMessages.EMAIL_ALREADY_REGISTERED));
+                    result.Errors.Add(new ValidationFailure(string.Empty , ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
                 }
             }
 

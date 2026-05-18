@@ -13,13 +13,13 @@ namespace MiCash.Application.UseCases.Users.Update
     {
         public UpdateUserValidator ()
         {
-            RuleFor(user => user.Name).NotEmpty().WithMessage(ResourseErrorMessages.NAME_EMPTY);
+            RuleFor(user => user.Name).NotEmpty().WithMessage(ResourceErrorMessages.NAME_EMPTY);
             RuleFor(user => user.Email)
                 .NotEmpty()
-                .WithMessage(ResourseErrorMessages.EMAIL_EMPTY)
+                .WithMessage(ResourceErrorMessages.EMAIL_EMPTY)
                 .EmailAddress()
                 .When(user => string.IsNullOrWhiteSpace(user.Email) == false , ApplyConditionTo.CurrentValidator)
-                .WithMessage(ResourseErrorMessages.EMAIL_INVALID);
+                .WithMessage(ResourceErrorMessages.EMAIL_INVALID);
         }
     }
 }

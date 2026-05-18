@@ -15,7 +15,7 @@ namespace WebAPI.Test.Users.Update
 {
     public class UpdateUserTest : MiCashClassFixture
     {
-        private const string METHOD = "api/User";
+        private const string METHOD = "api/user/update";
 
         private readonly string _token;
 
@@ -51,7 +51,7 @@ namespace WebAPI.Test.Users.Update
 
             var errors = responseData.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("NAME_EMPTY" , new CultureInfo(culture));
+            var expectedMessage = ResourceErrorMessages.ResourceManager.GetString("NAME_EMPTY" , new CultureInfo(culture));
 
             errors.Should().HaveCount(1).And.Contain(c => c.GetString()!.Equals(expectedMessage));
         }

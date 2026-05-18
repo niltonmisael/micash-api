@@ -50,7 +50,7 @@ namespace WebAPI.Test.Expenses.Update
 
             var errors = response.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("TITLE_REQUIRED" , new CultureInfo(culture));
+            var expectedMessage = ResourceErrorMessages.ResourceManager.GetString("TITLE_REQUIRED" , new CultureInfo(culture));
 
             errors.Should().HaveCount(1).And.Contain(error => error.GetString()!.Equals(expectedMessage));
         }
@@ -70,7 +70,7 @@ namespace WebAPI.Test.Expenses.Update
 
             var errors = response.RootElement.GetProperty("errorMessages").EnumerateArray();
 
-            var expectedMessage = ResourseErrorMessages.ResourceManager.GetString("EXPENSE_NOT_FOUND" , new CultureInfo(culture));
+            var expectedMessage = ResourceErrorMessages.ResourceManager.GetString("EXPENSE_NOT_FOUND" , new CultureInfo(culture));
 
             errors.Should().HaveCount(1).And.Contain(error => error.GetString()!.Equals(expectedMessage));
         }
