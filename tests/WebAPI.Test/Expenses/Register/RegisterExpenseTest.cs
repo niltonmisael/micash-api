@@ -7,7 +7,7 @@ namespace WebAPI.Test.Expenses.Register
 {
     public class RegisterExpenseTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Expenses";
+        private const string METHOD = "api/expense";
 
         private readonly string _token;
 

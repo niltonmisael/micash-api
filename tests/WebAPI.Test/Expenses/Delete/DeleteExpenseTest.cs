@@ -9,7 +9,7 @@ namespace WebAPI.Test.Expenses.Delete
 {
     public class DeleteExpenseTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Expenses";
+        private const string METHOD = "api/expense";
 
         private readonly string _token;
         private readonly long _expenseId;

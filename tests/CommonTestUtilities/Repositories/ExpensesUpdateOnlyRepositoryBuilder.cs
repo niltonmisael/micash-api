@@ -16,7 +16,7 @@ namespace CommonTestUtilities.Repositories
         public ExpensesUpdateOnlyRepositoryBuilder GetById ( User user , Expense? expense )
         {
             if ( expense is not null )
-                _repository.Setup(repository => repository.GetById(user , expense.Id)).ReturnsAsync(expense);
+                _repository.Setup(repository => repository.GetById(user , expense.Id, It.IsAny<CancellationToken>())).ReturnsAsync(expense);
 
             return this;
         }

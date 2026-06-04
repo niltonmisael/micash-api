@@ -32,9 +32,7 @@ namespace MiCash.Application.UseCases.Expenses.Update
 
             var loggedUser = await _loggedUser.Get();
 
-            var expense = await _repository.GetById(loggedUser, id);
-
-
+            var expense = await _repository.GetById(loggedUser, id, cancellationToken);
 
             if ( expense == null  ) {
                 throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);   
@@ -42,7 +40,7 @@ namespace MiCash.Application.UseCases.Expenses.Update
 
             _mapper.Map(request, expense);
 
-            _repository.Update(expense);
+            _repository.Update(expense, cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
         }

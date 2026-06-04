@@ -1,15 +1,10 @@
 ﻿using MiCash.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Domain.Repositories.Expenses
 {
     public interface IExpensesUpdateOnlyRepository
     {
-        Task<Expense?> GetById(User user, long id);
-        void Update(Expense expense);
+        Task<Expense?> GetById(User user, long id, CancellationToken cancellationToken);
+        void Update(Expense expense, CancellationToken cancellationToken);
     }
 }

@@ -1,17 +1,12 @@
 ﻿using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace WebAPI.Test.Expenses.GetAll
 {
     public class GetAllExpenseTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Expenses";
+        private const string METHOD = "api/expense";
 
         private readonly string _token;
         public GetAllExpenseTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)

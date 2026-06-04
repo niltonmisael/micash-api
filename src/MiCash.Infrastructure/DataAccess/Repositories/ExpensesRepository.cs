@@ -28,10 +28,10 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id, cancellationToken);
         }
-        async Task<Expense?> IExpensesUpdateOnlyRepository.GetById ( User user, long id )
+        async Task<Expense?> IExpensesUpdateOnlyRepository.GetById ( User user, long id, CancellationToken cancellationToken )
         {
             return await _dbContext.Expenses
-                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
+                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id, cancellationToken);
         }
 
         public async Task Delete (long id, CancellationToken cancellationToken )
@@ -42,7 +42,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             
         }
 
-        public void Update ( Expense expense)
+        public void Update ( Expense expense, CancellationToken cancellationToken)
         {
             _dbContext.Expenses.Update(expense);
         }

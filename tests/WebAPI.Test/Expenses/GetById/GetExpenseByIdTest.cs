@@ -1,19 +1,13 @@
 ﻿using FluentAssertions;
 using MiCash.Communication.Enums;
-using Microsoft.AspNetCore.Authentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace WebAPI.Test.Expenses.GetById
 {
     public class GetExpenseByIdTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Expenses";
+        private const string METHOD = "api/expense";
 
         private readonly string _token;
         private readonly long _expenseId;

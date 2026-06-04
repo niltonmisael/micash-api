@@ -1,21 +1,16 @@
 ﻿using CommonTestUtilities.Requests;
 using FluentAssertions;
 using MiCash.Exception;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using WebAPI.Test.InlineData;
 
 namespace WebAPI.Test.Expenses.Update
 {
     public class UpdateExpenseTest : MiCashClassFixture
     {
-        private const string METHOD = "api/Expenses";
+        private const string METHOD = "api/expense";
 
         private readonly string _token;
         private readonly long _expenseId;
