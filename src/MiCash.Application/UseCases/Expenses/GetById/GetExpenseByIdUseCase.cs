@@ -19,11 +19,11 @@ namespace MiCash.Application.UseCases.Expenses.GetById
             _mapper = mapper;
             _loggedUser = loggedUser;
         }
-        public async Task<ResponseExpenseJson> Execute (long id )
+        public async Task<ResponseExpenseJson> Execute (long id , CancellationToken cancellationToken )
         {
             var loggedUser = await _loggedUser.Get();
 
-            var result = await _repository.GetById (loggedUser, id );
+            var result = await _repository.GetById (loggedUser, id, cancellationToken );
 
             if ( result is null ) {
 

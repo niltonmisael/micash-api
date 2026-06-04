@@ -2,7 +2,6 @@
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
@@ -19,9 +18,10 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetExcel ( 
             [FromServices] IGenerateExpensesReportExcelUseCase useCase ,
-            [FromQuery] DateOnly month )
+            [FromQuery] DateOnly month,
+            CancellationToken cancellationToken)
         {
-            byte[] file = await useCase.Execute(month) ;
+            byte[] file = await useCase.Execute(month, cancellationToken) ;
 
             if ( file.Length > 0 ) {
                 return File(file , MediaTypeNames.Application.Octet , "report.xlsx");
@@ -34,9 +34,10 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetPdf (
             [FromServices] IGenerateExpensesReportPdfUseCase useCase ,
-            [FromQuery] DateOnly month )
+            [FromQuery] DateOnly month,
+            CancellationToken cancellationToken)
         {
-            byte[] file = await useCase.Execute(month);
+            byte[] file = await useCase.Execute(month, cancellationToken);
 
             if ( file.Length > 0 ) {
                 return File(file , MediaTypeNames.Application.Pdf , "report.pdf");

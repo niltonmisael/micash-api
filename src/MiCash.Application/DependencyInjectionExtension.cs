@@ -13,6 +13,10 @@ using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Application.UseCases.Expenses.Update;
+using MiCash.Application.UseCases.Incomes.GetAll;
+using MiCash.Application.UseCases.Incomes.GetById;
+using MiCash.Application.UseCases.Incomes.Register;
+using MiCash.Application.UseCases.Incomes.Update;
 using MiCash.Application.UseCases.Login.Logout;
 using MiCash.Application.UseCases.Login.Refresh;
 using MiCash.Application.UseCases.Users.ChangePassword;
@@ -61,6 +65,11 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetCategoryByIdUseCase , GetCategoryByIdUseCase>();
             services.AddScoped<IUpdateCategoryUseCase , UpdateCategoryUseCase>();
             services.AddScoped<IInactivateCategoryUseCase , InactivateCategoryUseCase>();
+            services.AddScoped<IRegisterIncomeUseCase , RegisterIncomeUseCase>();
+            services.AddScoped<IGetAllIncomesUseCase , GetAllIncomesUseCase>();
+            services.AddScoped<IGetIncomeByIdUseCase , GetIncomeByIdUseCase>();
+            services.AddScoped<IUpdateIncomeUseCase , UpdateIncomeUseCase>();
+            services.AddScoped<IDeleteExpenseUseCase , DeleteExpenseUseCase>();
         }
     }
 }

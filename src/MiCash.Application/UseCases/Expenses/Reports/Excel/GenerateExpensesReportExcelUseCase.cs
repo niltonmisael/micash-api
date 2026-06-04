@@ -1,14 +1,8 @@
 ﻿using ClosedXML.Excel;
-using MiCash.Domain.Enums;
 using MiCash.Domain.Extensions;
 using MiCash.Domain.Reports;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.LoggedUser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Expenses.Reports.Excel
 {
@@ -23,11 +17,11 @@ namespace MiCash.Application.UseCases.Expenses.Reports.Excel
             _repository = repository;
             _loggedUser = loggedUser;
         }
-        public async Task<byte[]> Execute(DateOnly month )
+        public async Task<byte[]> Execute(DateOnly month, CancellationToken cancellationToken )
         {
             var loggedUser = await _loggedUser.Get();
 
-            var expenses = await _repository.FilterByMonth(loggedUser, month );
+            var expenses = await _repository.FilterByMonth(loggedUser, month , cancellationToken);
             if ( expenses.Count == 0 ) {
                 return [];
             }

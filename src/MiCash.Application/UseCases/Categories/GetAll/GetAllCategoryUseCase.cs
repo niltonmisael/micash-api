@@ -20,13 +20,13 @@ namespace MiCash.Application.UseCases.Categories.GetAll
             _loggedUser = loggedUser;
             _repostory = repostory;
         }
-        public async Task<ResponseCategoryJson> Execute ( CancellationToken cancellationToken )
+        public async Task<ResponseCategoriesJson> Execute ( CancellationToken cancellationToken )
         {
             var userLogged = await _loggedUser.Get();
 
             var result = await _repostory.GetAllAsync(userLogged , cancellationToken);
 
-            return new ResponseCategoryJson
+            return new ResponseCategoriesJson
             {
                 Categories = _mapper.Map<IEnumerable<ResponseShortCategoryJson>>(result)
             };

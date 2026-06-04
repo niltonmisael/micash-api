@@ -2,14 +2,8 @@
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
-using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCases.Test.Expenses.Reports.Pdf
 {
@@ -19,12 +13,13 @@ namespace UseCases.Test.Expenses.Reports.Pdf
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var expenses = ExpenseBuilder.Collection(loggedUser);
 
             var useCase = CreatedUseCase(loggedUser , expenses);
 
-            var result = await useCase.Execute(DateOnly.FromDateTime(DateTime.Today));
+            var result = await useCase.Execute(DateOnly.FromDateTime(DateTime.Today), cancellationToken);
 
             result.Should().NotBeNullOrEmpty();
         }
@@ -32,11 +27,12 @@ namespace UseCases.Test.Expenses.Reports.Pdf
         [Fact]
         public async Task Success_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
 
             var useCase = CreatedUseCase(loggedUser , []);
 
-            var result = await useCase.Execute(DateOnly.FromDateTime(DateTime.Today));
+            var result = await useCase.Execute(DateOnly.FromDateTime(DateTime.Today), cancellationToken);
 
             result.Should().BeEmpty();
         }

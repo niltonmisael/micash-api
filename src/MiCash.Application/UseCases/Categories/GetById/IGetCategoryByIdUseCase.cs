@@ -4,6 +4,6 @@ namespace MiCash.Application.UseCases.Categories.GetById
 {
     public interface IGetCategoryByIdUseCase
     {
-        Task<IEnumerable<ResponseCategoryJson>> Execute ( long id, CancellationToken cancellationToken );
+        Task<IEnumerable<ResponseCategoriesJson>> Execute ( long id, CancellationToken cancellationToken );
     }
 }

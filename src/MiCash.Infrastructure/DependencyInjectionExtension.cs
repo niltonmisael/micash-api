@@ -1,6 +1,7 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
@@ -49,6 +50,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<ICategoriesWriteOnlyRepository , CategoryRepository>();
             services.AddScoped<ICategoriesReadOnlyRepository , CategoryRepository>();
             services.AddScoped<ICategoriesUpdateOnlyRepository , CategoryRepository>();
+            services.AddScoped<IIncomesUpdateOnlyRepository , IncomeRepository>();
+            services.AddScoped<IIncomesWriteOnlyRepository , IncomeRepository>();
+            services.AddScoped<IIncomesReadOnlyRepository , IncomeRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Requests.Categories;
+using MiCash.Communication.Requests.Incomes;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Categories;
+using MiCash.Communication.Responses.Incomes;
 using MiCash.Domain.Entities;
 
 namespace MiCash.Application.AutoMapper
@@ -20,6 +22,7 @@ namespace MiCash.Application.AutoMapper
             CreateMap<RequestRegisterUserJson , User>();
             CreateMap<RequestCreateCategoryJson , Category>();
             CreateMap<RequestExpenseJson , Expense>();
+            CreateMap<RequestIncomeJson , Income>();
         }
 
         private void EntityToResponse ()
@@ -29,7 +32,10 @@ namespace MiCash.Application.AutoMapper
             CreateMap<Expense , ResponseShortExpenseJson>();
             CreateMap<User, ResponseUserProfileJson>();
             CreateMap<Category , ResponseShortCategoryJson>();
-
+            CreateMap<Category , ResponseCategoriesJson>();
+            CreateMap<Income , ResponseIncomesJson>();
+            CreateMap<Income , ResponseRegisteredIncomeJson>();
+            CreateMap<Income , ResponseIncomeJson>();
         }
     }
 }

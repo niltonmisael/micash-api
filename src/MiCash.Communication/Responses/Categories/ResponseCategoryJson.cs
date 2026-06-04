@@ -2,6 +2,5 @@
 {
     public class ResponseCategoryJson
     {
-        public IEnumerable<ResponseShortCategoryJson> Categories { get; set; } = [];
     }
 }

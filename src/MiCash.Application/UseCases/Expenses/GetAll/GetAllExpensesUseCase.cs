@@ -17,11 +17,11 @@ namespace MiCash.Application.UseCases.Expenses.GetAll
             _loggedUser = loggedUser;
 
         }
-        public async Task<ResponseExpensesJson> Execute ()
+        public async Task<ResponseExpensesJson> Execute ( CancellationToken cancellationToken)
         {
             var userLogged = await _loggedUser.Get();
 
-            var result = await _repository.GetAll(userLogged);
+            var result = await _repository.GetAll(userLogged, cancellationToken);
 
             return new ResponseExpensesJson
             {

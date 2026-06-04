@@ -160,6 +160,24 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Income not found.
+        /// </summary>
+        public static string INCOME_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("INCOME_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Income type is invalid.
+        /// </summary>
+        public static string INCOME_TYPE_IS_INVALID {
+            get {
+                return ResourceManager.GetString("INCOME_TYPE_IS_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid Password.
         /// </summary>
         public static string INVALID_PASSWORD {
@@ -201,6 +219,15 @@ namespace MiCash.Exception {
         public static string PAYMENT_TYPE_INVALID {
             get {
                 return ResourceManager.GetString("PAYMENT_TYPE_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Received date is required.
+        /// </summary>
+        public static string RECEIVED_DATE_IS_REQUIRED {
+            get {
+                return ResourceManager.GetString("RECEIVED_DATE_IS_REQUIRED", resourceCulture);
             }
         }
         

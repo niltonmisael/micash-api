@@ -62,6 +62,8 @@ public sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
             .HasColumnName("user_id")
             .IsRequired();
 
+
+
         builder.HasOne(x => x.Category)
             .WithMany(x => x.Expenses)
             .HasForeignKey(x => x.CategoryId)
@@ -72,6 +74,7 @@ public sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Indexes
         builder.HasIndex(x => x.UserId);
 
         builder.HasIndex(x => x.CategoryId);

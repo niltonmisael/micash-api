@@ -37,7 +37,7 @@ namespace MiCash.Application.UseCases.Expenses.Register
             var expense = _mapper.Map<Expense>(request);
             expense.UserId = loggedUser.Id;
 
-            await _repository.Add(expense);
+            await _repository.Add(expense, cancellationToken);
             await _unitOfWork.Commit(cancellationToken);
 
             return _mapper.Map<ResponseRegisteredExpenseJson>(expense);

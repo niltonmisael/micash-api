@@ -22,7 +22,7 @@ namespace MiCash.Application.UseCases.Categories.GetById
             _mapper = mapper;
             _loggedUser = loggedUser;
         }
-        public async Task<IEnumerable<ResponseCategoryJson>> Execute ( long id, CancellationToken cancellationToken )
+        public async Task<IEnumerable<ResponseCategoriesJson>> Execute ( long id, CancellationToken cancellationToken )
         {
             var loggedUser = await _loggedUser.Get();
 
@@ -33,7 +33,7 @@ namespace MiCash.Application.UseCases.Categories.GetById
                 throw new NotFoundException(ResourceErrorMessages.CATEGORY_NOT_FOUND);
             }
 
-            return _mapper.Map<IEnumerable<ResponseCategoryJson>>(result);
+            return _mapper.Map<IEnumerable<ResponseCategoriesJson>>(result);
         }
     }
 }

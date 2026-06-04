@@ -1,11 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Expenses;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CommonTestUtilities.Repositories
 {
@@ -20,21 +15,22 @@ namespace CommonTestUtilities.Repositories
 
         public ExpenseReadOnlyRepositoryBuilder GetAll (User user, List<Expense> expenses)
         {
-            _repository.Setup(repository => repository.GetAll(user)).ReturnsAsync(expenses);
+            _repository.Setup(repository => repository.GetAll(user, It.IsAny<CancellationToken>())).ReturnsAsync(expenses);
 
             return this;
         }
         public ExpenseReadOnlyRepositoryBuilder GetById ( User user , Expense? expense )
         {
+
             if ( expense is not null )
-                _repository.Setup(repository => repository.GetById(user , expense.Id)).ReturnsAsync(expense);
+                _repository.Setup(repository => repository.GetById(user , expense.Id, It.IsAny<CancellationToken>())).ReturnsAsync(expense);
 
             return this;
         }
 
         public ExpenseReadOnlyRepositoryBuilder FilterByMonth (User user, List<Expense> expenses)
         {
-            _repository.Setup(repository => repository.FilterByMonth(user, It.IsAny<DateOnly>())).ReturnsAsync(expenses);
+            _repository.Setup(repository => repository.FilterByMonth(user, It.IsAny<DateOnly>(), It.IsAny<CancellationToken>())).ReturnsAsync(expenses);
             return this;
         }
 

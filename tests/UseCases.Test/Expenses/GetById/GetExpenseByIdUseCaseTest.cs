@@ -7,12 +7,6 @@ using MiCash.Application.UseCases.Expenses.GetById;
 using MiCash.Domain.Entities;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCases.Test.Expenses.GetById
 {
@@ -22,12 +16,13 @@ namespace UseCases.Test.Expenses.GetById
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var expense = ExpenseBuilder.Build(loggedUser);
 
             var useCase = CreateUseCase(loggedUser, expense);
 
-            var result = await useCase.Execute(expense.Id);
+            var result = await useCase.Execute(expense.Id, cancellationToken);
 
             result.Should().NotBeNull();
             result.Id.Should().Be(expense.Id);
@@ -41,11 +36,12 @@ namespace UseCases.Test.Expenses.GetById
         [Fact]
         public async Task Error_Expense_Not_Found ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
 
             var useCase = CreateUseCase(loggedUser);
 
-            var act = async () => await useCase.Execute(id: 1000);
+            var act = async () => await useCase.Execute(id: 1000, cancellationToken);
 
             var result = await act.Should().ThrowAsync<NotFoundException>();
 

@@ -5,11 +5,6 @@ using CommonTestUtilities.Repositories;
 using FluentAssertions;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCases.Test.Expenses.GetAll
 {
@@ -18,12 +13,13 @@ namespace UseCases.Test.Expenses.GetAll
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var expenses = ExpenseBuilder.Collection(loggedUser);
 
             var useCase = CreateUseCase(loggedUser, expenses);
 
-            var result = await useCase.Execute();
+            var result = await useCase.Execute(cancellationToken);
 
             result.Should().NotBeNull();
             result.Expenses.Should().NotBeNullOrEmpty().And.AllSatisfy(expense => {

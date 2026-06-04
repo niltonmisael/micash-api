@@ -25,5 +25,7 @@ namespace MiCash.Domain.Entities
         public ICollection<Category> Categories { get; set; } = [];
 
         public ICollection<Expense> Expenses { get; set; } = [];
+
+        public ICollection<Income> Incomes { get; set; } = [];
     }
 }

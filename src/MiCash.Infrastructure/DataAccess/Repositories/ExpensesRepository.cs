@@ -12,21 +12,21 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task Add ( Expense expense )
+        public async Task Add ( Expense expense, CancellationToken cancellationToken )
         {
-             await _dbContext.Expenses.AddAsync(expense);
+             await _dbContext.Expenses.AddAsync(expense, cancellationToken);
 
         }
-        public async Task<List<Expense>> GetAll (User user )
+        public async Task<List<Expense>> GetAll (User user , CancellationToken cancellationToken )
         {
-            return await _dbContext.Expenses.AsNoTracking().Where(expense => expense.UserId == user.Id).ToListAsync();
+            return await _dbContext.Expenses.AsNoTracking().Where(expense => expense.UserId == user.Id).ToListAsync(cancellationToken);
         }
 
-        async Task<Expense?> IExpensesReadOnlyRepository.GetById ( User user, long id )
+        async Task<Expense?> IExpensesReadOnlyRepository.GetById ( User user, long id, CancellationToken cancellationToken )
         {
             return await _dbContext.Expenses
                 .AsNoTracking()
-                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
+                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id, cancellationToken);
         }
         async Task<Expense?> IExpensesUpdateOnlyRepository.GetById ( User user, long id )
         {
@@ -34,20 +34,20 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
         }
 
-        public async Task Delete (long id )
+        public async Task Delete (long id, CancellationToken cancellationToken )
         {
-            var result = await _dbContext.Expenses.FirstAsync(expense => expense.Id == id);
+            var result = await _dbContext.Expenses.FirstAsync(expense => expense.Id == id, cancellationToken);
 
             _dbContext.Expenses.Remove(result);
             
         }
 
-        public void Update ( Expense expense )
+        public void Update ( Expense expense)
         {
             _dbContext.Expenses.Update(expense);
         }
 
-        public async Task<List<Expense>> FilterByMonth ( User user, DateOnly date )
+        public async Task<List<Expense>> FilterByMonth ( User user, DateOnly date, CancellationToken cancellationToken )
         {
             var startDate = new DateTime(date.Year , date.Month , 1 , 0 , 0 , 0 , DateTimeKind.Utc);
             var daysInMonth = DateTime.DaysInMonth(year: date.Year , month: date.Month);
@@ -59,7 +59,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .Where(expense => expense.UserId == user.Id && expense.ExpenseDate >= startDate && expense.ExpenseDate <= endDate)
                 .OrderBy(expense => expense.ExpenseDate)
                 .ThenBy(expense => expense.Title)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("all")]
-        [ProducesResponseType(typeof(ResponseCategoryJson) , StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseCategoriesJson) , StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllCategory (
             [FromServices] IGetAllCategoryUseCase useCase ,

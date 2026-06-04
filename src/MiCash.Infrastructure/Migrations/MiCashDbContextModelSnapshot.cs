@@ -143,6 +143,66 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("expenses", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Income", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_recurring");
+
+                    b.Property<DateOnly>("ReceivedAt")
+                        .HasColumnType("date")
+                        .HasColumnName("received_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "ReceivedAt");
+
+                    b.ToTable("incomes", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -235,6 +295,18 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Income", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany("Incomes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_income_user");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Expenses");
@@ -245,6 +317,8 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Expenses");
+
+                    b.Navigation("Incomes");
                 });
 #pragma warning restore 612, 618
         }

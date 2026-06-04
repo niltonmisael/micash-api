@@ -177,4 +177,13 @@
   <data name="CATEGORY_ALREADY_INACTIVE" xml:space="preserve">
     <value>Categoria já inativada</value>
   </data>
+  <data name="RECEIVED_DATE_IS_REQUIRED" xml:space="preserve">
+    <value>Data de recebimento é obrigatório</value>
+  </data>
+  <data name="INCOME_TYPE_IS_INVALID" xml:space="preserve">
+    <value>Tipo de receita inválido</value>
+  </data>
+  <data name="INCOME_NOT_FOUND" xml:space="preserve">
+    <value>Receita não encontrada</value>
+  </data>
 </root>

@@ -1,16 +1,8 @@
-﻿using AutoMapper;
-using MiCash.Domain.Repositories;
+﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Expenses.Delete
 {
@@ -35,13 +27,13 @@ namespace MiCash.Application.UseCases.Expenses.Delete
         {
             var loggedUser = await _loggedUser.Get();
 
-            var expense = await _expensesReadOnlyRepository.GetById(loggedUser,id);
+            var expense = await _expensesReadOnlyRepository.GetById(loggedUser,id, cancellationToken);
 
             if ( expense == null ) {
                 throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);
             }
 
-            await _repository.Delete(id);
+            await _repository.Delete(id, cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
 
