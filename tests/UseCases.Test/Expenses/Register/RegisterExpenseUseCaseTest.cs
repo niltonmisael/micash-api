@@ -1,4 +1,5 @@
-﻿using CommonTestUtilities.Entities;
+﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
@@ -52,8 +53,9 @@ namespace UseCases.Test.Expenses.Register
             var mapper = MapperBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
+            var cacheService = new RedisCacheServiceBuilder().Build();
 
-            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser);
+            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService);
         }
     }
 }

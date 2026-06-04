@@ -6,6 +6,10 @@ using MiCash.Application.UseCases.Categories.GetAll;
 using MiCash.Application.UseCases.Categories.GetById;
 using MiCash.Application.UseCases.Categories.Inactivate;
 using MiCash.Application.UseCases.Categories.Update;
+using MiCash.Application.UseCases.Dashboard.GetExpensesByCategory;
+using MiCash.Application.UseCases.Dashboards.ExpensesByCategory;
+using MiCash.Application.UseCases.Dashboards.LatestExpenses;
+using MiCash.Application.UseCases.Dashboards.MonthlySummary;
 using MiCash.Application.UseCases.Expenses.Delete;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -70,6 +74,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetIncomeByIdUseCase , GetIncomeByIdUseCase>();
             services.AddScoped<IUpdateIncomeUseCase , UpdateIncomeUseCase>();
             services.AddScoped<IDeleteExpenseUseCase , DeleteExpenseUseCase>();
+            services.AddScoped<IGetMonthlySummaryUseCase , GetMonthlySummaryUseCase>();
+            services.AddScoped<IGetExpensesByCategoryUseCase , GetExpensesByCategoryUseCase>();
+            services.AddScoped<IGetLatestExpensesUseCase , GetLatestExpensesUseCase>();
         }
     }
 }

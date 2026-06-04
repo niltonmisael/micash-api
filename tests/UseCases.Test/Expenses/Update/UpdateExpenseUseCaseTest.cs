@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTestUtilities.Requests;
 using MiCash.Domain.Enums;
+using CommonTestUtilities.Cache;
 
 namespace UseCases.Test.Expenses.Update
 {
@@ -82,8 +83,9 @@ namespace UseCases.Test.Expenses.Update
             var mapper = MapperBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
+            var cacheService = new RedisCacheServiceBuilder().Build();
 
-            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser);
+            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, cacheService);
         }
     }
 }

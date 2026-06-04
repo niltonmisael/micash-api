@@ -10,6 +10,5 @@ namespace MiCash.Communication.Responses
         public DateTime ExpenseDate { get; set; }
         public decimal Amount { get; set; }
         public PaymentType PaymentType { get; set; }
-        public IList<Tag> Tags { get; set; } = [];
     }
 }

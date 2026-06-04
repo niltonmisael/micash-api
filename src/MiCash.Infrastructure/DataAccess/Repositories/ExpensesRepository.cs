@@ -61,5 +61,6 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .ThenBy(expense => expense.Title)
                 .ToListAsync(cancellationToken);
         }
+
     }
 }

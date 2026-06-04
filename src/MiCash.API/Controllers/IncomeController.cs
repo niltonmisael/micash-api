@@ -6,12 +6,14 @@ using MiCash.Application.UseCases.Incomes.Update;
 using MiCash.Communication.Requests.Incomes;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Incomes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MiCash.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class IncomeController : ControllerBase
     {
         [HttpPost]

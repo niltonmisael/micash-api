@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Requests.Incomes;
+using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -15,19 +17,22 @@ namespace MiCash.Application.UseCases.Incomes.Update
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
+        private readonly IRedisCacheService _cacheService;
 
         public UpdateIncomeUseCase (
             IIncomesUpdateOnlyRepository incomesUpdateOnlyRepository ,
             IIncomesReadOnlyRepository incomesReadOnlyRepository ,
             IUnitOfWork unitOfWork ,
             IMapper mapper ,
-            ILoggedUser loggedUser )
+            ILoggedUser loggedUser ,
+            IRedisCacheService cacheService )
         {
             _incomesUpdateOnlyRepository = incomesUpdateOnlyRepository;
             _incomesReadOnlyRepository = incomesReadOnlyRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _loggedUser = loggedUser;
+            _cacheService = cacheService;
         }
         public async Task Execute ( long id , RequestIncomeJson request , CancellationToken cancellationToken )
         {
@@ -46,6 +51,17 @@ namespace MiCash.Application.UseCases.Incomes.Update
             await _incomesUpdateOnlyRepository.UpdateAsync(income , cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
+
+            var cacheKey =
+                $"dashboard:monthly-summary:{loggedUser.Id}:{income.ReceivedAt.Year}:{income.ReceivedAt.Month}";
+
+            await _cacheService.RemoveAsync(cacheKey);
+
+            await _cacheService.RemoveAsync(
+                CacheKeys.ExpensesByCategory(
+                    loggedUser.Id ,
+                    income.ReceivedAt.Year ,
+                    income.ReceivedAt.Month));
         }
 
         private void Validate ( RequestIncomeJson request )

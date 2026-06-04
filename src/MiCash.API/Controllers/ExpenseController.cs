@@ -43,7 +43,7 @@ namespace MiCash.API.Controllers
         }
         [HttpGet]
         [Route("{id}")]
-        [ProducesResponseType(typeof(ResponseExpensesJson) , StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseExpenseJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById ( 
             [FromServices] IGetExpenseByIdUseCase useCase, 

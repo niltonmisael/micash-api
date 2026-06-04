@@ -32,10 +32,12 @@ namespace MiCash.Application.AutoMapper
             CreateMap<Expense , ResponseShortExpenseJson>();
             CreateMap<User, ResponseUserProfileJson>();
             CreateMap<Category , ResponseShortCategoryJson>();
+            CreateMap<Category , ResponseCategoryJson>();
             CreateMap<Category , ResponseCategoriesJson>();
             CreateMap<Income , ResponseIncomesJson>();
             CreateMap<Income , ResponseRegisteredIncomeJson>();
             CreateMap<Income , ResponseIncomeJson>();
+            CreateMap<Income , ResponseIncomeShortJson>();
         }
     }
 }

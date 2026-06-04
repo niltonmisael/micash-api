@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
+using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Repositories.Users;
@@ -53,6 +54,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IIncomesUpdateOnlyRepository , IncomeRepository>();
             services.AddScoped<IIncomesWriteOnlyRepository , IncomeRepository>();
             services.AddScoped<IIncomesReadOnlyRepository , IncomeRepository>();
+            services.AddScoped<IDashboardReadOnlyRepository, DashboardRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

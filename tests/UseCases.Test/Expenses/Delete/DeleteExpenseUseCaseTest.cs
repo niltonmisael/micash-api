@@ -1,4 +1,5 @@
-﻿using CommonTestUtilities.Entities;
+﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
@@ -48,8 +49,9 @@ namespace UseCases.Test.Expenses.Delete
             var repository = new ExpenseReadOnlyRepositoryBuilder().GetById(user, expense).Build();
             var unityOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
+            var cacheService = new RedisCacheServiceBuilder().Build();
 
-            return new DeleteExpenseUseCase( repositoryWriteOnly, unityOfWork, loggedUser, repository);   
+            return new DeleteExpenseUseCase( repositoryWriteOnly, unityOfWork, loggedUser, repository, cacheService);   
         }
     }
 }
