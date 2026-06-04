@@ -1,16 +1,9 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Responses;
-using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Expenses.GetById
 {

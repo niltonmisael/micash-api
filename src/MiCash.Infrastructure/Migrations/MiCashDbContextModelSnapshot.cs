@@ -22,6 +22,59 @@ namespace MiCash.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("icon");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("categories", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
                 {
                     b.Property<long>("Id")
@@ -32,25 +85,48 @@ namespace MiCash.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
                         .HasColumnName("amount");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
-                    b.Property<int>("PaymentType")
-                        .HasColumnType("integer")
+                    b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expense_date");
+
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("payment_type");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
                         .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
@@ -58,30 +134,13 @@ namespace MiCash.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("expenses");
-                });
+                    b.HasIndex("UserId", "ExpenseDate");
 
-            modelBuilder.Entity("MiCash.Domain.Entities.Tag", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ExpenseId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Value")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpenseId");
-
-                    b.ToTable("tags", (string)null);
+                    b.ToTable("expenses", (string)null);
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
@@ -93,44 +152,63 @@ namespace MiCash.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("password");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("phone");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("role");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid>("UserIdentifier")
                         .HasColumnType("uuid")
                         .HasColumnName("user_identifier");
 
+                    b.Property<string>("UserRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("user_role");
+
                     b.HasKey("Id");
 
-                    b.ToTable("users");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UserIdentifier")
+                        .IsUnique();
+
+                    b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
+            modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
                 {
                     b.HasOne("MiCash.Domain.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("Categories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -138,20 +216,35 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MiCash.Domain.Entities.Tag", b =>
+            modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
                 {
-                    b.HasOne("MiCash.Domain.Entities.Expense", "Expense")
-                        .WithMany("Tags")
-                        .HasForeignKey("ExpenseId")
+                    b.HasOne("MiCash.Domain.Entities.Category", "Category")
+                        .WithMany("Expenses")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany("Expenses")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Expense");
+                    b.Navigation("Category");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
+            modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
                 {
-                    b.Navigation("Tags");
+                    b.Navigation("Expenses");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
+                {
+                    b.Navigation("Categories");
+
+                    b.Navigation("Expenses");
                 });
 #pragma warning restore 612, 618
         }

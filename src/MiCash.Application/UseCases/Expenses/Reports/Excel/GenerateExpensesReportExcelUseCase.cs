@@ -47,7 +47,7 @@ namespace MiCash.Application.UseCases.Expenses.Reports.Excel
             foreach ( var expense in expenses ) {
 
                 worksheet.Cell($"A{raw}").Value = expense.Title;
-                worksheet.Cell($"B{raw}").Value = expense.Date;
+                worksheet.Cell($"B{raw}").Value = expense.ExpenseDate;
                 worksheet.Cell($"C{raw}").Value = expense.PaymentType.PaymentTypeToString();
 
                 worksheet.Cell($"D{raw}").Value = expense.Amount;

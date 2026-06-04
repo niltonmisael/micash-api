@@ -54,7 +54,7 @@ namespace Validators.Tests.Expenses
             //Arrange
             var validator = new ExpenseValidator();
             var request = RequestExpenseJsonBuilder.Build();
-            request.Date = DateTime.UtcNow.AddDays(1);
+            request.ExpenseDate = DateTime.UtcNow.AddDays(1);
 
             //Act
             var result = validator.Validate(request);
@@ -100,20 +100,19 @@ namespace Validators.Tests.Expenses
             result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.AMOUNT_MUST_BE_GREATER_THAN_ZERO));
         }
 
-        [Fact]
-        public void Error_Tag_Invalid ()
-        {
-            //Arrange
-            var validator = new ExpenseValidator();
-            var request = RequestExpenseJsonBuilder.Build();
-            request.Tags.Add(( Tag ) 1000);
+        //[Fact]
+        //public void Error_Tag_Invalid ()
+        //{
+        //    //Arrange
+        //    var validator = new ExpenseValidator();
+        //    var request = RequestExpenseJsonBuilder.Build();
 
-            //Act
-            var result = validator.Validate(request);
+        //    //Act
+        //    var result = validator.Validate(request);
 
-            //Assert
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.TAG_TYPE_NOT_SUPPORTED));
-        }
+        //    //Assert
+        //    result.IsValid.Should().BeFalse();
+        //    result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMessages.TAG_TYPE_NOT_SUPPORTED));
+        //}
     }
 }

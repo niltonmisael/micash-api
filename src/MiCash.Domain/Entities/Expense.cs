@@ -1,39 +1,34 @@
 ﻿using MiCash.Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MiCash.Domain.Entities
 {
-    [Table("expenses")]
     public class Expense
     {
-        [Column("id")]
         public long Id { get; set; }
 
-        [Column("title")]
         public string Title { get; set; } = string.Empty;
 
-        [Column("description")]
         public string? Description { get; set; }
 
-        [Column("date")]
-        public DateTime Date { get; set; }
+        public DateTime ExpenseDate { get; set; }
 
-        [Column("amount")]
         public decimal Amount { get; set; }
 
-        [Column("payment_type")]
         public PaymentType PaymentType { get; set; }
 
-        public ICollection<Tag> Tags { get; set; } = [];
+        public ExpenseStatus Status { get; set; }
 
-        [Column("category_id")]
         public long CategoryId { get; set; }
 
         public Category Category { get; set; } = default!;
 
-        [Column("user_id")]
         public long UserId { get; set; }
+
         public User User { get; set; } = default!;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     }
 }

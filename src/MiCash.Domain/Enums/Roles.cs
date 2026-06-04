@@ -2,6 +2,6 @@
 {
     public static class Roles
     {
-        public const string PREMIUM = "premium";
+        public const string PREMIUM = "PREMIUM";
     }
 }

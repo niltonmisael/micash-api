@@ -15,14 +15,18 @@ namespace MiCash.Application.UseCases.Expenses.Update
         private readonly IExpensesUpdateOnlyRepository _repository;
         private readonly ILoggedUser _loggedUser;
 
-        public UpdateExpenseUseCase (IMapper mapper, IUnitOfWork unitOfWork, IExpensesUpdateOnlyRepository repository, ILoggedUser loggedUser)
+        public UpdateExpenseUseCase (
+            IMapper mapper, 
+            IUnitOfWork unitOfWork, 
+            IExpensesUpdateOnlyRepository repository, 
+            ILoggedUser loggedUser)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _repository = repository;
             _loggedUser = loggedUser;
         }
-        public async Task Execute (long id, RequestExpenseJson request)
+        public async Task Execute (long id, RequestExpenseJson request, CancellationToken cancellationToken)
         {
             Validate(request);
 
@@ -36,13 +40,11 @@ namespace MiCash.Application.UseCases.Expenses.Update
                 throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);   
             }
 
-            expense.Tags.Clear();
-
             _mapper.Map(request, expense);
 
             _repository.Update(expense);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
         }
 
         public void Validate ( RequestExpenseJson request ) {

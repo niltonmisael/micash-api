@@ -15,12 +15,13 @@ namespace UseCases.Test.Users.Update
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
             var request = RequestUpdateUserJsonBuilder.Build();
 
             var useCase = CreateUseCase(user);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             await act.Should().NotThrowAsync();
 
@@ -31,6 +32,7 @@ namespace UseCases.Test.Users.Update
         [Fact]
         public async Task Error_Name_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
 
             var request = RequestUpdateUserJsonBuilder.Build();
@@ -38,7 +40,7 @@ namespace UseCases.Test.Users.Update
 
             var useCase = CreateUseCase(user);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
@@ -48,11 +50,12 @@ namespace UseCases.Test.Users.Update
         [Fact]
         public async Task Error_Email_Already_Exist ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
             var request = RequestUpdateUserJsonBuilder.Build();
             var useCase = CreateUseCase(user , request.Email);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 

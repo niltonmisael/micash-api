@@ -70,6 +70,24 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Category Already Inactive.
+        /// </summary>
+        public static string CATEGORY_ALREADY_INACTIVE {
+            get {
+                return ResourceManager.GetString("CATEGORY_ALREADY_INACTIVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Category not found.
+        /// </summary>
+        public static string CATEGORY_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("CATEGORY_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Color is required..
         /// </summary>
         public static string COLOR_REQUIRED {

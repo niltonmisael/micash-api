@@ -1,9 +1,4 @@
 ﻿using MiCash.Communication.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Communication.Requests
 {
@@ -13,11 +8,15 @@ namespace MiCash.Communication.Requests
 
         public string Description {  get; set; } = string.Empty;
 
-        public DateTime Date {  get; set; }
+        public DateTime ExpenseDate {  get; set; }
 
         public decimal Amount { get; set; }
 
         public PaymentType PaymentType { get; set; }
-        public IList<Tag> Tags { get; set; } = [];
+
+        public ExpenseStatus ExpenseStatus { get; set; }
+
+        public long CategoryId { get; set; }
+
     }
 }

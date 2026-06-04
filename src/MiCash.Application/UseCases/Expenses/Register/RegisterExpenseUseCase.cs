@@ -16,7 +16,11 @@ namespace MiCash.Application.UseCases.Expenses.Register
         private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
 
-        public RegisterExpenseUseCase ( IExpensesWriteOnlyRepository repository, IUnitOfWork unitOfWork, IMapper mapper, ILoggedUser loggedUser)
+        public RegisterExpenseUseCase ( 
+            IExpensesWriteOnlyRepository repository, 
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            ILoggedUser loggedUser)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -24,7 +28,7 @@ namespace MiCash.Application.UseCases.Expenses.Register
             _loggedUser = loggedUser;
         }
 
-        public async Task<ResponseRegisteredExpenseJson> Execute (RequestExpenseJson request) 
+        public async Task<ResponseRegisteredExpenseJson> Execute (RequestExpenseJson request, CancellationToken cancellationToken) 
         {
             Validate(request);
 
@@ -34,7 +38,7 @@ namespace MiCash.Application.UseCases.Expenses.Register
             expense.UserId = loggedUser.Id;
 
             await _repository.Add(expense);
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
 
             return _mapper.Map<ResponseRegisteredExpenseJson>(expense);
 

@@ -71,11 +71,11 @@ namespace MiCash.Application.UseCases.Expenses.Reports.PDF
                 row = table.AddRow();
                 row.Height = HEIGHT_ROW_EXPENSE_TABLE;
 
-                row.Cells[0].AddParagraph(expense.Date.ToString("D"));
+                row.Cells[0].AddParagraph(expense.ExpenseDate.ToString("D"));
                 SetStyleBaseForExpenseInformation(row.Cells[0]);
                 row.Cells[0].Format.LeftIndent = 20;
 
-                row.Cells[1].AddParagraph(expense.Date.ToString("t"));
+                row.Cells[1].AddParagraph(expense.ExpenseDate.ToString("t"));
                 SetStyleBaseForExpenseInformation(row.Cells[1]);
 
                 row.Cells[2].AddParagraph(expense.PaymentType.PaymentTypeToString());

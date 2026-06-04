@@ -15,12 +15,13 @@ namespace UseCases.Test.Expenses.Delete
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var expense = ExpenseBuilder.Build(loggedUser);
 
             var useCase = CreateUseCase(loggedUser, expense);
 
-            var act = async () => await useCase.Execute(expense.Id);
+            var act = async () => await useCase.Execute(expense.Id, cancellationToken);
 
             await act.Should().NotThrowAsync();
 
@@ -29,11 +30,12 @@ namespace UseCases.Test.Expenses.Delete
         [Fact]
         public async Task Error_Expense_Not_Found ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
 
             var useCase = CreateUseCase(loggedUser);
 
-            var act = async () => await useCase.Execute(id: 10000);
+            var act = async () => await useCase.Execute(id: 10000, cancellationToken);
 
             var result = await act.Should().ThrowAsync<NotFoundException>();
 

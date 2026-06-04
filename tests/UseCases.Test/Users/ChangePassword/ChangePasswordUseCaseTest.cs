@@ -21,13 +21,14 @@ namespace UseCases.Test.Users.ChangePassword
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
 
             var request = RequestChangePasswordJsonBuilder.Build();
 
             var useCase = CreateUseCase(user , request.Password);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             await act.Should().NotThrowAsync();
         }
@@ -35,6 +36,7 @@ namespace UseCases.Test.Users.ChangePassword
         [Fact]
         public async Task Error_NewPassword_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
 
             var request = RequestChangePasswordJsonBuilder.Build();
@@ -42,7 +44,7 @@ namespace UseCases.Test.Users.ChangePassword
 
             var useCase = CreateUseCase(user , request.Password);
 
-            var act = async () => { await useCase.Execute(request); };
+            var act = async () => { await useCase.Execute(request, cancellationToken); };
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
@@ -53,12 +55,13 @@ namespace UseCases.Test.Users.ChangePassword
         [Fact]
         public async Task Error_CurrentPassword_Different ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
             var request = RequestChangePasswordJsonBuilder.Build();
 
             var useCase = CreateUseCase(user);
 
-            var act = async () => { await useCase.Execute(request); };
+            var act = async () => { await useCase.Execute(request, cancellationToken); };
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 

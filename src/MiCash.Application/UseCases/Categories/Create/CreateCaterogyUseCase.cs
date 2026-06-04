@@ -37,7 +37,7 @@ namespace MiCash.Application.UseCases.Categories.Create
             category.UserId = loggedUser.Id;
 
             await _repository.Create(category);
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
         }
 
         private void Validate ( RequestCreateCategoryJson request )

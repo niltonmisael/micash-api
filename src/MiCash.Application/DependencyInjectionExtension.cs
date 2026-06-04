@@ -2,6 +2,10 @@
 using MiCash.Application.UseCases.Auth.Login;
 using MiCash.Application.UseCases.Auth.Logout;
 using MiCash.Application.UseCases.Categories.Create;
+using MiCash.Application.UseCases.Categories.GetAll;
+using MiCash.Application.UseCases.Categories.GetById;
+using MiCash.Application.UseCases.Categories.Inactivate;
+using MiCash.Application.UseCases.Categories.Update;
 using MiCash.Application.UseCases.Expenses.Delete;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -53,7 +57,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<ILogoutUseCase , LogoutUseCase>();
             services.AddScoped<IRefreshTokenUseCase , RefreshTokenUseCase>();
             services.AddScoped<ICreateCaterogyUseCase,  CreateCaterogyUseCase>();
-
+            services.AddScoped<IGetAllCategoryUseCase ,  GetAllCategoryUseCase>();
+            services.AddScoped<IGetCategoryByIdUseCase , GetCategoryByIdUseCase>();
+            services.AddScoped<IUpdateCategoryUseCase , UpdateCategoryUseCase>();
+            services.AddScoped<IInactivateCategoryUseCase , InactivateCategoryUseCase>();
         }
     }
 }

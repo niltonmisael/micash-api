@@ -45,17 +45,17 @@ namespace MiCash.Application.UseCases.Users.Register
             _redisCacheService = redisCacheService;
         }
 
-        public async Task<ResponseRegisteredUserJson> Execute ( RequestRegisterUserJson request )
+        public async Task<ResponseRegisteredUserJson> Execute ( RequestRegisterUserJson request, CancellationToken cancellationToken )
         {
             await Validate(request);
 
             var user = _mapper.Map<Domain.Entities.User>(request);
-            user.Password = _passwordEncripter.Encrypt(user.Password);
+            user.PasswordHash = _passwordEncripter.Encrypt(user.PasswordHash);
             user.UserIdentifier = Guid.NewGuid();
 
             await _userWriteOnlyRepository.Add(user);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
 
             var token = _tokenGenerator.Generate(user);
 

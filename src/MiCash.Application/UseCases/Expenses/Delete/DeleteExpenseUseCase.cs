@@ -20,14 +20,18 @@ namespace MiCash.Application.UseCases.Expenses.Delete
         private readonly IExpensesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
-        public DeleteExpenseUseCase (IExpensesWriteOnlyRepository repository, IUnitOfWork unitOfWork, ILoggedUser loggedUser, IExpensesReadOnlyRepository expensesReadOnlyRepository)
+        public DeleteExpenseUseCase (
+            IExpensesWriteOnlyRepository repository, 
+            IUnitOfWork unitOfWork, 
+            ILoggedUser loggedUser, 
+            IExpensesReadOnlyRepository expensesReadOnlyRepository)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
             _expensesReadOnlyRepository = expensesReadOnlyRepository;
         }
-        public async Task Execute(long id)
+        public async Task Execute(long id, CancellationToken cancellationToken)
         {
             var loggedUser = await _loggedUser.Get();
 
@@ -39,7 +43,7 @@ namespace MiCash.Application.UseCases.Expenses.Delete
 
             await _repository.Delete(id);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
 
         }
     }

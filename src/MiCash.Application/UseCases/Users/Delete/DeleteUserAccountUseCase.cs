@@ -1,11 +1,6 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Services.LoggedUser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Users.Delete
 {
@@ -24,13 +19,13 @@ namespace MiCash.Application.UseCases.Users.Delete
             _userWriteOnlyRepository = userWriteOnlyRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task Execute ()
+        public async Task Execute (CancellationToken cancellationToken)
         {
             var user = await _loggedUser.Get();
 
             await _userWriteOnlyRepository.Delete(user);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
         }
     }
 }

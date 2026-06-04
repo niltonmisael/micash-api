@@ -1,33 +1,29 @@
 ﻿using MiCash.Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MiCash.Domain.Entities
 {
-    [Table("users")]
     public class User
     {
-        [Column("id")]
         public long Id { get; set; }
 
-        [Column("name")]
         public string Name { get; set; } = string.Empty;
 
-        [Column("phone")]
         public string Phone { get; set; } = string.Empty;
 
-        [Column("email")]
         public string Email { get; set; } = string.Empty;
 
-        [Column("password")]
-        public string Password { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
 
-        [Column("user_identifier")]
-        public Guid UserIdentifier { get; set; }
+        public Guid UserIdentifier { get; set; } = Guid.NewGuid();
 
-        [Column("role")]
-        public string Role { get; set; } = Roles.PREMIUM;
+        public string UserRole { get; set; } = Roles.PREMIUM;
 
-        public ICollection<Category>? Categories { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<Category> Categories { get; set; } = [];
+
+        public ICollection<Expense> Expenses { get; set; } = [];
     }
 }

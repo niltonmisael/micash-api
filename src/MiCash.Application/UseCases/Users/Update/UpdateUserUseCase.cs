@@ -5,11 +5,6 @@ using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Users.Update
 {
@@ -31,7 +26,7 @@ namespace MiCash.Application.UseCases.Users.Update
             _unitOfWork = unitOfWork;
             _userUpdateOnlyRepository = userUpdateOnlyRepository;
         }
-        public async Task Execute ( RequestUpdateUserJson request )
+        public async Task Execute ( RequestUpdateUserJson request, CancellationToken cancellationToken )
         {
             var loggedUser = await _loggedUser.Get();
 
@@ -44,7 +39,7 @@ namespace MiCash.Application.UseCases.Users.Update
 
             _userUpdateOnlyRepository.Update(user);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
         }
 
 

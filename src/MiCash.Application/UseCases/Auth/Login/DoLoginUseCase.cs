@@ -45,7 +45,7 @@ namespace MiCash.Application.UseCases.Auth.Login
                 throw new InvalidLoginException();
             }
 
-            var passwordMatch = _passwordEncryption.Verify(request.Password, user.Password);
+            var passwordMatch = _passwordEncryption.Verify(request.Password, user.PasswordHash);
 
             if ( passwordMatch == false ) {
                 _logger.LogWarning("Invalid password for email {Email}" , request.Email);

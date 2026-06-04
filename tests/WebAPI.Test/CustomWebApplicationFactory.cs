@@ -111,10 +111,10 @@ namespace WebAPI.Test
 
             user.Id = 1;
 
-            var password = user.Password;
+            var password = user.PasswordHash;
 
-            user.Password =
-                passwordEncripter.Encrypt(user.Password);
+            user.PasswordHash =
+                passwordEncripter.Encrypt(user.PasswordHash);
 
             dbContext.Users.Add(user);
 
@@ -140,10 +140,10 @@ namespace WebAPI.Test
 
             user.Id = 2;
 
-            var password = user.Password;
+            var password = user.PasswordHash;
 
-            user.Password =
-                passwordEncripter.Encrypt(user.Password);
+            user.PasswordHash =
+                passwordEncripter.Encrypt(user.PasswordHash);
 
             dbContext.Users.Add(user);
 
@@ -169,11 +169,6 @@ namespace WebAPI.Test
                 ExpenseBuilder.Build(user);
 
             expense.Id = expenseId;
-
-            foreach ( var tag in expense.Tags ) {
-                tag.Id = tagId;
-                tag.ExpenseId = expenseId;
-            }
 
             dbContext.Expenses.Add(expense);
 

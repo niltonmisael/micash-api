@@ -1,9 +1,4 @@
 ﻿using MiCash.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Infrastructure.DataAccess
 {
@@ -15,9 +10,9 @@ namespace MiCash.Infrastructure.DataAccess
         {
             _dbContext = dbContext;
         }
-        public async Task Commit ()
+        public async Task Commit (CancellationToken cancellationToken)
         {
-           await _dbContext.SaveChangesAsync();
+           await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

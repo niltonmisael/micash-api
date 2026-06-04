@@ -8,12 +8,6 @@ using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Domain.Entities;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UseCases.Test.Expenses.Register
 {
@@ -22,11 +16,12 @@ namespace UseCases.Test.Expenses.Register
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var request = RequestExpenseJsonBuilder.Build();
             var useCase = CreateUseCase(loggedUser);
 
-            var result = await useCase.Execute(request);
+            var result = await useCase.Execute(request, cancellationToken);
 
             result.Should().NotBeNull();
             result.Title.Should().Be(request.Title);
@@ -36,13 +31,14 @@ namespace UseCases.Test.Expenses.Register
         [Fact]
         public async Task Error_Title_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var request = RequestExpenseJsonBuilder.Build();
             request.Title = string.Empty;
 
             var useCase = CreateUseCase(loggedUser);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             var result = act.Should().ThrowAsync<ErrorOnValidationException>();
 

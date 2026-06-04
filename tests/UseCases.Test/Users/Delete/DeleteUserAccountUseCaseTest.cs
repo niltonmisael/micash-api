@@ -17,10 +17,11 @@ namespace UseCases.Test.Users.Delete
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
             var useCase = CreateUseCase(user);
 
-            var act = async () => await useCase.Execute();
+            var act = async () => await useCase.Execute(cancellationToken);
 
             await act.Should().NotThrowAsync();
         }

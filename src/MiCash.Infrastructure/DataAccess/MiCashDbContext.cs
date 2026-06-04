@@ -1,4 +1,5 @@
 ﻿using MiCash.Domain.Entities;
+using MiCash.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess
@@ -13,12 +14,22 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
 
+
         protected override void OnModelCreating ( ModelBuilder modelBuilder )
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Tag>().ToTable("tags");
+            modelBuilder.ApplyConfigurationsFromAssembly(
+                typeof(MiCashDbContext).Assembly);
         }
+
+        protected override void ConfigureConventions ( ModelConfigurationBuilder configurationBuilder )
+        {
+            configurationBuilder.Properties<ExpenseStatus>() // Se quiser configurar para todos enums do projeto, use <Enum>() ao invés de <ExpenseStatus>()
+                .HaveConversion<string>();
+        }
+
+
 
     }
 }

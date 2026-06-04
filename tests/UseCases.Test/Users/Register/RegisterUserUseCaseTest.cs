@@ -16,10 +16,11 @@ namespace UseCases.Test.Users.Register
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var request = RequestRegisterUserJsonBuilder.Build();
             var useCase = CreateUseCase();
 
-            var result = await useCase.Execute(request);
+            var result = await useCase.Execute(request, cancellationToken);
 
             result.Should().NotBeNull();
             result.Name.Should().Be(request.Name);
@@ -30,12 +31,13 @@ namespace UseCases.Test.Users.Register
         [Fact]
         public async Task Error_Name_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var request = RequestRegisterUserJsonBuilder.Build();
             request.Name = string.Empty;
 
             var useCase = CreateUseCase();
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
@@ -45,11 +47,13 @@ namespace UseCases.Test.Users.Register
         [Fact]
         public async Task Error_Email_Already_Exist ()
         {
+
+            var cancellationToken = CancellationToken.None;
             var request = RequestRegisterUserJsonBuilder.Build();
 
             var useCase = CreateUseCase(request.Email);
 
-            var act = async () => await useCase.Execute(request);
+            var act = async () => await useCase.Execute(request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 

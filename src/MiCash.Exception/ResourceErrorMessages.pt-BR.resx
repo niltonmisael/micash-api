@@ -171,4 +171,10 @@
   <data name="ICON_REQUIRED" xml:space="preserve">
     <value>Ícone é obrigatório</value>
   </data>
+  <data name="CATEGORY_NOT_FOUND" xml:space="preserve">
+    <value>Categoria não encontrada </value>
+  </data>
+  <data name="CATEGORY_ALREADY_INACTIVE" xml:space="preserve">
+    <value>Categoria já inativada</value>
+  </data>
 </root>

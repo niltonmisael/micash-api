@@ -20,9 +20,10 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(typeof(ResponseErrorJson),StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register ( 
             [FromServices] IRegisterExpenseUseCase useCase ,
-            [FromBody] RequestExpenseJson request )
+            [FromBody] RequestExpenseJson request,
+            CancellationToken cancellationToken)
         {
-                var response = await useCase.Execute(request);
+                var response = await useCase.Execute(request, cancellationToken);
 
                 return Created(string.Empty, response);
         }
@@ -55,9 +56,12 @@ namespace MiCash.API.Controllers
         [Route("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete ( [FromServices] IDeleteExpenseUseCase useCase, [FromRoute] long id)
+        public async Task<IActionResult> Delete ( 
+            [FromServices] IDeleteExpenseUseCase useCase, 
+            [FromRoute] long id,
+            CancellationToken cancellationToken)
         {
-            await useCase.Execute(id);
+            await useCase.Execute(id, cancellationToken);
 
             return NoContent();
         }
@@ -70,9 +74,10 @@ namespace MiCash.API.Controllers
         public async Task<IActionResult> Update ( 
             [FromServices] IUpdateExpenseUseCase useCase , 
             [FromRoute] long id, 
-            [FromBody] RequestExpenseJson request)
+            [FromBody] RequestExpenseJson request,
+            CancellationToken cancellationToken)
         {
-            await useCase.Execute(id, request);
+            await useCase.Execute(id, request, cancellationToken);
 
             return NoContent();
         }

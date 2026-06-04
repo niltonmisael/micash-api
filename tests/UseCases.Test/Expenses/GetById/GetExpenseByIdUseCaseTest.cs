@@ -33,11 +33,9 @@ namespace UseCases.Test.Expenses.GetById
             result.Id.Should().Be(expense.Id);
             result.Title.Should().Be(expense.Title);
             result.Description.Should().Be(expense.Description);
-            result.Date.Should().Be(expense.Date);
+            result.ExpenseDate.Should().Be(expense.ExpenseDate);
             result.Amount.Should().Be(expense.Amount);
             result.PaymentType.Should().Be((MiCash.Communication.Enums.PaymentType)expense.PaymentType);
-            result.Tags.Should().NotBeNullOrEmpty().And.BeEquivalentTo(expense.Tags.Select(tag => tag.Value));
-
         }
 
         [Fact]

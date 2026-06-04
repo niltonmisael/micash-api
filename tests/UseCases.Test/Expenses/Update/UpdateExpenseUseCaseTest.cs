@@ -23,19 +23,20 @@ namespace UseCases.Test.Expenses.Update
         [Fact]
         public async Task Success ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var request = RequestExpenseJsonBuilder.Build();
             var expense = ExpenseBuilder.Build(loggedUser);
 
             var useCase = CreateUseCase(loggedUser , expense);
 
-            var act = async () => await useCase.Execute(expense.Id , request);
+            var act = async () => await useCase.Execute(expense.Id , request, cancellationToken);
 
             await act.Should().NotThrowAsync();
 
             expense.Title.Should().Be(request.Title);
             expense.Description.Should().Be(request.Description);
-            expense.Date.Should().Be(request.Date);
+            expense.ExpenseDate.Should().Be(request.ExpenseDate);
             expense.Amount.Should().Be(request.Amount);
             expense.PaymentType.Should().Be(( PaymentType ) request.PaymentType);
         }
@@ -43,6 +44,7 @@ namespace UseCases.Test.Expenses.Update
         [Fact]
         public async Task Error_Title_Empty ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var expense = ExpenseBuilder.Build(loggedUser);
 
@@ -51,7 +53,7 @@ namespace UseCases.Test.Expenses.Update
 
             var useCase = CreateUseCase(loggedUser , expense);
 
-            var act = async () => await useCase.Execute(expense.Id , request);
+            var act = async () => await useCase.Execute(expense.Id , request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
 
@@ -61,12 +63,13 @@ namespace UseCases.Test.Expenses.Update
         [Fact]
         public async Task Error_Expense_Not_Found ()
         {
+            var cancellationToken = CancellationToken.None;
             var loggedUser = UserBuilder.Build();
             var request = RequestExpenseJsonBuilder.Build();
 
             var useCase = CreateUseCase(loggedUser);
 
-            var act = async () => await useCase.Execute(id: 10000 , request);
+            var act = async () => await useCase.Execute(id: 10000 , request, cancellationToken);
 
             var result = await act.Should().ThrowAsync<NotFoundException>();
 

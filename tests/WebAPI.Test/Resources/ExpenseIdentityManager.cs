@@ -17,6 +17,6 @@ namespace WebAPI.Test.Resources
         }
 
         public long GetExpenseId() => _expense.Id;
-        public DateTime GetDate() => _expense.Date;
+        public DateTime GetDate() => _expense.ExpenseDate;
     }
 }

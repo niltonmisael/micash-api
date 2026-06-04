@@ -18,9 +18,12 @@ namespace MiCash.API.Controllers
         [HttpPost("register")]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register ([FromServices] IRegisterUserUseCase useCase,  [FromBody] RequestRegisterUserJson request)
+        public async Task<IActionResult> Register (
+            [FromServices] IRegisterUserUseCase useCase,  
+            [FromBody] RequestRegisterUserJson request,
+            CancellationToken cancellationToken)
         {
-            var response = await useCase.Execute(request);
+            var response = await useCase.Execute(request, cancellationToken);
 
             return Created(string.Empty, response);
             
@@ -40,9 +43,12 @@ namespace MiCash.API.Controllers
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateProfile ( [FromServices] IUpdateUserUseCase useCase, [FromBody] RequestUpdateUserJson request)
+        public async Task<IActionResult> UpdateProfile ( 
+            [FromServices] IUpdateUserUseCase useCase, 
+            [FromBody] RequestUpdateUserJson request, 
+            CancellationToken cancellationToken )
         {
-            await useCase.Execute(request);
+            await useCase.Execute(request, cancellationToken);
 
             return NoContent();
         }
@@ -51,9 +57,12 @@ namespace MiCash.API.Controllers
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangePassword ( [FromServices] IChangePasswordUseCase useCase , [FromBody] RequestChangePasswordJson request )
+        public async Task<IActionResult> ChangePassword ( 
+            [FromServices] IChangePasswordUseCase useCase , 
+            [FromBody] RequestChangePasswordJson request,
+            CancellationToken cancellationToken)
         {
-            await useCase.Execute(request);
+            await useCase.Execute(request, cancellationToken);
 
             return NoContent();
         }
@@ -61,9 +70,11 @@ namespace MiCash.API.Controllers
         [HttpDelete("delete")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteProfile ( [FromServices] IDeleteUserAccountUseCase useCase )
+        public async Task<IActionResult> DeleteProfile ( 
+            [FromServices] IDeleteUserAccountUseCase useCase,
+            CancellationToken cancellationToken)
         {
-            await useCase.Execute();
+            await useCase.Execute(cancellationToken);
 
             return NoContent();
         }

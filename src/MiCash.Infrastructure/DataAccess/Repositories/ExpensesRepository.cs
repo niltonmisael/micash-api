@@ -25,14 +25,12 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
         async Task<Expense?> IExpensesReadOnlyRepository.GetById ( User user, long id )
         {
             return await _dbContext.Expenses
-                .Include(expense => expense.Tags)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
         }
         async Task<Expense?> IExpensesUpdateOnlyRepository.GetById ( User user, long id )
         {
             return await _dbContext.Expenses
-                .Include (expense => expense.Tags)
                 .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == user.Id);
         }
 
@@ -58,8 +56,8 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             return await _dbContext
                 .Expenses
                 .AsNoTracking()
-                .Where(expense => expense.UserId == user.Id && expense.Date >= startDate && expense.Date <= endDate)
-                .OrderBy(expense => expense.Date)
+                .Where(expense => expense.UserId == user.Id && expense.ExpenseDate >= startDate && expense.ExpenseDate <= endDate)
+                .OrderBy(expense => expense.ExpenseDate)
                 .ThenBy(expense => expense.Title)
                 .ToListAsync();
         }

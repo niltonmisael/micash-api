@@ -7,11 +7,6 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCash.Application.UseCases.Users.ChangePassword
 {
@@ -33,17 +28,17 @@ namespace MiCash.Application.UseCases.Users.ChangePassword
             _unitOfWork = unitOfWork;
             _passwordEncripter = passwordEncripter;
         }
-        public async Task Execute ( RequestChangePasswordJson request )
+        public async Task Execute ( RequestChangePasswordJson request, CancellationToken cancellationToken )
         {
             var loggedUser = await _loggedUser.Get();
             Validate(request, loggedUser);
 
             var user = await _userUpdateOnlyRepository.GetById(loggedUser.Id);
-            user.Password = _passwordEncripter.Encrypt(request.NewPassword);
+            user.PasswordHash = _passwordEncripter.Encrypt(request.NewPassword);
 
             _userUpdateOnlyRepository.Update(user);
 
-            await _unitOfWork.Commit();
+            await _unitOfWork.Commit(cancellationToken);
 
         }
 
@@ -53,7 +48,7 @@ namespace MiCash.Application.UseCases.Users.ChangePassword
 
             var result = validator.Validate(request);
 
-            var passwordMatch = _passwordEncripter.Verify(request.Password, loggedUser.Password);
+            var passwordMatch = _passwordEncripter.Verify(request.Password, loggedUser.PasswordHash);
 
             if(passwordMatch == false ) {
                 result.Errors.Add(new ValidationFailure(string.Empty , ResourceErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
