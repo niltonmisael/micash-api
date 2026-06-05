@@ -1,6 +1,4 @@
-﻿using MiCash.Domain.Enums;
-
-namespace MiCash.Domain.Entities
+﻿namespace MiCash.Domain.Entities
 {
     public class User
     {
@@ -16,7 +14,7 @@ namespace MiCash.Domain.Entities
 
         public Guid UserIdentifier { get; set; } = Guid.NewGuid();
 
-        public string UserRole { get; set; } = Roles.PREMIUM;
+        public string? PagarMeCustomerId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -27,5 +25,8 @@ namespace MiCash.Domain.Entities
         public ICollection<Expense> Expenses { get; set; } = [];
 
         public ICollection<Income> Incomes { get; set; } = [];
+
+        public ICollection<Subscription> Subscriptions { get; set; } = [];
+
     }
 }

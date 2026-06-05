@@ -1,7 +1,5 @@
 ﻿using CommonTestUtilities.Cache;
-using CommonTestUtilities.Entities;
 using MiCash.Domain.Entities;
-using MiCash.Domain.Enums;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.Cache;
@@ -10,40 +8,50 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using WebAPI.Test.Resources;
 
 namespace WebAPI.Test
 {
     public class CustomWebApplicationFactory
         : WebApplicationFactory<Program>
     {
-        public ExpenseIdentityManager Expense_MemberTeam { get; private set; } = default!;
-        public ExpenseIdentityManager Expense_Admin { get; private set; } = default!;
-        public UserIdentityManager User_Team_Member { get; private set; } = default!;
-        public UserIdentityManager User_Admin { get; private set; } = default!;
+        private string _token = string.Empty;
+
+        private string _email = string.Empty;
+        private string _name = string.Empty;
+        private string _password = string.Empty;
+        private DateTime _date = DateTime.Now;
+        private long _expenseId;
+
+        public string GetToken () => _token;
+
+        public string GetEmail () => _email;
+
+        public string GetName () => _name;
+
+        public string GetPassword () => _password;
+
+        public long GetExpenseId () => _expenseId;
+
+        public DateTime GetDate() => _date;
 
         protected override void ConfigureWebHost (
             IWebHostBuilder builder )
         {
             builder
                 .UseEnvironment("Test")
-                .ConfigureServices(services =>
-                {
+                .ConfigureServices(services => {
                     services.AddScoped<IRedisCacheService ,
                         FakeRedisCacheService>();
-
 
                     var provider = services
                         .AddEntityFrameworkInMemoryDatabase()
                         .BuildServiceProvider();
 
-                    services.AddDbContext<MiCashDbContext>(config =>
-                    {
-                        config.UseInMemoryDatabase(
+                    services.AddDbContext<MiCashDbContext>(options => {
+                        options.UseInMemoryDatabase(
                             "InMemoryDbForTesting");
 
-                        config.UseInternalServiceProvider(provider);
+                        options.UseInternalServiceProvider(provider);
                     });
 
                     var scope = services
@@ -62,7 +70,7 @@ namespace WebAPI.Test
                     StartDataBase(
                         dbContext ,
                         passwordEncripter ,
-                        accessTokenGenerator!);
+                        accessTokenGenerator);
                 });
         }
 
@@ -71,108 +79,52 @@ namespace WebAPI.Test
             IPasswordEncripter passwordEncripter ,
             IAccessTokenGenerator accessTokenGenerator )
         {
-            var userTeamMember = AddUserTeamMember(
-                dbContext ,
-                passwordEncripter ,
-                accessTokenGenerator);
+            dbContext.Database.EnsureDeleted();
+            dbContext.Database.EnsureCreated();
 
-            var expenseTeamMember = AddExpenses(
-                dbContext ,
-                userTeamMember ,
-                expenseId: 1 ,
-                tagId: 1);
+            _name = "Usuário Teste";
+            _email = "teste@micash.com";
+            _password = "123456";
 
-            Expense_MemberTeam =
-                new ExpenseIdentityManager(expenseTeamMember);
+            var user = new User
+            {
+                Name = _name ,
+                Email = _email ,
+                Phone = "43999999999" ,
+                PasswordHash = passwordEncripter.Encrypt(_password) ,
+                UserIdentifier = Guid.NewGuid()
+            };
 
-            var userAdmin = AddUserAdmin(
-                dbContext ,
-                passwordEncripter ,
-                accessTokenGenerator);
-
-            var expenseAdmin = AddExpenses(
-                dbContext ,
-                userAdmin ,
-                expenseId: 2 ,
-                tagId: 2);
-
-            Expense_Admin =
-                new ExpenseIdentityManager(expenseAdmin);
-
+            dbContext.Users.Add(user);
             dbContext.SaveChanges();
-        }
 
-        private User AddUserTeamMember (
-            MiCashDbContext dbContext ,
-            IPasswordEncripter passwordEncripter ,
-            IAccessTokenGenerator accessTokenGenerator )
-        {
-            var user = UserBuilder.Build();
+            var category = new Category
+            {
+                Name = "Moradia" ,
+                UserId = user.Id
+            };
 
-            user.Id = 1;
+            dbContext.Categories.Add(category);
+            dbContext.SaveChanges();
 
-            var password = user.PasswordHash;
-
-            user.PasswordHash =
-                passwordEncripter.Encrypt(user.PasswordHash);
-
-            dbContext.Users.Add(user);
-
-            var token =
-                accessTokenGenerator.Generate(user);
-
-            User_Team_Member =
-                new UserIdentityManager(
-                    user ,
-                    password ,
-                    token);
-
-            return user;
-        }
-
-        private User AddUserAdmin (
-            MiCashDbContext dbContext ,
-            IPasswordEncripter passwordEncripter ,
-            IAccessTokenGenerator accessTokenGenerator )
-        {
-            var user =
-                UserBuilder.Build(Roles.PREMIUM);
-
-            user.Id = 2;
-
-            var password = user.PasswordHash;
-
-            user.PasswordHash =
-                passwordEncripter.Encrypt(user.PasswordHash);
-
-            dbContext.Users.Add(user);
-
-            var token =
-                accessTokenGenerator.Generate(user);
-
-            User_Admin =
-                new UserIdentityManager(
-                    user ,
-                    password ,
-                    token);
-
-            return user;
-        }
-
-        private Expense AddExpenses (
-            MiCashDbContext dbContext ,
-            User user ,
-            long expenseId ,
-            long tagId )
-        {
-            var expense =
-                ExpenseBuilder.Build(user);
-
-            expense.Id = expenseId;
+            var expense = new Expense
+            {
+                UserId = user.Id ,
+                CategoryId = category.Id ,
+                Description = "Pagamento da conta de luz",
+                Title = "Conta de Luz" ,
+                Amount = 150 ,
+                ExpenseDate = DateTime.Today
+            };
 
             dbContext.Expenses.Add(expense);
+            dbContext.SaveChanges();
 
-            return expense;
+            _expenseId = expense.Id;
+
+            _date = expense.ExpenseDate;
+
+            _token = accessTokenGenerator.Generate(user);
         }
     }
 }

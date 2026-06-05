@@ -3,9 +3,11 @@ using MiCash.API.Filters;
 using MiCash.API.Middleware;
 using MiCash.API.Token;
 using MiCash.Domain.Security.Tokens;
+using MiCash.Domain.Services.Payments;
 using MiCash.Infrastructure;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Migrations;
+using MiCash.Infrastructure.Services.Payments;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -59,6 +61,10 @@ builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)))
 builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddHttpClient<IPaymentGateway , PagarMeService>();
+builder.Services.Configure<PagarMeSettings>(
+    builder.Configuration.GetSection("PagarMe"));
+
 var allowedOrigins =
     builder.Configuration
         .GetSection("Cors:AllowedOrigins")

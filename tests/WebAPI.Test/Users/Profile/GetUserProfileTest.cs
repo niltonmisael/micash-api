@@ -19,9 +19,9 @@ namespace WebAPI.Test.Users.Profile
 
         public GetUserProfileTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
-            _token = webApplicationFactory.User_Team_Member.GetToken();
-            _userName = webApplicationFactory.User_Team_Member.GetName();
-            _userEmail = webApplicationFactory.User_Team_Member.GetEmail();
+            _token = webApplicationFactory.GetToken();
+            _userName = webApplicationFactory.GetName();
+            _userEmail = webApplicationFactory.GetEmail();
         }
 
         [Fact]

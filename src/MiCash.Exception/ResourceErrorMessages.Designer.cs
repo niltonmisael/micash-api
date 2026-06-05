@@ -223,11 +223,29 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Plan not found.
+        /// </summary>
+        public static string PLAN_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("PLAN_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Received date is required.
         /// </summary>
         public static string RECEIVED_DATE_IS_REQUIRED {
             get {
                 return ResourceManager.GetString("RECEIVED_DATE_IS_REQUIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Subscription not found.
+        /// </summary>
+        public static string SUBSCRIPTION_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_NOT_FOUND", resourceCulture);
             }
         }
         
@@ -255,6 +273,15 @@ namespace MiCash.Exception {
         public static string UNKNOWN_ERROR {
             get {
                 return ResourceManager.GetString("UNKNOWN_ERROR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a User already has active subscription.
+        /// </summary>
+        public static string USER_ALREADY_HAS_ACTIVE_SUBSCRIPTION {
+            get {
+                return ResourceManager.GetString("USER_ALREADY_HAS_ACTIVE_SUBSCRIPTION", resourceCulture);
             }
         }
         

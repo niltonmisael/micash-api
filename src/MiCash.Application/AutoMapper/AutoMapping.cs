@@ -5,6 +5,7 @@ using MiCash.Communication.Requests.Incomes;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Categories;
 using MiCash.Communication.Responses.Incomes;
+using MiCash.Communication.Responses.Plans;
 using MiCash.Domain.Entities;
 
 namespace MiCash.Application.AutoMapper
@@ -38,6 +39,8 @@ namespace MiCash.Application.AutoMapper
             CreateMap<Income , ResponseRegisteredIncomeJson>();
             CreateMap<Income , ResponseIncomeJson>();
             CreateMap<Income , ResponseIncomeShortJson>();
+            CreateMap<Plan , ResponsePlanJson>();
+            CreateMap<Plan , ResponsePlansJson>();
         }
     }
 }

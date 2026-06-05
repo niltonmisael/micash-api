@@ -50,7 +50,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponseRegisteredCategoryJson) , StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ResponseCategoryJson) , StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetCategoryById (
             [FromRoute] long id ,

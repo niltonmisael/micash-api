@@ -23,6 +23,10 @@ using MiCash.Application.UseCases.Incomes.Register;
 using MiCash.Application.UseCases.Incomes.Update;
 using MiCash.Application.UseCases.Login.Logout;
 using MiCash.Application.UseCases.Login.Refresh;
+using MiCash.Application.UseCases.Plans.GetAll;
+using MiCash.Application.UseCases.Plans.GetById;
+using MiCash.Application.UseCases.Subscriptions.Create;
+using MiCash.Application.UseCases.Subscriptions.GetCurrent;
 using MiCash.Application.UseCases.Users.ChangePassword;
 using MiCash.Application.UseCases.Users.Delete;
 using MiCash.Application.UseCases.Users.Profile;
@@ -77,6 +81,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetMonthlySummaryUseCase , GetMonthlySummaryUseCase>();
             services.AddScoped<IGetExpensesByCategoryUseCase , GetExpensesByCategoryUseCase>();
             services.AddScoped<IGetLatestExpensesUseCase , GetLatestExpensesUseCase>();
+            services.AddScoped<IGetAllPlansUseCase , GetAllPlansUseCase>();
+            services.AddScoped<IGetPlanByIdUseCase , GetPlanByIdUseCase>();
+            services.AddScoped<ICreateSubscriptionUseCase , CreateSubscriptionUseCase>();
+            services.AddScoped<IGetCurrentSubscriptionUseCase , GetCurrentSubscriptionUseCase>();
         }
     }
 }

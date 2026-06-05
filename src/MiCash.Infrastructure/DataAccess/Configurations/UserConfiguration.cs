@@ -10,11 +10,13 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasKey(x => x.Id);
 
-
         builder.HasIndex(x => x.Email)
             .IsUnique();
 
         builder.HasIndex(x => x.UserIdentifier)
+            .IsUnique();
+
+        builder.HasIndex(x => x.PagarMeCustomerId)
             .IsUnique();
 
         builder.Property(x => x.Id)
@@ -43,10 +45,6 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnName("user_identifier")
             .IsRequired();
 
-        builder.Property(x => x.UserRole)
-            .HasColumnName("user_role")
-            .HasMaxLength(20);
-
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
@@ -55,6 +53,10 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasColumnName("updated_at")
             .IsRequired();
 
+        builder.Property(x => x.PagarMeCustomerId)
+            .HasColumnName("pagarme_customer_id");
+
+        //Relationship
         builder.HasMany(x => x.Categories)
             .WithOne(x => x.User)
             .HasForeignKey(x => x.UserId)
@@ -64,5 +66,15 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(x => x.User)
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.Incomes)
+            .WithOne(i => i.User)
+            .HasForeignKey(i => i.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.Subscriptions)
+            .WithOne(u => u.User)
+            .HasForeignKey (u => u.UserId)
+            .OnDelete (DeleteBehavior.Cascade);
     }
 }

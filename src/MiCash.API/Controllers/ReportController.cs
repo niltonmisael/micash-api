@@ -1,6 +1,5 @@
 ﻿using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
-using MiCash.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
@@ -9,7 +8,7 @@ namespace MiCash.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = Roles.PREMIUM)]
+    [Authorize]
     public class ReportController : ControllerBase
     {
 

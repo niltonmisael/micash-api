@@ -13,7 +13,7 @@ namespace WebAPI.Test.Expenses.Register
 
         public RegisterExpenseTest(CustomWebApplicationFactory webApplicationFactory): base(webApplicationFactory) 
         {
-            _token = webApplicationFactory.User_Team_Member.GetToken();
+            _token = webApplicationFactory.GetToken();
         }
 
         [Fact]

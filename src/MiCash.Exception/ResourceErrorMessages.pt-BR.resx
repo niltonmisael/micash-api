@@ -186,4 +186,13 @@
   <data name="INCOME_NOT_FOUND" xml:space="preserve">
     <value>Receita não encontrada</value>
   </data>
+  <data name="PLAN_NOT_FOUND" xml:space="preserve">
+    <value>Plano não encontrado</value>
+  </data>
+  <data name="USER_ALREADY_HAS_ACTIVE_SUBSCRIPTION" xml:space="preserve">
+    <value>Usuário já possui assinatura ativa</value>
+  </data>
+  <data name="SUBSCRIPTION_NOT_FOUND" xml:space="preserve">
+    <value>Nenhuma assinatura foi encontrada para o usuário.</value>
+  </data>
 </root>

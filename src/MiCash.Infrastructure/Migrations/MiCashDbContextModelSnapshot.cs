@@ -203,6 +203,103 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("incomes", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("PagarmePlanId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("pagarme_plan_id");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PagarmePlanId")
+                        .IsUnique();
+
+                    b.ToTable("plans", (string)null);
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.Subscription", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<DateTime?>("NextBillingDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_billing_date");
+
+                    b.Property<string>("PagarmeSubscriptionId")
+                        .HasColumnType("text")
+                        .HasColumnName("pagarme_subscription_id");
+
+                    b.Property<long>("PlanId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("plan_id");
+
+                    b.Property<DateTime>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PagarmeSubscriptionId")
+                        .IsUnique();
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("subscriptions", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -228,6 +325,10 @@ namespace MiCash.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
+                    b.Property<string>("PagarMeCustomerId")
+                        .HasColumnType("text")
+                        .HasColumnName("pagarme_customer_id");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -248,15 +349,12 @@ namespace MiCash.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_identifier");
 
-                    b.Property<string>("UserRole")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("user_role");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("PagarMeCustomerId")
                         .IsUnique();
 
                     b.HasIndex("UserIdentifier")
@@ -307,9 +405,33 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Subscription", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.Plan", "Plan")
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Expenses");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
+                {
+                    b.Navigation("Subscriptions");
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
@@ -319,6 +441,8 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("Incomes");
+
+                    b.Navigation("Subscriptions");
                 });
 #pragma warning restore 612, 618
         }

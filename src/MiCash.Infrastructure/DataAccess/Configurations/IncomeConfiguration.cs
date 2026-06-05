@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MiCash.Infrastructure.DataAccess.Configurations
 {
-    internal class IncomeConfiguration : IEntityTypeConfiguration<Income>
+    public sealed class IncomeConfiguration : IEntityTypeConfiguration<Income>
     {
         public void Configure ( EntityTypeBuilder<Income> builder )
         {

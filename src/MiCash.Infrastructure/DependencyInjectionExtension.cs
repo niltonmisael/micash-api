@@ -3,17 +3,20 @@ using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Repositories.Plans;
+using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.LoggedUser;
-using MiCash.Infrastructure.Cache.Redis;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Security.Tokens;
+using MiCash.Infrastructure.Services.Cache.Redis;
 using MiCash.Infrastructure.Services.LoggedUser;
+using MiCash.Infrastructure.Services.Payments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +58,13 @@ namespace MiCash.Infrastructure
             services.AddScoped<IIncomesWriteOnlyRepository , IncomeRepository>();
             services.AddScoped<IIncomesReadOnlyRepository , IncomeRepository>();
             services.AddScoped<IDashboardReadOnlyRepository, DashboardRepository>();
+            services.AddScoped<ICategoriesReadOnlyRepository, CategoryRepository>();
+            services.AddScoped<ICategoriesWriteOnlyRepository, CategoryRepository>();
+            services.AddScoped<ICategoriesUpdateOnlyRepository, CategoryRepository>();
+            services.AddScoped<IPlansReadOnlyRepository, PlanRepository>();
+            services.AddScoped<ISubscriptionsReadOnlyRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionsUpdateOnlyRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionsWriteOnlyRepository, SubscriptionRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

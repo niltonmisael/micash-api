@@ -19,37 +19,10 @@ namespace WebAPI.Test.Users.ChangePassword
 
         public ChangePasswordTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
-            _token = webApplicationFactory.User_Team_Member.GetToken();
-            _password = webApplicationFactory.User_Team_Member.GetPassword();
-            _email = webApplicationFactory.User_Team_Member.GetEmail();
+            _token = webApplicationFactory.GetToken();
+            _password = webApplicationFactory.GetPassword();
+            _email = webApplicationFactory.GetEmail();
         }
-
-        //Refazer o teste de sucesso, pois o endpoint de login foi alterado.
-
-        //[Fact]
-        //public async Task Success ()
-        //{
-        //    var request = RequestChangePasswordJsonBuilder.Build();
-        //    request.Password = _password;
-
-        //    var response = await DoPut(METHOD , request , _token);
-
-        //    response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-
-        //    var loginRequest = new RequestLoginJson
-        //    {
-        //        Email = _email ,
-        //        Password = _password ,
-        //    };
-
-        //    response = await DoPost("api/auth/login" , loginRequest);
-        //    response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        //    loginRequest.Password = request.NewPassword;
-
-        //    response = await DoPost("api/auth/login" , loginRequest);
-        //    response.StatusCode.Should().Be(HttpStatusCode.OK);
-        //}
 
         [Theory]
         [ClassData(typeof(CultureInlineDataTest))]

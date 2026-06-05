@@ -186,4 +186,13 @@
   <data name="INCOME_NOT_FOUND" xml:space="preserve">
     <value>Income not found</value>
   </data>
+  <data name="PLAN_NOT_FOUND" xml:space="preserve">
+    <value>Plan not found</value>
+  </data>
+  <data name="USER_ALREADY_HAS_ACTIVE_SUBSCRIPTION" xml:space="preserve">
+    <value>User already has active subscription</value>
+  </data>
+  <data name="SUBSCRIPTION_NOT_FOUND" xml:space="preserve">
+    <value>Subscription not found</value>
+  </data>
 </root>

@@ -2,7 +2,7 @@
 using StackExchange.Redis;
 using System.Text.Json;
 
-namespace MiCash.Infrastructure.Cache.Redis
+namespace MiCash.Infrastructure.Services.Cache.Redis
 {
     public class RedisCacheService : IRedisCacheService
     {

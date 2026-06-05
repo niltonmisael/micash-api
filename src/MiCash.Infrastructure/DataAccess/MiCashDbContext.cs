@@ -14,6 +14,8 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Income> Incomes { get; set; }
+        public DbSet<Plan> Plans { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
 
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )

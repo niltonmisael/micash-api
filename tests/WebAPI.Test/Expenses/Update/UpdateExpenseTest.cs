@@ -16,8 +16,8 @@ namespace WebAPI.Test.Expenses.Update
         private readonly long _expenseId;
         public UpdateExpenseTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
-            _token = webApplicationFactory.User_Team_Member.GetToken();
-            _expenseId = webApplicationFactory.Expense_MemberTeam.GetExpenseId();
+            _token = webApplicationFactory.GetToken();
+            _expenseId = webApplicationFactory.GetExpenseId();
         }
         [Fact]
         public async Task Success ()

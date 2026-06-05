@@ -11,7 +11,7 @@ namespace WebAPI.Test.Expenses.GetAll
         private readonly string _token;
         public GetAllExpenseTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
-            _token = webApplicationFactory.User_Team_Member.GetToken();
+            _token = webApplicationFactory.GetToken();
         }
 
         [Fact]
