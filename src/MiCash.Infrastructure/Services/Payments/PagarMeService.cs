@@ -7,11 +7,15 @@ using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace MiCash.Infrastructure.Services.Payments
 {
     public class PagarMeService : IPaymentGateway
     {
+
+        private const string CustomersEndpoint = "customers";
+        private const string SubscriptionsEndpoint = "subscriptions";
 
         private readonly HttpClient _httpClient;
         private readonly PagarMeSettings _settings;
@@ -27,7 +31,7 @@ namespace MiCash.Infrastructure.Services.Payments
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     "Basic" , Convert.ToBase64String(
-                        Encoding.UTF8.GetBytes($"{_settings.ApiKey}")));
+                        Encoding.UTF8.GetBytes($"{_settings.ApiKey}:")));
         }
 
         public Task CancelSubscriptionAsync ( string subscriptionId , CancellationToken cancellationToken )
@@ -45,8 +49,9 @@ namespace MiCash.Infrastructure.Services.Payments
             };
 
             var response = await _httpClient.PostAsJsonAsync(
-                "customers",
-                request, cancellationToken );
+                CustomersEndpoint,
+                request , 
+                cancellationToken );
 
             if ( !response.IsSuccessStatusCode ) {
                 var error = await response.Content.ReadAsStringAsync(cancellationToken);

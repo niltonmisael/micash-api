@@ -27,12 +27,11 @@ namespace MiCash.API.Controllers
             return Created(string.Empty, null);
         }
 
-        [HttpGet("current")]
         [Authorize]
+        [HttpGet("current")]
         [ProducesResponseType(typeof(ResponseCurrentSubscriptionJson), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCurrentSubscription (
-            [FromServices] IGetCurrentSubscriptionUseCase useCase ,
-            [FromBody] RequestCreateSubscriptionJson request ,
+            [FromServices] IGetCurrentSubscriptionUseCase useCase,
             CancellationToken cancellationToken )
         {
             var response = await useCase.ExecuteAsync(cancellationToken);
@@ -49,18 +48,16 @@ namespace MiCash.API.Controllers
             return Ok(response);
         }
 
-        [HttpPost("checkout")]
         [Authorize]
+        [HttpPost("checkout")]
         [ProducesResponseType(typeof(ResponseSubscriptionCheckoutJson) , StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreateCheckout (
             [FromServices] ICreateSubscriptionCheckoutUseCase useCase ,
             [FromBody] RequestCreateSubscriptionCheckoutJson request ,
             CancellationToken cancellationToken )
         {
-            var response =
-                await useCase.ExecuteAsync(
-                    request ,
-                    cancellationToken);
+            var response = await useCase.ExecuteAsync( request , cancellationToken);
 
             return Ok(response);
         }

@@ -26,6 +26,7 @@ using MiCash.Application.UseCases.Login.Refresh;
 using MiCash.Application.UseCases.Plans.GetAll;
 using MiCash.Application.UseCases.Plans.GetById;
 using MiCash.Application.UseCases.Subscriptions.Create;
+using MiCash.Application.UseCases.Subscriptions.CreateCheckout;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
 using MiCash.Application.UseCases.Users.ChangePassword;
 using MiCash.Application.UseCases.Users.Delete;
@@ -85,6 +86,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetPlanByIdUseCase , GetPlanByIdUseCase>();
             services.AddScoped<ICreateSubscriptionUseCase , CreateSubscriptionUseCase>();
             services.AddScoped<IGetCurrentSubscriptionUseCase , GetCurrentSubscriptionUseCase>();
+            services.AddScoped<ICreateSubscriptionCheckoutUseCase , CreateSubscriptionCheckoutUseCase>();
         }
     }
 }
