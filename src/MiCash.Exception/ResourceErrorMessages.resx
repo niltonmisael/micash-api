@@ -195,4 +195,10 @@
   <data name="SUBSCRIPTION_NOT_FOUND" xml:space="preserve">
     <value>Subscription not found</value>
   </data>
+  <data name="SUBSCRIPTION_ALREADY_HAS_A_SCHEDULED_CANCELLATION" xml:space="preserve">
+    <value>Subscription already has a scheduled cancellation.</value>
+  </data>
+  <data name="THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION" xml:space="preserve">
+    <value>This subscription does not have a scheduled cancellation option.</value>
+  </data>
 </root>

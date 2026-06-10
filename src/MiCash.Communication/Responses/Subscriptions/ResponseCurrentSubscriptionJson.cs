@@ -2,14 +2,24 @@
 {
     public class ResponseCurrentSubscriptionJson
     {
-        public long Id { get; set; }
+        public long? PlanId { get; set; }
 
         public string PlanName { get; set; } = string.Empty;
 
-        public decimal Price { get; set; }
+        public int Status { get; set; }
 
-        public string Status { get; set; } = string.Empty;
+        public string StatusDescription { get; set; } = string.Empty;
+
+        public bool CancelAtPeriodEnd { get; set; }
 
         public DateTime? NextBillingDate { get; set; }
+
+        public DateTime? EndsAt { get; set; }
+
+        public DateTime? CancellationRequestedAt { get; set; }
+
+        public DateTime? CancellationScheduledFor { get; set; }
+
+        public decimal Price { get; set; }
     }
 }

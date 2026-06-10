@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using static System.Net.WebRequestMethods;
 
 namespace MiCash.Infrastructure.Services.Payments
 {
@@ -16,6 +15,7 @@ namespace MiCash.Infrastructure.Services.Payments
 
         private const string CustomersEndpoint = "customers";
         private const string SubscriptionsEndpoint = "subscriptions";
+        private const string PaymentsLinks = "paymentlinks";
 
         private readonly HttpClient _httpClient;
         private readonly PagarMeSettings _settings;
@@ -39,39 +39,85 @@ namespace MiCash.Infrastructure.Services.Payments
             throw new NotImplementedException();
         }
 
-        public async Task<string> CreateCustomerAsync ( User user , CancellationToken cancellationToken )
+
+        public async Task<CreateCheckoutResult> CreateSubscriptionCheckoutAsync ( User user , Plan plan , CancellationToken cancellationToken )
         {
-            var request = new CreateCustomerRequest
+
+            var orderCode = $"micash_{user.Id}_{Guid.NewGuid():N}";
+
+            var request = new CreatePaymentLinkRequest
             {
-                Email = user.Email ,
-                Name = user.Name ,
-                Type = "individual"
+                Name = plan.Name ,
+
+                Type = "subscription" ,
+
+                OrderCode = orderCode ,
+
+                IsBuilding = false ,
+
+                Metadata = new Dictionary<string , string>
+                {
+                    ["user_identifier"] = user.UserIdentifier.ToString() ,
+                    ["plan_id"] = plan.Id.ToString()
+                } ,
+
+                PaymentSettings = new PaymentSettings
+                {
+                    AcceptedPaymentMethods =
+                    [
+                        "credit_card"
+                    ] ,
+
+                    CreditCardSettings = new CreditCardSettings
+                    {
+                        OperationType = "auth_and_capture"
+                    }
+                } ,
+
+                CartSettings = new PaymentLinkCartSettings
+                {
+                    Recurrences =
+                    [
+            
+                        new PaymentLinkRecurrence
+                        {
+                            PlanId = plan.PagarmePlanId
+                        }
+                    ]
+                }
             };
 
-            var response = await _httpClient.PostAsJsonAsync(
-                CustomersEndpoint,
-                request , 
-                cancellationToken );
+            var response =
+                await _httpClient.PostAsJsonAsync(
+                    PaymentsLinks ,
+                    request ,
+                    cancellationToken);
 
             if ( !response.IsSuccessStatusCode ) {
-                var error = await response.Content.ReadAsStringAsync(cancellationToken);
+                var error =
+                    await response.Content.ReadAsStringAsync(
+                        cancellationToken);
 
-                throw new Exception($"Erro ao criar cliente Pagar.me: {error}");
+                throw new Exception(
+                    $"Erro ao criar checkout: {error}");
             }
 
-            var customer = await response.Content
-                .ReadFromJsonAsync<CreateCustomerResponse>(cancellationToken);
+            var checkout =
+                await response.Content
+                    .ReadFromJsonAsync<CreatePaymentLinkResponse>(
+                        cancellationToken);
 
-            if ( customer is null ) {
-                throw new Exception("Não foi possível obter o CustomerId.");
+            if ( checkout is null ) {
+                throw new Exception(
+                    "Checkout não retornado pelo Pagar.me.");
             }
 
-            return customer.Id;
-        }
-
-        public Task<CreateCheckoutResult> CreateSubscriptionCheckoutAsync ( User user , Plan plan , CancellationToken cancellationToken )
-        {
-            throw new NotImplementedException();
+            return new CreateCheckoutResult
+            {
+                PaymentLinkId = checkout.Id,
+                CheckoutUrl = checkout.Url,
+                OrderCode = orderCode ,
+            };
         }
     }
 }

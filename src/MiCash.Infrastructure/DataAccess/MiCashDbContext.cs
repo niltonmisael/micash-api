@@ -16,6 +16,8 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<Income> Incomes { get; set; }
         public DbSet<Plan> Plans { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
+        public DbSet<PaymentLink> PaymentLinks { get; set; }
+        public DbSet<ProcessedWebhook> ProcessedWebhooks { get; set; }
 
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )

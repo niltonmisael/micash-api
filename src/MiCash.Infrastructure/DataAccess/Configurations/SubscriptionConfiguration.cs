@@ -49,6 +49,24 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 .HasColumnName("updated_at")
                 .IsRequired();
 
+            builder.Property(x => x.PagarmeCustomerId)
+                .HasColumnName("pagarme_customer_id");
+
+            builder.Property(x => x.PagarmeChargeId)
+                .HasColumnName("pagarme_charge_id");
+
+            builder.Property(x => x.CancelAtPeriodEnd)
+                .HasColumnName("cancel_at_period_end");
+
+            builder.Property(x => x.CancellationRequestedAt)
+                .HasColumnName("cancellation_requested_at");
+
+            builder.Property(x => x.CancellationJobId)
+                .HasColumnName("cancellation_job_id");
+
+            builder.Property(x => x.CancellationScheduledFor)
+                .HasColumnName("cancellation_screduled_for");
+                
             // Relationships
             builder.HasOne(x => x.User)
                 .WithMany(u => u.Subscriptions)

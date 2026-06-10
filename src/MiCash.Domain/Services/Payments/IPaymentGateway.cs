@@ -5,7 +5,6 @@ namespace MiCash.Domain.Services.Payments
 {
     public interface IPaymentGateway
     {
-        Task<string> CreateCustomerAsync ( User user , CancellationToken cancellationToken );
 
         Task<CreateCheckoutResult> CreateSubscriptionCheckoutAsync ( User user , Plan plan ,CancellationToken cancellationToken );
 

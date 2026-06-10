@@ -34,6 +34,11 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             return await _dbContext.Users.FirstAsync(user => user.Id == id);
         }
 
+        public async Task<User?> GetByIdAsync ( long userId , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        }
+
         public async Task<User?> GetByUserIdentifier ( Guid userIdentifier )
         {
             return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(user => user.UserIdentifier == userIdentifier);

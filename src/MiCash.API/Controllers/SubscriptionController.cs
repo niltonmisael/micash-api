@@ -1,8 +1,10 @@
-﻿using MiCash.Application.UseCases.Subscriptions.Create;
-using MiCash.Application.UseCases.Subscriptions.CreateCheckout;
+﻿using MiCash.Application.UseCases.Checkout;
+using MiCash.Application.UseCases.Subscriptions.Cancel;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
-using MiCash.Communication.Requests.Subscriptions;
+using MiCash.Application.UseCases.Subscriptions.Reactivate;
+using MiCash.Communication.Requests.Checkout;
 using MiCash.Communication.Responses;
+using MiCash.Communication.Responses.Checkout;
 using MiCash.Communication.Responses.Subscriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,19 +15,6 @@ namespace MiCash.API.Controllers
     [ApiController]
     public class SubscriptionController : ControllerBase
     {
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateSubscriptions (
-            [FromServices] ICreateSubscriptionUseCase useCase,
-            [FromBody] RequestCreateSubscriptionJson request,
-            CancellationToken cancellationToken)
-        {
-            await useCase.ExecuteAsync(request, cancellationToken);
-
-            return Created(string.Empty, null);
-        }
 
         [Authorize]
         [HttpGet("current")]
@@ -36,30 +25,36 @@ namespace MiCash.API.Controllers
         {
             var response = await useCase.ExecuteAsync(cancellationToken);
 
-            if (response is null ) {
-
-                return Ok(new ResponseCurrentSubscriptionJson
-                {
-                    PlanName = "Free" ,
-                    Status = "Free"
-                });
-            }
-
             return Ok(response);
         }
 
         [Authorize]
-        [HttpPost("checkout")]
-        [ProducesResponseType(typeof(ResponseSubscriptionCheckoutJson) , StatusCodes.Status200OK)]
+        [HttpDelete("cancel")]
+        [ProducesResponseType(typeof(ResponseCheckoutJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CreateCheckout (
-            [FromServices] ICreateSubscriptionCheckoutUseCase useCase ,
-            [FromBody] RequestCreateSubscriptionCheckoutJson request ,
+        public async Task<IActionResult> CancelSubscription (
+            [FromServices] ICancelSubscriptionUseCase useCase ,
             CancellationToken cancellationToken )
         {
-            var response = await useCase.ExecuteAsync( request , cancellationToken);
+            await useCase.ExecuteAsync(cancellationToken);
 
-            return Ok(response);
+            return Ok();
         }
+
+        [Authorize]
+        [HttpPost("reactivate")]
+        [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> Reactivate (
+            [FromServices] IReactivateSubscriptionUseCase useCase ,
+            CancellationToken cancellationToken )
+        {
+            await useCase.ExecuteAsync(
+                cancellationToken);
+
+            return NoContent();
+        }
+
     }
 }

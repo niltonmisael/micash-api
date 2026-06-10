@@ -3,18 +3,25 @@ using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Repositories.Users;
+using MiCash.Domain.Repositories.WebHook;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
+using MiCash.Domain.Security.WebHook;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Domain.Services.Payments;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Security.Tokens;
+using MiCash.Infrastructure.Security.WebHook;
 using MiCash.Infrastructure.Services.Cache.Redis;
+using MiCash.Infrastructure.Services.Jobs;
 using MiCash.Infrastructure.Services.LoggedUser;
 using MiCash.Infrastructure.Services.Payments;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +72,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<ISubscriptionsReadOnlyRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionsUpdateOnlyRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionsWriteOnlyRepository, SubscriptionRepository>();
+            services.AddScoped<IWebhookAuthenticator ,WebhookAuthenticator>();
+            services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
+            services.AddScoped<IBackgroundJobService ,HangfireBackgroundJobService>();
+            services.AddScoped<IProcessedWebhookRepository, ProcessedWebhookRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

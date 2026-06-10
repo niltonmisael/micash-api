@@ -13,30 +13,64 @@ namespace MiCash.Application.UseCases.Subscriptions.GetCurrent
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
 
         public GetCurrentSubscriptionUseCase (
-            ILoggedUser loggedUser,
-            ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository)
+            ILoggedUser loggedUser ,
+            ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository )
         {
             _loggedUser = loggedUser;
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
         }
-        public async Task<ResponseCurrentSubscriptionJson> ExecuteAsync ( CancellationToken cancellationToken )
+
+        public async Task<ResponseCurrentSubscriptionJson> ExecuteAsync (
+            CancellationToken cancellationToken )
         {
-            var loggedUser = await _loggedUser.Get();
+            var user =
+                await _loggedUser.Get();
 
             var subscription =
-                await _subscriptionsReadOnlyRepository.GetCurrentByUserIdAsync(loggedUser.Id, cancellationToken);
+                await _subscriptionsReadOnlyRepository
+                    .GetCurrentByUserIdAsync(
+                        user.Id ,
+                        cancellationToken);
 
             if ( subscription is null ) {
-                return null;
+                return new ResponseCurrentSubscriptionJson
+                {
+                    PlanName = "Free" ,
+                    Status = 0 ,
+                    StatusDescription = "Free"
+                };
             }
 
             return new ResponseCurrentSubscriptionJson
             {
-                Id = subscription.Id ,
-                PlanName = subscription.Plan.Name ,
-                Price = subscription.Plan.Price ,
-                Status = subscription.Status.ToString() ,
-                NextBillingDate = subscription.NextBillingDate
+                PlanId = subscription.PlanId ,
+
+                PlanName =
+                    subscription.Plan.Name ,
+
+                Status =
+                    ( int ) subscription.Status ,
+
+                StatusDescription =
+                    subscription.Status.ToString() ,
+
+                CancelAtPeriodEnd =
+                    subscription.CancelAtPeriodEnd ,
+
+                NextBillingDate =
+                    subscription.NextBillingDate ,
+
+                EndsAt =
+                    subscription.EndsAt ,
+
+                CancellationRequestedAt =
+                    subscription.CancellationRequestedAt ,
+
+                CancellationScheduledFor =
+                    subscription.CancellationScheduledFor ,
+
+                Price =
+                    subscription.Plan.Price
             };
         }
     }

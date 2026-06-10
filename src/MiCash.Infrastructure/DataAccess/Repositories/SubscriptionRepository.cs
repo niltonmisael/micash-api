@@ -20,11 +20,20 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             await _dbContext.Subscriptions.AddAsync(subscription , cancellationToken);
         }
 
+        public async Task<bool> ExistsByPagarmeSubscriptionIdAsync ( string subscriptionId , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Subscriptions
+                .AnyAsync(x => x.PagarmeSubscriptionId == subscriptionId ,cancellationToken);
+        }
+
         public async Task<Subscription?> GetActiveByUserIdAsync ( long userId , CancellationToken cancellationToken )
         {
             return await _dbContext.Subscriptions
-                .AsNoTracking() 
-                .FirstOrDefaultAsync(s => s.UserId == userId && s.Status == SubscriptionStatus.Active , cancellationToken);
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.Status == SubscriptionStatus.Active)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<Subscription?> GetByIdAsync ( long id , CancellationToken cancellationToken )
@@ -32,6 +41,11 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             return await _dbContext.Subscriptions
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        }
+
+        public async Task<Subscription?> GetByPagarmeSubscriptionIdAsync ( string subscriptionId , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Subscriptions.FirstOrDefaultAsync(s => s.PagarmeSubscriptionId == subscriptionId , cancellationToken);
         }
 
         public async Task<Subscription?> GetCurrentByUserIdAsync ( long userId , CancellationToken cancellationToken )

@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using MiCash.API.Extensions;
 using MiCash.API.Filters;
 using MiCash.API.Middleware;
@@ -64,6 +66,17 @@ builder.Services.AddApplication();
 builder.Services.AddHttpClient<IPaymentGateway , PagarMeService>();
 builder.Services.Configure<PagarMeSettings>(
     builder.Configuration.GetSection("PagarMe"));
+builder.Services.Configure<WebhookSettings>(
+    builder.Configuration.GetSection("WebhookSettings"));
+
+builder.Services.AddHangfire(config => {
+    config.UsePostgreSqlStorage(options => {
+        options.UseNpgsqlConnection(
+            builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
+});
+
+builder.Services.AddHangfireServer();
 
 var allowedOrigins =
     builder.Configuration
@@ -113,6 +126,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseHangfireDashboard("/hangfire");
 }
 app.UseSerilogRequestLogging();
 app.UseMiddleware<CultureMiddleware>();

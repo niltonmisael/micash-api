@@ -1,4 +1,5 @@
 ﻿using MiCash.Application.AutoMapper;
+using MiCash.Application.Jobs.Subscriptions;
 using MiCash.Application.UseCases.Auth.Login;
 using MiCash.Application.UseCases.Auth.Logout;
 using MiCash.Application.UseCases.Categories.Create;
@@ -6,6 +7,7 @@ using MiCash.Application.UseCases.Categories.GetAll;
 using MiCash.Application.UseCases.Categories.GetById;
 using MiCash.Application.UseCases.Categories.Inactivate;
 using MiCash.Application.UseCases.Categories.Update;
+using MiCash.Application.UseCases.Checkout;
 using MiCash.Application.UseCases.Dashboard.GetExpensesByCategory;
 using MiCash.Application.UseCases.Dashboards.ExpensesByCategory;
 using MiCash.Application.UseCases.Dashboards.LatestExpenses;
@@ -25,14 +27,16 @@ using MiCash.Application.UseCases.Login.Logout;
 using MiCash.Application.UseCases.Login.Refresh;
 using MiCash.Application.UseCases.Plans.GetAll;
 using MiCash.Application.UseCases.Plans.GetById;
-using MiCash.Application.UseCases.Subscriptions.Create;
-using MiCash.Application.UseCases.Subscriptions.CreateCheckout;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
+using MiCash.Application.UseCases.Subscriptions.Reactivate;
 using MiCash.Application.UseCases.Users.ChangePassword;
 using MiCash.Application.UseCases.Users.Delete;
 using MiCash.Application.UseCases.Users.Profile;
 using MiCash.Application.UseCases.Users.Register;
 using MiCash.Application.UseCases.Users.Update;
+using MiCash.Application.UseCases.WebHook;
+using MiCash.Application.UseCases.WebHook.Handlers;
+using MiCash.Domain.Services.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -84,9 +88,15 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetLatestExpensesUseCase , GetLatestExpensesUseCase>();
             services.AddScoped<IGetAllPlansUseCase , GetAllPlansUseCase>();
             services.AddScoped<IGetPlanByIdUseCase , GetPlanByIdUseCase>();
-            services.AddScoped<ICreateSubscriptionUseCase , CreateSubscriptionUseCase>();
             services.AddScoped<IGetCurrentSubscriptionUseCase , GetCurrentSubscriptionUseCase>();
-            services.AddScoped<ICreateSubscriptionCheckoutUseCase , CreateSubscriptionCheckoutUseCase>();
+            services.AddScoped<ICreateCheckoutUseCase, CreateCheckoutUseCase>();
+            services.AddScoped<IPagarMeWebhookHandler , SubscriptionCreatedHandler>();
+            services.AddScoped<IPagarMeWebhookHandler , SubscriptionCanceledHandler>();
+            services.AddScoped<IPagarMeWebhookHandler , ChargePaidHandler>();
+            services.AddScoped<IPagarMeWebhookHandler , ChargePaymentFailedHandler>();
+            services.AddScoped<IProcessPagarMeWebhookUseCase , ProcessPagarMeWebhookUseCase>();
+            services.AddScoped<ISubscriptionCancellationJob ,SubscriptionCancellationJob>();
+            services.AddScoped<IReactivateSubscriptionUseCase, ReactivateSubscriptionUseCase>();
         }
     }
 }

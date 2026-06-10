@@ -5,6 +5,7 @@ namespace MiCash.Domain.Repositories.Users
     public interface IUserReadOnlyRepository
     {
         Task<bool> ExistActiveUserWithEmail(string email);
+        Task<User?> GetByIdAsync ( long userId , CancellationToken cancellationToken );
         Task<User?> GetByUserIdentifier ( Guid userIdentifier );
         Task<User?> GetUserByEmail(string email);
     }

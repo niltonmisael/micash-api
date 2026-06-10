@@ -241,6 +241,15 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Subscription already has a scheduled cancellation..
+        /// </summary>
+        public static string SUBSCRIPTION_ALREADY_HAS_A_SCHEDULED_CANCELLATION {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_ALREADY_HAS_A_SCHEDULED_CANCELLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Subscription not found.
         /// </summary>
         public static string SUBSCRIPTION_NOT_FOUND {
@@ -255,6 +264,15 @@ namespace MiCash.Exception {
         public static string TAG_TYPE_NOT_SUPPORTED {
             get {
                 return ResourceManager.GetString("TAG_TYPE_NOT_SUPPORTED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This subscription does not have a scheduled cancellation option..
+        /// </summary>
+        public static string THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION {
+            get {
+                return ResourceManager.GetString("THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION", resourceCulture);
             }
         }
         

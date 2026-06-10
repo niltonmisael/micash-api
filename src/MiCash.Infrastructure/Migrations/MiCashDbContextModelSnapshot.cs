@@ -203,6 +203,52 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("incomes", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.PaymentLink", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CheckoutUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("checkout_url");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("OrderCode")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("order_code");
+
+                    b.Property<string>("PagarmePaymentLinkId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("pagarme_payment_link_id");
+
+                    b.Property<long>("PlanId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("plan_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("payment_link", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
                 {
                     b.Property<long>("Id")
@@ -240,6 +286,49 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("plans", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.ProcessedWebhook", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("boolean")
+                        .HasColumnName("success");
+
+                    b.Property<string>("WebhookId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("webhook_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WebhookId");
+
+                    b.ToTable("processed_webhook", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Subscription", b =>
                 {
                     b.Property<long>("Id")
@@ -248,6 +337,22 @@ namespace MiCash.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("CancelAtPeriodEnd")
+                        .HasColumnType("boolean")
+                        .HasColumnName("cancel_at_period_end");
+
+                    b.Property<string>("CancellationJobId")
+                        .HasColumnType("text")
+                        .HasColumnName("cancellation_job_id");
+
+                    b.Property<DateTime?>("CancellationRequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancellation_requested_at");
+
+                    b.Property<DateTime?>("CancellationScheduledFor")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancellation_screduled_for");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -260,6 +365,14 @@ namespace MiCash.Infrastructure.Migrations
                     b.Property<DateTime?>("NextBillingDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_billing_date");
+
+                    b.Property<string>("PagarmeChargeId")
+                        .HasColumnType("text")
+                        .HasColumnName("pagarme_charge_id");
+
+                    b.Property<string>("PagarmeCustomerId")
+                        .HasColumnType("text")
+                        .HasColumnName("pagarme_customer_id");
 
                     b.Property<string>("PagarmeSubscriptionId")
                         .HasColumnType("text")
