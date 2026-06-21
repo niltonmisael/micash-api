@@ -29,4 +29,23 @@
         int page ,
         int pageSize )
         => $"financial-goals-history:{userId}:{page}:{pageSize}";
+
+    public static string FinancialInsights (
+        long userId ,
+        int month ,
+        int year )
+        => $"financial-insights:{userId}:{year}:{month}";
+    
+    public static string FinancialGoalsProgress (
+        long userId ,
+        int year ,
+        int month )
+        => $"financial-goals:progress:{userId}:{year}:{month}";
+
+    public static string FinancialGoalsAlerts (
+        long userId ,
+        int month ,
+        int year )
+        => $"financial-goals-alerts:{userId}:{year}:{month}";
+
 }

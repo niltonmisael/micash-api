@@ -5,8 +5,10 @@ using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception.ExceptionBase;
+using PdfSharp.Drawing;
 
 namespace MiCash.Application.UseCases.Incomes.Register
 {
@@ -16,20 +18,20 @@ namespace MiCash.Application.UseCases.Incomes.Register
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
         private readonly IMapper _mapper;
-        private readonly IRedisCacheService _redisCacheService;
+        private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
 
         public RegisterIncomeUseCase (
             IIncomesWriteOnlyRepository incomesWriteOnlyRepository,
             IUnitOfWork unitOfWork,
             ILoggedUser loggedUser,
             IMapper mapper,
-            IRedisCacheService redisCacheService)
+            IFinancialCacheInvalidator financialCacheInvalidator)
         {
             _incomesWriteOnlyRepository = incomesWriteOnlyRepository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
             _mapper = mapper;
-            _redisCacheService = redisCacheService;
+            _financialCacheInvalidator = financialCacheInvalidator;
         }
         public async Task<ResponseRegisteredIncomeJson> Execute ( RequestIncomeJson request , CancellationToken cancellationToken )
         {
@@ -44,16 +46,11 @@ namespace MiCash.Application.UseCases.Incomes.Register
             await _incomesWriteOnlyRepository.Add(income , cancellationToken);
             await _unitOfWork.Commit(cancellationToken);
 
-            var cacheKey =
-                $"dashboard:monthly-summary:{loggedUser.Id}:{income.ReceivedAt.Year}:{income.ReceivedAt.Month}";
-
-            await _redisCacheService.RemoveAsync(cacheKey);
-
-            await _redisCacheService.RemoveAsync(
-                CacheKeys.ExpensesByCategory(
-                    loggedUser.Id ,
-                    income.ReceivedAt.Year ,
-                    income.ReceivedAt.Month));
+            await _financialCacheInvalidator
+                .InvalidateMonthAsync(
+                loggedUser.Id ,
+                income.ReceivedAt.Month ,
+                income.ReceivedAt.Year);
 
             return _mapper.Map<ResponseRegisteredIncomeJson>(income);
         }

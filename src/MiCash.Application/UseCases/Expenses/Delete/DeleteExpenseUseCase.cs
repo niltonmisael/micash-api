@@ -1,6 +1,7 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -13,19 +14,19 @@ namespace MiCash.Application.UseCases.Expenses.Delete
         private readonly IExpensesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
-        private readonly IRedisCacheService _cacheService;
+        private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
         public DeleteExpenseUseCase (
             IExpensesWriteOnlyRepository repository, 
             IUnitOfWork unitOfWork, 
             ILoggedUser loggedUser, 
             IExpensesReadOnlyRepository expensesReadOnlyRepository,
-            IRedisCacheService cacheService)
+            IFinancialCacheInvalidator financialCacheInvalidator)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
             _expensesReadOnlyRepository = expensesReadOnlyRepository;
-            _cacheService = cacheService;
+            _financialCacheInvalidator = financialCacheInvalidator;
         }
         public async Task Execute(long id, CancellationToken cancellationToken)
         {
@@ -41,16 +42,11 @@ namespace MiCash.Application.UseCases.Expenses.Delete
 
             await _unitOfWork.Commit(cancellationToken);
 
-            var cacheKey =
-                $"dashboard:monthly-summary:{loggedUser.Id}:{expense.ExpenseDate.Year}:{expense.ExpenseDate.Month}";
-
-            await _cacheService.RemoveAsync(cacheKey);
-
-            await _cacheService.RemoveAsync(
-                CacheKeys.ExpensesByCategory(
-                    loggedUser.Id ,
-                    expense.ExpenseDate.Year ,
-                    expense.ExpenseDate.Month));
+            await _financialCacheInvalidator
+                .InvalidateMonthAsync(
+                loggedUser.Id ,
+                expense.ExpenseDate.Month ,
+                expense.ExpenseDate.Year);
 
         }
     }

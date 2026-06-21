@@ -44,6 +44,9 @@ using MiCash.Application.UseCases.Users.Register;
 using MiCash.Application.UseCases.Users.Update;
 using MiCash.Application.UseCases.WebHook;
 using MiCash.Application.UseCases.WebHook.Handlers;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
+using MiCash.Domain.Services.FinancialGoals;
+using MiCash.Domain.Services.FinancialInsights;
 using MiCash.Domain.Services.Jobs;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -112,6 +115,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetFinancialGoalByPeriodUseCase , GetFinancialGoalByPeriodUseCase>();
             services.AddScoped<IGetFinancialGoalsHistoryUseCase, GetFinancialGoalsHistoryUseCase>();
             services.AddScoped<IUpdateFinancialGoalUseCase,  UpdateFinancialGoalUseCase>();
+            services.AddScoped<IFinancialGoalCalculator , FinancialGoalCalculator>();
+            services.AddScoped<IFinancialInsightAnalyzer ,FinancialInsightAnalyzer>();
+            services.AddScoped<IFinancialCacheInvalidator ,FinancialCacheInvalidator>();
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using MiCash.Application.UseCases.FinancialGols.Copy;
+﻿using MiCash.Application.UseCases.FinancialGols.Alert;
+using MiCash.Application.UseCases.FinancialGols.Copy;
 using MiCash.Application.UseCases.FinancialGols.Delete;
 using MiCash.Application.UseCases.FinancialGols.GetById;
 using MiCash.Application.UseCases.FinancialGols.GetByPeriod;
 using MiCash.Application.UseCases.FinancialGols.History;
+using MiCash.Application.UseCases.FinancialGols.Progress;
 using MiCash.Application.UseCases.FinancialGols.Register;
 using MiCash.Application.UseCases.FinancialGols.Update;
 using MiCash.Communication.Pagination;
@@ -163,6 +165,42 @@ namespace MiCash.API.Controllers
                 cancellationToken);
 
             return NoContent();
+        }
+
+        [HttpGet("progress")]
+        [ProducesResponseType(
+            typeof(ResponseFinancialGoalsProgressJson) ,
+            StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProgress (
+            [FromServices] IGetFinancialGoalsProgressUseCase useCase ,
+            [FromQuery] int month ,
+            [FromQuery] int year ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(
+                month ,
+                year ,
+                cancellationToken);
+
+            return Ok(response);
+        }
+
+        [HttpGet("alerts")]
+        [ProducesResponseType(
+            typeof(ResponseFinancialGoalsAlertsJson) ,
+            StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAlerts (
+            [FromServices] IGetFinancialGoalsAlertsUseCase useCase ,
+            [FromQuery] int month ,
+            [FromQuery] int year ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(
+                month ,
+                year ,
+                cancellationToken);
+
+            return Ok(response);
         }
     }
 }

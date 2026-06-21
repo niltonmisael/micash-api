@@ -3,6 +3,7 @@ using MiCash.Communication.Requests;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -15,49 +16,61 @@ namespace MiCash.Application.UseCases.Expenses.Update
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExpensesUpdateOnlyRepository _repository;
         private readonly ILoggedUser _loggedUser;
-        private readonly IRedisCacheService _cacheService;
+        private readonly IFinancialCacheInvalidator _financialCacheInvalidator ;
 
         public UpdateExpenseUseCase (
             IMapper mapper, 
             IUnitOfWork unitOfWork, 
             IExpensesUpdateOnlyRepository repository, 
             ILoggedUser loggedUser,
-            IRedisCacheService cacheService)
+            IFinancialCacheInvalidator financialCacheInvalidator)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _repository = repository;
             _loggedUser = loggedUser;
-            _cacheService = cacheService;
+            _financialCacheInvalidator = financialCacheInvalidator;
         }
         public async Task Execute (long id, RequestExpenseJson request, CancellationToken cancellationToken)
         {
             Validate(request);
 
-            var loggedUser = await _loggedUser.Get();
+            var user = await _loggedUser.Get();
 
-            var expense = await _repository.GetById(loggedUser, id, cancellationToken);
+            var expense = await _repository.GetById(
+                user ,
+                id ,
+                cancellationToken);
 
-            if ( expense == null  ) {
-                throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);   
+            if ( expense is null ) {
+                throw new NotFoundException(
+                    ResourceErrorMessages.EXPENSE_NOT_FOUND);
             }
 
-            _mapper.Map(request, expense);
+            var oldExpenseDate = expense.ExpenseDate;
 
-            _repository.Update(expense, cancellationToken);
+            _mapper.Map(request , expense);
+
+            _repository.Update(expense , cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
 
-            var cacheKey =
-                $"dashboard:monthly-summary:{loggedUser.Id}:{expense.ExpenseDate.Year}:{expense.ExpenseDate.Month}";
+            await _financialCacheInvalidator
+                .InvalidateMonthAsync(
+                    user.Id ,
+                    oldExpenseDate.Month ,
+                    oldExpenseDate.Year);
 
-            await _cacheService.RemoveAsync(cacheKey);
+            if ( oldExpenseDate.Month != expense.ExpenseDate.Month ||
+                oldExpenseDate.Year != expense.ExpenseDate.Year ) {
 
-            await _cacheService.RemoveAsync(
-                CacheKeys.ExpensesByCategory(
-                    loggedUser.Id ,
-                    expense.ExpenseDate.Year ,
-                    expense.ExpenseDate.Month));
+                await _financialCacheInvalidator
+                    .InvalidateMonthAsync(
+                        user.Id ,
+                        expense.ExpenseDate.Month ,
+                        expense.ExpenseDate.Year);
+            }
+
         }
 
         public void Validate ( RequestExpenseJson request ) {

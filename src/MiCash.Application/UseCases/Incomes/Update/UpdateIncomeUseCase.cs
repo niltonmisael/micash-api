@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Requests.Incomes;
-using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
-using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -17,7 +16,7 @@ namespace MiCash.Application.UseCases.Incomes.Update
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
-        private readonly IRedisCacheService _cacheService;
+        private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
 
         public UpdateIncomeUseCase (
             IIncomesUpdateOnlyRepository incomesUpdateOnlyRepository ,
@@ -25,43 +24,60 @@ namespace MiCash.Application.UseCases.Incomes.Update
             IUnitOfWork unitOfWork ,
             IMapper mapper ,
             ILoggedUser loggedUser ,
-            IRedisCacheService cacheService )
+            IFinancialCacheInvalidator financialCacheInvalidator )
         {
             _incomesUpdateOnlyRepository = incomesUpdateOnlyRepository;
             _incomesReadOnlyRepository = incomesReadOnlyRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _loggedUser = loggedUser;
-            _cacheService = cacheService;
+            _financialCacheInvalidator = financialCacheInvalidator;
         }
-        public async Task Execute ( long id , RequestIncomeJson request , CancellationToken cancellationToken )
+        public async Task Execute (
+            long id ,
+            RequestIncomeJson request ,
+            CancellationToken cancellationToken )
         {
             Validate(request);
 
-            var loggedUser = await _loggedUser.Get();
+            var user = await _loggedUser.Get();
 
-            var income = await _incomesReadOnlyRepository.GetByIdAsync(loggedUser.Id, id , cancellationToken);
+            var income = await _incomesReadOnlyRepository
+                .GetByIdAsync(
+                    user.Id ,
+                    id ,
+                    cancellationToken);
 
-            if( income == null ) {
-                throw new NotFoundException(ResourceErrorMessages.INCOME_NOT_FOUND);
+            if ( income is null ) {
+                throw new NotFoundException(
+                    ResourceErrorMessages.INCOME_NOT_FOUND);
             }
+
+            var oldReceivedAt = income.ReceivedAt;
 
             _mapper.Map(request , income);
 
-            await _incomesUpdateOnlyRepository.UpdateAsync(income , cancellationToken);
+            await _incomesUpdateOnlyRepository
+                .UpdateAsync(
+                    income ,
+                    cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
 
-            var cacheKey =
-                $"dashboard:monthly-summary:{loggedUser.Id}:{income.ReceivedAt.Year}:{income.ReceivedAt.Month}";
+            await _financialCacheInvalidator
+                .InvalidateMonthAsync(
+                    user.Id ,
+                    oldReceivedAt.Month ,
+                    oldReceivedAt.Year);
 
-            await _cacheService.RemoveAsync(cacheKey);
-
-            await _cacheService.RemoveAsync(
-                CacheKeys.ExpensesByCategory(
-                    loggedUser.Id ,
-                    income.ReceivedAt.Year ,
-                    income.ReceivedAt.Month));
+            if ( oldReceivedAt.Month != income.ReceivedAt.Month ||
+                oldReceivedAt.Year != income.ReceivedAt.Year ) {
+                await _financialCacheInvalidator
+                    .InvalidateMonthAsync(
+                        user.Id ,
+                        income.ReceivedAt.Month ,
+                        income.ReceivedAt.Year);
+            }
         }
 
         private void Validate ( RequestIncomeJson request )

@@ -4,6 +4,8 @@ using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.FinancialGoals;
+using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -17,19 +19,22 @@ namespace MiCash.Application.UseCases.FinancialGols.Register
         private readonly ILoggedUser _loggedUser;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
 
         public RegisterFinancialGoalUseCase (
             IFinancialGoalWriteOnlyRepository financialGoalWriteOnlyRepository,
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository,
             ILoggedUser loggedUser,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IFinancialCacheInvalidator financialCacheInvalidator)
         {
             _financialGoalWriteOnlyRepository = financialGoalWriteOnlyRepository;
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _loggedUser = loggedUser;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _financialCacheInvalidator = financialCacheInvalidator;
         }
 
         public async Task<ResponseRegisteredFinancialGoalJson> Execute ( 
@@ -52,6 +57,17 @@ namespace MiCash.Application.UseCases.FinancialGols.Register
             await _financialGoalWriteOnlyRepository.AddAsync(financialGoal , cancellationToken);
 
             await _unitOfWork.Commit( cancellationToken );
+
+            await _financialCacheInvalidator
+                .InvalidateMonthAsync(
+                user.Id ,
+                financialGoal.Month ,
+                financialGoal.Year);
+
+            await _financialCacheInvalidator
+                .InvalidateFinancialGoalAsync(
+                user.Id ,
+                financialGoal.Id);
 
             return _mapper.Map<ResponseRegisteredFinancialGoalJson>(financialGoal);
         }

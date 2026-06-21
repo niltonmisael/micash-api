@@ -62,5 +62,24 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IReadOnlyCollection<Expense>> GetByPeriodAsync (
+            long userId ,
+            int month ,
+            int year ,
+            CancellationToken cancellationToken )
+        {
+            var startDate = new DateTime(year , month , 1);
+
+            var endDate = startDate.AddMonths(1);
+
+            return await _dbContext
+                .Expenses
+                .AsNoTracking()
+                .Where(expense =>
+                    expense.UserId == userId &&
+                    expense.ExpenseDate >= startDate &&
+                    expense.ExpenseDate < endDate)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
