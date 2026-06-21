@@ -30,6 +30,7 @@ builder.Services.AddRouting(config => {
 builder.Services.AddEndpointsApiExplorer(); 
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(config => {
+    config.EnableAnnotations();
     config.AddSecurityDefinition("Bearer" , new OpenApiSecurityScheme
     {
         Name = "Authorization" ,
@@ -38,7 +39,7 @@ builder.Services.AddSwaggerGen(config => {
                       Example: 'Bearer 1234abcdf'",
         In = ParameterLocation.Header,
         Scheme = "Bearer",
-        Type = SecuritySchemeType.ApiKey
+        Type = SecuritySchemeType.ApiKey,
     });
 
     config.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -60,6 +61,7 @@ builder.Services.AddSwaggerGen(config => {
     });
 });
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
+builder.Services.AddScoped<RequireActiveSubscriptionFilter>();
 builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();

@@ -2,6 +2,7 @@
 using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
@@ -76,6 +77,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
             services.AddScoped<IBackgroundJobService ,HangfireBackgroundJobService>();
             services.AddScoped<IProcessedWebhookRepository, ProcessedWebhookRepository>();
+            services.AddScoped<IFinancialGoalReadOnlyRepository, FinancialGoalRepository>();
+            services.AddScoped<IFinancialGoalWriteOnlyRepository, FinancialGoalRepository>();
+            services.AddScoped<IFinancialGoalUpdateOnlyRepository, FinancialGoalRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

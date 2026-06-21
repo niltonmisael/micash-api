@@ -21,5 +21,7 @@
         public User User { get; set; } = default!;
 
         public ICollection<Expense> Expenses { get; set; } = [];
+
+        public ICollection<FinancialGoal> FinancialGoals { get; set; } = [];
     }
 }

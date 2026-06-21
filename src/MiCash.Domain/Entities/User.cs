@@ -28,5 +28,7 @@
 
         public ICollection<Subscription> Subscriptions { get; set; } = [];
 
+        public ICollection<FinancialGoal> FinancialGoals { get; set; } = [];
+
     }
 }

@@ -143,6 +143,57 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("expenses", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.FinancialGoal", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("integer")
+                        .HasColumnName("month");
+
+                    b.Property<decimal>("TargetAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("target_amount");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer")
+                        .HasColumnName("year");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Month", "Year");
+
+                    b.HasIndex("UserId", "CategoryId", "Month", "Year")
+                        .IsUnique();
+
+                    b.ToTable("financial_goal", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Income", b =>
                 {
                     b.Property<long>("Id")
@@ -506,6 +557,25 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.FinancialGoal", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.Category", "Category")
+                        .WithMany("FinancialGoals")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany("FinancialGoals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Income", b =>
                 {
                     b.HasOne("MiCash.Domain.Entities.User", "User")
@@ -540,6 +610,8 @@ namespace MiCash.Infrastructure.Migrations
             modelBuilder.Entity("MiCash.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Expenses");
+
+                    b.Navigation("FinancialGoals");
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
@@ -552,6 +624,8 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Expenses");
+
+                    b.Navigation("FinancialGoals");
 
                     b.Navigation("Incomes");
 

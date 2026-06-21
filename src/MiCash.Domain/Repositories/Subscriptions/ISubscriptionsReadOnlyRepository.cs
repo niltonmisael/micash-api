@@ -9,6 +9,7 @@ namespace MiCash.Domain.Repositories.Subscriptions
         Task<Subscription?> GetCurrentByUserIdAsync ( long userId, CancellationToken cancellationToken );
         Task<Subscription?> GetByPagarmeSubscriptionIdAsync ( string subscriptionId , CancellationToken cancellationToken );
         Task<bool> ExistsByPagarmeSubscriptionIdAsync ( string subscriptionId ,CancellationToken cancellationToken );
+        Task<List<Subscription>> GetHistoryByUserIdAsync (long userId , CancellationToken cancellationToken );
 
     }
 }

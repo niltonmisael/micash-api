@@ -201,4 +201,28 @@
   <data name="THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION" xml:space="preserve">
     <value>Esta assinatura não possui cancelamento agendado.</value>
   </data>
+  <data name="TARGET_AMOUNT_IS_REQUIRED" xml:space="preserve">
+    <value>A meta de valor é obrigatória.</value>
+  </data>
+  <data name="TARGET_AMOUNT_MUST_BE_GREATER_THAN_ZERO" xml:space="preserve">
+    <value>A meta de valor deve ser maior que zero.</value>
+  </data>
+  <data name="MONTH_IS_REQUIRED" xml:space="preserve">
+    <value>O mês é obrigatório.</value>
+  </data>
+  <data name="MONTH_INVALID_RANGE" xml:space="preserve">
+    <value>O mês deve estar entre 1 e 12.</value>
+  </data>
+  <data name="YEAR_IS_REQUIRED" xml:space="preserve">
+    <value>O ano é obrigatório.</value>
+  </data>
+  <data name="YEAR_LESS_THAN_CURRENT" xml:space="preserve">
+    <value>O ano não pode ser menor que o ano atual.</value>
+  </data>
+  <data name="CATEGORY_MONTHLY_GOAL_DUPLICATED" xml:space="preserve">
+    <value>Já existe uma meta cadastrada para esta categoria neste mês.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_NOT_FOUND" xml:space="preserve">
+    <value>Meta não encontrado</value>
+  </data>
 </root>

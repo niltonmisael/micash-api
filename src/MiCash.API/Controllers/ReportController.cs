@@ -1,4 +1,5 @@
-﻿using MiCash.Application.UseCases.Expenses.Reports.Excel;
+﻿using MiCash.API.Attributes;
+using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace MiCash.API.Controllers
     {
 
         [HttpGet("excel")]
+        [RequireActiveSubscription]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetExcel ( 
@@ -29,6 +31,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("pdf")]
+        [RequireActiveSubscription]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetPdf (

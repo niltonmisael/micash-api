@@ -79,6 +79,15 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a A goal has already been registered for this category this month..
+        /// </summary>
+        public static string CATEGORY_MONTHLY_GOAL_DUPLICATED {
+            get {
+                return ResourceManager.GetString("CATEGORY_MONTHLY_GOAL_DUPLICATED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Category not found.
         /// </summary>
         public static string CATEGORY_NOT_FOUND {
@@ -151,6 +160,15 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Financial goal not found.
+        /// </summary>
+        public static string FINANCIAL_GOAL_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("FINANCIAL_GOAL_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Icon is required.
         /// </summary>
         public static string ICON_REQUIRED {
@@ -192,6 +210,24 @@ namespace MiCash.Exception {
         public static string INVALID_TOKEN {
             get {
                 return ResourceManager.GetString("INVALID_TOKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Month must be between 1 and 12..
+        /// </summary>
+        public static string MONTH_INVALID_RANGE {
+            get {
+                return ResourceManager.GetString("MONTH_INVALID_RANGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Month is required..
+        /// </summary>
+        public static string MONTH_IS_REQUIRED {
+            get {
+                return ResourceManager.GetString("MONTH_IS_REQUIRED", resourceCulture);
             }
         }
         
@@ -268,6 +304,24 @@ namespace MiCash.Exception {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Target amount is required..
+        /// </summary>
+        public static string TARGET_AMOUNT_IS_REQUIRED {
+            get {
+                return ResourceManager.GetString("TARGET_AMOUNT_IS_REQUIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Target amount must be greater than zero..
+        /// </summary>
+        public static string TARGET_AMOUNT_MUST_BE_GREATER_THAN_ZERO {
+            get {
+                return ResourceManager.GetString("TARGET_AMOUNT_MUST_BE_GREATER_THAN_ZERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a This subscription does not have a scheduled cancellation option..
         /// </summary>
         public static string THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION {
@@ -309,6 +363,24 @@ namespace MiCash.Exception {
         public static string USER_NOT_FOUND {
             get {
                 return ResourceManager.GetString("USER_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Year is required..
+        /// </summary>
+        public static string YEAR_IS_REQUIRED {
+            get {
+                return ResourceManager.GetString("YEAR_IS_REQUIRED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Year cannot be less than the current year..
+        /// </summary>
+        public static string YEAR_LESS_THAN_CURRENT {
+            get {
+                return ResourceManager.GetString("YEAR_LESS_THAN_CURRENT", resourceCulture);
             }
         }
     }

@@ -59,6 +59,15 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                      x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.Pending);
         }
 
+        public async Task<List<Subscription>> GetHistoryByUserIdAsync ( long userId , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Subscriptions
+                .Include(x => x.Plan)
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
         public void Update ( Subscription subscription , CancellationToken cancellationToken )
         {
             _dbContext.Subscriptions.Update(subscription);

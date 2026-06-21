@@ -1,8 +1,7 @@
-﻿using MiCash.Application.UseCases.Checkout;
-using MiCash.Application.UseCases.Subscriptions.Cancel;
+﻿using MiCash.Application.UseCases.Subscriptions.Cancel;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
+using MiCash.Application.UseCases.Subscriptions.History;
 using MiCash.Application.UseCases.Subscriptions.Reactivate;
-using MiCash.Communication.Requests.Checkout;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Checkout;
 using MiCash.Communication.Responses.Subscriptions;
@@ -46,7 +45,7 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Reactivate (
+        public async Task<IActionResult> ReactivateSubscription (
             [FromServices] IReactivateSubscriptionUseCase useCase ,
             CancellationToken cancellationToken )
         {
@@ -54,6 +53,18 @@ namespace MiCash.API.Controllers
                 cancellationToken);
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet("history")]
+        [ProducesResponseType(typeof(ResponseSubscriptionHistoryJson) , StatusCodes.Status200OK)]
+        public async Task<IActionResult> HistorySubscription (
+            [FromServices] ISubscriptionHistoryUseCase useCase ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.ExecuteAsync(cancellationToken);
+
+            return Ok(response);
         }
 
     }

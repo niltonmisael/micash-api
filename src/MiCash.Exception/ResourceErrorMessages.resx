@@ -201,4 +201,28 @@
   <data name="THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION" xml:space="preserve">
     <value>This subscription does not have a scheduled cancellation option.</value>
   </data>
+  <data name="TARGET_AMOUNT_IS_REQUIRED" xml:space="preserve">
+    <value>Target amount is required.</value>
+  </data>
+  <data name="TARGET_AMOUNT_MUST_BE_GREATER_THAN_ZERO" xml:space="preserve">
+    <value>Target amount must be greater than zero.</value>
+  </data>
+  <data name="MONTH_IS_REQUIRED" xml:space="preserve">
+    <value>Month is required.</value>
+  </data>
+  <data name="MONTH_INVALID_RANGE" xml:space="preserve">
+    <value>Month must be between 1 and 12.</value>
+  </data>
+  <data name="YEAR_IS_REQUIRED" xml:space="preserve">
+    <value>Year is required.</value>
+  </data>
+  <data name="YEAR_LESS_THAN_CURRENT" xml:space="preserve">
+    <value>Year cannot be less than the current year.</value>
+  </data>
+  <data name="CATEGORY_MONTHLY_GOAL_DUPLICATED" xml:space="preserve">
+    <value>A goal has already been registered for this category this month.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_NOT_FOUND" xml:space="preserve">
+    <value>Financial goal not found</value>
+  </data>
 </root>

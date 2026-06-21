@@ -19,6 +19,14 @@ using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Application.UseCases.Expenses.Update;
+using MiCash.Application.UseCases.FinancialGoals.Copy;
+using MiCash.Application.UseCases.FinancialGols.Copy;
+using MiCash.Application.UseCases.FinancialGols.Delete;
+using MiCash.Application.UseCases.FinancialGols.GetById;
+using MiCash.Application.UseCases.FinancialGols.GetByPeriod;
+using MiCash.Application.UseCases.FinancialGols.History;
+using MiCash.Application.UseCases.FinancialGols.Register;
+using MiCash.Application.UseCases.FinancialGols.Update;
 using MiCash.Application.UseCases.Incomes.GetAll;
 using MiCash.Application.UseCases.Incomes.GetById;
 using MiCash.Application.UseCases.Incomes.Register;
@@ -97,6 +105,13 @@ namespace MiCash.Infrastructure
             services.AddScoped<IProcessPagarMeWebhookUseCase , ProcessPagarMeWebhookUseCase>();
             services.AddScoped<ISubscriptionCancellationJob ,SubscriptionCancellationJob>();
             services.AddScoped<IReactivateSubscriptionUseCase, ReactivateSubscriptionUseCase>();
+            services.AddScoped<IRegisterFinancialGoalUseCase , RegisterFinancialGoalUseCase>();
+            services.AddScoped<ICopyFinancialGoalsUseCase, CopyFinancialGoalsUseCase>();
+            services.AddScoped<IDeleteFinancialGoalUseCase, DeleteFinancialGoalUseCase>();
+            services.AddScoped<IGetFinancialGoalByIdUseCase , GetFinancialGoalByIdUseCase>();
+            services.AddScoped<IGetFinancialGoalByPeriodUseCase , GetFinancialGoalByPeriodUseCase>();
+            services.AddScoped<IGetFinancialGoalsHistoryUseCase, GetFinancialGoalsHistoryUseCase>();
+            services.AddScoped<IUpdateFinancialGoalUseCase,  UpdateFinancialGoalUseCase>();
         }
     }
 }

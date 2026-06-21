@@ -12,7 +12,7 @@ namespace MiCash.API.Controllers
     public class PlanController : ControllerBase
     {
         [HttpGet]
-        [ProducesResponseType(typeof(ResponsePlansJson),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ResponsePlansJson>),StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseErrorJson),StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAllPlans (
