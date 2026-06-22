@@ -1,5 +1,7 @@
 ﻿using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Repositories.FinancialGoals;
+using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.LoggedUser;
 
 namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
@@ -8,13 +10,16 @@ namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
     {
         private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
         private readonly ILoggedUser _loggedUser;
+        private readonly IRedisCacheService _redisCacheService;
 
         public GetFinancialGoalByPeriodUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository,
-            ILoggedUser loggedUser)
+            ILoggedUser loggedUser,
+            IRedisCacheService redisCacheService)
         {
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _loggedUser = loggedUser;
+            _redisCacheService = redisCacheService;
         }
         public async Task<ResponseFinancialGoalsJson> Execute (
             int month ,
@@ -23,6 +28,16 @@ namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
         {
             var user =
                 await _loggedUser.Get();
+
+            var cacheKey = CacheKeys.FinancialGoalsByPeriod(user.Id, month, year);
+
+            var cached =
+                await _redisCacheService
+                .GetAsync<ResponseFinancialGoalsJson>(cacheKey);
+
+            if ( cached is not null ) {
+                return cached;
+            }
 
             var goals =
                 await _financialGoalReadOnlyRepository
@@ -46,6 +61,11 @@ namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
                     })
                     .ToList()
             };
+
+            await _redisCacheService.SetAsync(
+                cacheKey ,
+                response ,
+                CacheExpiration.FinancialGoals);
 
             return response;
         }

@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Services.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess.Repositories
@@ -17,11 +18,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
              await _dbContext.Expenses.AddAsync(expense, cancellationToken);
 
         }
-        public async Task<List<Expense>> GetAll (User user , CancellationToken cancellationToken )
-        {
-            return await _dbContext.Expenses.AsNoTracking().Where(expense => expense.UserId == user.Id).ToListAsync(cancellationToken);
-        }
-
+        
         async Task<Expense?> IExpensesReadOnlyRepository.GetById ( User user, long id, CancellationToken cancellationToken )
         {
             return await _dbContext.Expenses
@@ -80,6 +77,33 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                     expense.ExpenseDate >= startDate &&
                     expense.ExpenseDate < endDate)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<PagedResult<Expense>> GetAllAsync (
+            long userId ,
+            int page ,
+            int pageSize ,
+            CancellationToken cancellationToken )
+        {
+            var query = _dbContext
+                .Expenses
+                .AsNoTracking()
+                .Where(expense => expense.UserId == userId);
+
+            var totalRecords = await query
+                .CountAsync(cancellationToken);
+
+            var expenses = await query
+                .OrderByDescending(expense => expense.ExpenseDate)
+                .Skip(( page - 1 ) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<Expense>
+            {
+                Data = expenses ,
+                TotalRecords = totalRecords
+            };
         }
     }
 }

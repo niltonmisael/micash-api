@@ -2,6 +2,7 @@
 using MiCash.Communication.Requests.Incomes;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
@@ -17,6 +18,7 @@ namespace MiCash.Application.UseCases.Incomes.Update
         private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
+        private readonly IRedisCacheService _redisCacheService;
 
         public UpdateIncomeUseCase (
             IIncomesUpdateOnlyRepository incomesUpdateOnlyRepository ,
@@ -24,7 +26,8 @@ namespace MiCash.Application.UseCases.Incomes.Update
             IUnitOfWork unitOfWork ,
             IMapper mapper ,
             ILoggedUser loggedUser ,
-            IFinancialCacheInvalidator financialCacheInvalidator )
+            IFinancialCacheInvalidator financialCacheInvalidator ,
+            IRedisCacheService redisCacheService )
         {
             _incomesUpdateOnlyRepository = incomesUpdateOnlyRepository;
             _incomesReadOnlyRepository = incomesReadOnlyRepository;
@@ -32,6 +35,7 @@ namespace MiCash.Application.UseCases.Incomes.Update
             _mapper = mapper;
             _loggedUser = loggedUser;
             _financialCacheInvalidator = financialCacheInvalidator;
+            _redisCacheService = redisCacheService;
         }
         public async Task Execute (
             long id ,
@@ -63,6 +67,11 @@ namespace MiCash.Application.UseCases.Incomes.Update
                     cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.IncomeById(
+                    user.Id ,
+                    income.Id));
 
             await _financialCacheInvalidator
                 .InvalidateMonthAsync(

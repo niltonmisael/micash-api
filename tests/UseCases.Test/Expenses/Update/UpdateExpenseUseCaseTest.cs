@@ -84,8 +84,9 @@ namespace UseCases.Test.Expenses.Update
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
+            var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, cacheService);
+            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, financialInvalidator, cacheService);
         }
     }
 }

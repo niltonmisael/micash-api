@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Services.Pagination;
 using Moq;
 
 namespace CommonTestUtilities.Repositories
@@ -13,9 +14,26 @@ namespace CommonTestUtilities.Repositories
             _repository = new Mock<IExpensesReadOnlyRepository>();
         }
 
-        public ExpenseReadOnlyRepositoryBuilder GetAll (User user, List<Expense> expenses)
+        public ExpenseReadOnlyRepositoryBuilder GetAll (
+            User user ,
+            List<Expense> expenses ,
+            int page = 1 ,
+            int pageSize = 10 )
         {
-            _repository.Setup(repository => repository.GetAll(user, It.IsAny<CancellationToken>())).ReturnsAsync(expenses);
+            var pagedResult = new PagedResult<Expense>
+            {
+                Data = expenses ,
+                TotalRecords = expenses.Count
+            };
+
+            _repository
+                .Setup(repository =>
+                    repository.GetAllAsync(
+                        user.Id ,
+                        page ,
+                        pageSize ,
+                        It.IsAny<CancellationToken>()))
+                .ReturnsAsync(pagedResult);
 
             return this;
         }

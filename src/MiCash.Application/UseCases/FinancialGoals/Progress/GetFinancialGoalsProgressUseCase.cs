@@ -2,6 +2,8 @@
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
+using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.LoggedUser;
 
@@ -14,17 +16,20 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
         private readonly IExpensesReadOnlyRepository _expenseReadOnlyRepository;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialGoalCalculator _financialGoalCalculator;
+        private readonly IRedisCacheService _redisCacheService;
 
         public GetFinancialGoalsProgressUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
             IExpensesReadOnlyRepository expenseReadOnlyRepository ,
             ILoggedUser loggedUser,
-            IFinancialGoalCalculator financialGoalCalculator)
+            IFinancialGoalCalculator financialGoalCalculator ,
+            IRedisCacheService redisCacheService )
         {
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _expenseReadOnlyRepository = expenseReadOnlyRepository;
             _loggedUser = loggedUser;
             _financialGoalCalculator = financialGoalCalculator;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ResponseFinancialGoalsProgressJson> Execute (
@@ -34,21 +39,40 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
         {
             var user = await _loggedUser.Get();
 
-            var goals =
-                await _financialGoalReadOnlyRepository
+            var cacheKey = CacheKeys.FinancialGoalsProgress(
+                user.Id ,
+                month ,
+                year);
+
+            var cached = await _redisCacheService
+                .GetAsync<ResponseFinancialGoalsProgressJson>(cacheKey);
+
+            if ( cached is not null ) {
+                return cached;
+            }
+
+            var goalsTask =
+                _financialGoalReadOnlyRepository
+                .GetByPeriodAsync(
+                    user.Id ,
+                    month ,
+                    year ,
+                    cancellationToken);
+
+            var expensesTask =
+                _expenseReadOnlyRepository
                     .GetByPeriodAsync(
                         user.Id ,
                         month ,
                         year ,
                         cancellationToken);
 
-            var expenses =
-                await _expenseReadOnlyRepository
-                    .GetByPeriodAsync(
-                        user.Id ,
-                        month ,
-                        year ,
-                        cancellationToken);
+            await Task.WhenAll(
+                goalsTask ,
+                expensesTask);
+
+            var goals = await goalsTask;
+            var expenses = await expensesTask;
 
             var expensesByCategory = expenses
                 .GroupBy(expense => expense.CategoryId)
@@ -89,6 +113,14 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
                         StatusDescription = calculation.Status.ToString()
                     });
             }
+
+            await _redisCacheService.SetAsync(
+                CacheKeys.FinancialGoalsProgress(
+                    user.Id ,
+                    month ,
+                    year) ,
+                response ,
+                CacheExpiration.FinancialGoals);
 
             return response;
         }

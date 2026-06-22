@@ -1,4 +1,5 @@
 ﻿using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using Moq;
 
 namespace CommonTestUtilities.Cache
@@ -32,5 +33,7 @@ namespace CommonTestUtilities.Cache
         {
             return _cacheService.Object;
         }
+
+       
     }
 }

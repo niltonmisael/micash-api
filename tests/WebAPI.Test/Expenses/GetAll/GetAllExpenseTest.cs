@@ -25,7 +25,7 @@ namespace WebAPI.Test.Expenses.GetAll
 
             var response = JsonDocument.Parse(body);
 
-            response.RootElement.GetProperty("expenses").EnumerateArray().Should().NotBeNullOrEmpty();
+            response.RootElement.GetProperty("data").EnumerateArray().Should().NotBeNullOrEmpty();
 
 
         }

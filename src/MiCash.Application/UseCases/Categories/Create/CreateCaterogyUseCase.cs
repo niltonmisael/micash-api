@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using MiCash.Communication.Requests.Categories;
+using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
+using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception.ExceptionBase;
 
@@ -13,17 +15,20 @@ namespace MiCash.Application.UseCases.Categories.Create
         private readonly ILoggedUser _loggedUser;
         private readonly ICategoriesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRedisCacheService _redisCacheService;
 
         public CreateCaterogyUseCase (
             IMapper mapper,
             ILoggedUser loggedUser,
             ICategoriesWriteOnlyRepository repository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IRedisCacheService redisCacheService)
         {
             _mapper = mapper;
             _loggedUser = loggedUser;
             _repository = repository;
             _unitOfWork = unitOfWork;
+            _redisCacheService = redisCacheService;
         }
         public async Task CreateCaterogy ( 
             RequestCreateCategoryJson request , 
@@ -38,6 +43,10 @@ namespace MiCash.Application.UseCases.Categories.Create
 
             await _repository.Create(category);
             await _unitOfWork.Commit(cancellationToken);
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.Categories(loggedUser.Id));
+
         }
 
         private void Validate ( RequestCreateCategoryJson request )

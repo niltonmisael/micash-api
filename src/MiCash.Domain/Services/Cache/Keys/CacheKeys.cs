@@ -48,4 +48,25 @@
         int year )
         => $"financial-goals-alerts:{userId}:{year}:{month}";
 
+    public static string ExpenseById (
+        long userId ,
+        long expenseId )
+        => $"expenses:{userId}:{expenseId}";
+
+    public static string IncomeById (
+        long userId ,
+        long incomeId )
+        => $"incomes:{userId}:{incomeId}";
+
+    public static string Categories ( long userId )
+    => $"categories:{userId}";
+
+    public static string CategoryById ( long userId, long categoryId  )
+    => $"categories:{userId}:{categoryId}";
+
+    public static string Plans ()
+    => "plans";
+
+    public static string PlanById (long planId)
+    => $"plans:{planId}";
 }

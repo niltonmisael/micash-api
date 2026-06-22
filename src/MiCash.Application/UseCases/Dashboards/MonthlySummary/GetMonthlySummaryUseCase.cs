@@ -2,6 +2,7 @@
 using MiCash.Communication.Responses.Dashboards;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.LoggedUser;
 
 public class GetMonthlySummaryUseCase
@@ -28,8 +29,10 @@ public class GetMonthlySummaryUseCase
     {
         var user = await _loggedUser.Get();
 
-        var cacheKey =
-            $"dashboard:monthly-summary:{user.Id}:{year}:{month}";
+        var cacheKey = CacheKeys.MonthlySummary(
+            user.Id ,
+            year ,
+            month);
 
         var cached =
             await _redisCacheService.GetAsync<ResponseMonthlySummaryJson>(cacheKey);
@@ -38,21 +41,26 @@ public class GetMonthlySummaryUseCase
             return cached;
         }
 
-        var totalIncome =
-            await _dashboardReadOnlyRepository
+        var totalIncomeTask =
+            _dashboardReadOnlyRepository
             .GetTotalAmountIncomesByMonth(
                 user.Id ,
                 year ,
                 month ,
                 cancellationToken);
 
-        var totalExpense =
-            await _dashboardReadOnlyRepository
+        var totalExpenseTask =
+            _dashboardReadOnlyRepository
                 .GetTotalAmountExpensesByMonth(
                     user.Id ,
                     year ,
                     month ,
                     cancellationToken);
+
+        await Task.WhenAll(totalIncomeTask , totalExpenseTask);
+
+        var totalIncome = await totalIncomeTask;
+        var totalExpense = await totalExpenseTask;
 
         var summary = new ResponseMonthlySummaryJson
         {
@@ -66,7 +74,7 @@ public class GetMonthlySummaryUseCase
         await _redisCacheService.SetAsync(
             cacheKey ,
             summary ,
-            TimeSpan.FromMinutes(10));
+            CacheExpiration.Dashboard);
 
         return summary;
     }

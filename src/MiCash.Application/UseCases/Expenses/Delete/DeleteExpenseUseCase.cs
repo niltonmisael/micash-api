@@ -1,4 +1,5 @@
-﻿using MiCash.Domain.Repositories;
+﻿using MiCash.Domain.Entities;
+using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
@@ -15,18 +16,21 @@ namespace MiCash.Application.UseCases.Expenses.Delete
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
+        private readonly IRedisCacheService _redisCacheService;
         public DeleteExpenseUseCase (
             IExpensesWriteOnlyRepository repository, 
             IUnitOfWork unitOfWork, 
             ILoggedUser loggedUser, 
             IExpensesReadOnlyRepository expensesReadOnlyRepository,
-            IFinancialCacheInvalidator financialCacheInvalidator)
+            IFinancialCacheInvalidator financialCacheInvalidator,
+            IRedisCacheService redisCacheService)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
             _expensesReadOnlyRepository = expensesReadOnlyRepository;
             _financialCacheInvalidator = financialCacheInvalidator;
+            _redisCacheService = redisCacheService;
         }
         public async Task Execute(long id, CancellationToken cancellationToken)
         {
@@ -41,6 +45,12 @@ namespace MiCash.Application.UseCases.Expenses.Delete
             await _repository.Delete(id, cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.ExpenseById(
+                    loggedUser.Id ,
+                    expense.Id));
+
 
             await _financialCacheInvalidator
                 .InvalidateMonthAsync(

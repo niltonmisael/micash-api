@@ -2,10 +2,10 @@
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
-using System.Text.Json;
 
 namespace MiCash.Application.UseCases.FinancialGols.GetById
 {
@@ -27,23 +27,44 @@ namespace MiCash.Application.UseCases.FinancialGols.GetById
             _mapper = mapper;
             _redisCacheService = redisCacheService;
         }
-        public async Task<ResponseFinancialGoalJson> Execute ( long id , CancellationToken cancellationToken )
+        public async Task<ResponseFinancialGoalJson> Execute (
+            long id ,
+            CancellationToken cancellationToken )
         {
             var user = await _loggedUser.Get();
 
-            var financialGoal = await _financialGoalReadOnlyRepository.GetByIdAsync(id , cancellationToken);
+            var cacheKey = CacheKeys.FinancialGoalById(
+                user.Id ,
+                id);
 
-            if( financialGoal == null ) {
-                throw new NotFoundException(ResourceErrorMessages.FINANCIAL_GOAL_NOT_FOUND);
+            var cached =
+                await _redisCacheService
+                    .GetAsync<ResponseFinancialGoalJson>(cacheKey);
+
+            if ( cached is not null ) {
+                return cached;
             }
 
-            await _redisCacheService.SetAsync(
-                CacheKeys.FinancialGoalById(user.Id , financialGoal.Id) ,
-                JsonSerializer.Serialize(financialGoal) ,
-                TimeSpan.FromMinutes(2)
-            );
+            var financialGoal =
+                await _financialGoalReadOnlyRepository
+                    .GetByIdAsync(
+                        id ,
+                        cancellationToken);
 
-            return _mapper.Map<ResponseFinancialGoalJson>(financialGoal);
+            if ( financialGoal is null ) {
+                throw new NotFoundException(
+                    ResourceErrorMessages.FINANCIAL_GOAL_NOT_FOUND);
+            }
+
+            var response = _mapper.Map<ResponseFinancialGoalJson>(
+                financialGoal);
+
+            await _redisCacheService.SetAsync(
+                cacheKey ,
+                response ,
+                CacheExpiration.FinancialGoals);
+
+            return response;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Services.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess.Repositories
@@ -24,14 +25,48 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .ExecuteDeleteAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<Income>> GetAllAsync ( User userLogged , CancellationToken cancellationToken )
+        public async Task<PagedResult<Income>> GetAllAsync ( User userLogged , int page , int pageSize , CancellationToken cancellationToken )
         {
-            return await _dbContext.Incomes.Where(i => i.UserId == userLogged.Id).ToListAsync(cancellationToken);
+            var query = _dbContext
+                .Incomes
+                .AsNoTracking()
+                .Where(expense => expense.UserId == userLogged.Id);
+
+            var totalRecords = await query
+                .CountAsync(cancellationToken);
+
+            var incomes = await query
+                .OrderByDescending(expense => expense.ReceivedAt)
+                .Skip(( page - 1 ) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<Income>
+            {
+                Data = incomes ,
+                TotalRecords = totalRecords
+            };
         }
 
         public async Task<Income?> GetByIdAsync ( long userId , long incomeId , CancellationToken cancellationToken )
         {
             return await _dbContext.Incomes.FirstOrDefaultAsync(i => i.UserId == userId && i.Id == incomeId , cancellationToken);
+        }
+
+        public async Task<IReadOnlyCollection<Income>> GetByPeriodAsync ( long userId , int month , int year , CancellationToken cancellationToken )
+        {
+            var startDate = new DateOnly(year , month , 1);
+
+            var endDate = startDate.AddMonths(1);
+
+            return await _dbContext
+                .Incomes
+                .AsNoTracking()
+                .Where(income =>
+                    income.UserId == userId &&
+                    income.ReceivedAt >= startDate &&
+                    income.ReceivedAt < endDate)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task UpdateAsync ( Income income , CancellationToken cancellationToken )

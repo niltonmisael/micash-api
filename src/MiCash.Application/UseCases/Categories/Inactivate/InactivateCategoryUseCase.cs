@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
+using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -12,17 +13,20 @@ namespace MiCash.Application.UseCases.Categories.Inactivate
         private readonly ICategoriesUpdateOnlyRepository _categoriesUpdateOnlyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
+        private readonly IRedisCacheService _redisCacheService;
 
         public InactivateCategoryUseCase (
             ICategoriesReadOnlyRepository categoriesReadOnlyRepository,
             ICategoriesUpdateOnlyRepository categoriesUpdateOnlyRepository ,
             IUnitOfWork unitOfWork,
-            ILoggedUser loggedUser)
+            ILoggedUser loggedUser,
+            IRedisCacheService redisCacheService)
         {
             _categoriesReadOnlyRepository = categoriesReadOnlyRepository;
             _categoriesUpdateOnlyRepository = categoriesUpdateOnlyRepository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task Execute ( long id , CancellationToken cancellationToken )
@@ -42,6 +46,13 @@ namespace MiCash.Application.UseCases.Categories.Inactivate
             await _categoriesUpdateOnlyRepository.InactivateAsync(category.Id ,  cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.Categories(loggedUser.Id));
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.CategoryById(loggedUser.Id, category.Id));
+
         }
     }
 }

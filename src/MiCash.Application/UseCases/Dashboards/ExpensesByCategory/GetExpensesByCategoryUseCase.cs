@@ -2,6 +2,7 @@
 using MiCash.Communication.Responses.Dashboards;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.LoggedUser;
 
 namespace MiCash.Application.UseCases.Dashboard.GetExpensesByCategory;
@@ -30,8 +31,10 @@ public class GetExpensesByCategoryUseCase
     {
         var user = await _loggedUser.Get();
 
-        var cacheKey =
-            $"dashboard:expenses-by-category:{user.Id}:{year}:{month}";
+        var cacheKey = CacheKeys.ExpensesByCategory(
+            user.Id ,
+            year ,
+            month);
 
         var cachedData = await _cacheService.GetAsync<List<ResponseExpenseCategorySummaryJson>>(cacheKey);
 
@@ -65,7 +68,7 @@ public class GetExpensesByCategoryUseCase
         await _cacheService.SetAsync(
             cacheKey ,
             result ,
-            TimeSpan.FromMinutes(30));
+            CacheExpiration.Dashboard);
 
         return result;
     }

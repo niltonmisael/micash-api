@@ -17,19 +17,22 @@ namespace MiCash.Application.UseCases.Expenses.Update
         private readonly IExpensesUpdateOnlyRepository _repository;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator ;
+        private readonly IRedisCacheService _redisCacheService ;
 
         public UpdateExpenseUseCase (
             IMapper mapper, 
             IUnitOfWork unitOfWork, 
             IExpensesUpdateOnlyRepository repository, 
             ILoggedUser loggedUser,
-            IFinancialCacheInvalidator financialCacheInvalidator)
+            IFinancialCacheInvalidator financialCacheInvalidator, 
+            IRedisCacheService redisCacheService)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _repository = repository;
             _loggedUser = loggedUser;
             _financialCacheInvalidator = financialCacheInvalidator;
+            _redisCacheService = redisCacheService;
         }
         public async Task Execute (long id, RequestExpenseJson request, CancellationToken cancellationToken)
         {
@@ -54,6 +57,11 @@ namespace MiCash.Application.UseCases.Expenses.Update
             _repository.Update(expense , cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
+
+            await _redisCacheService.RemoveAsync(
+                CacheKeys.ExpenseById(
+                    user.Id ,
+                    expense.Id));
 
             await _financialCacheInvalidator
                 .InvalidateMonthAsync(

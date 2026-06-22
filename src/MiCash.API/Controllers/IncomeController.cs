@@ -3,6 +3,7 @@ using MiCash.Application.UseCases.Incomes.GetAll;
 using MiCash.Application.UseCases.Incomes.GetById;
 using MiCash.Application.UseCases.Incomes.Register;
 using MiCash.Application.UseCases.Incomes.Update;
+using MiCash.Communication.Pagination;
 using MiCash.Communication.Requests.Incomes;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Incomes;
@@ -34,11 +35,12 @@ namespace MiCash.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetAllIncomes ( 
             [FromServices] IGetAllIncomesUseCase useCase,
+            [FromQuery] RequestPaginationJson request ,
             CancellationToken cancellationToken)
         {
-            var response = await useCase.Execute(cancellationToken);
+            var response = await useCase.Execute(request,cancellationToken);
 
-            if ( response.Incomes.Count != 0 ) {
+            if ( response.Data.Count != 0 ) {
                 return Ok(response);
             }
             return NoContent();

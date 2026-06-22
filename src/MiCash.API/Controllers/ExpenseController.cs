@@ -3,6 +3,7 @@ using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
 using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Application.UseCases.Expenses.Update;
+using MiCash.Communication.Pagination;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -27,16 +28,18 @@ namespace MiCash.API.Controllers
 
                 return Created(string.Empty, response);
         }
+
         [HttpGet]
         [ProducesResponseType(typeof(ResponseExpensesJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> GetAllExpenses ( 
             [FromServices] IGetAllExpensesUseCase useCase,
+            [FromQuery] RequestPaginationJson request,
             CancellationToken cancellationToken)
         {
-            var response = await useCase.Execute(cancellationToken);
+            var response = await useCase.Execute(request,cancellationToken);
 
-            if (response.Expenses.Count != 0 ) {
+            if (response.Data.Count != 0 ) {
                 return Ok(response);
             }
             return NoContent();

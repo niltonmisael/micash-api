@@ -10,5 +10,6 @@
         Task InvalidateFinancialGoalAsync (
             long userId ,
             long financialGoalId );
+
     }
 }

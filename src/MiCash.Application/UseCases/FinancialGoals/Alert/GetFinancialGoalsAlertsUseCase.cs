@@ -3,6 +3,7 @@ using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
+using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.LoggedUser;
 
@@ -15,17 +16,20 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alerts
         private readonly IExpensesReadOnlyRepository _expenseReadOnlyRepository;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialGoalCalculator _financialGoalCalculator;
+        private readonly IRedisCacheService _redisCacheService;
 
         public GetFinancialGoalsAlertsUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
             IExpensesReadOnlyRepository expenseReadOnlyRepository ,
             ILoggedUser loggedUser,
-            IFinancialGoalCalculator financialGoalCalculator)
+            IFinancialGoalCalculator financialGoalCalculator ,
+            IRedisCacheService redisCacheService )
         {
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _expenseReadOnlyRepository = expenseReadOnlyRepository;
             _loggedUser = loggedUser;
             _financialGoalCalculator = financialGoalCalculator;
+            _redisCacheService = redisCacheService;
         }
 
         public async Task<ResponseFinancialGoalsAlertsJson> Execute (
@@ -35,19 +39,39 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alerts
         {
             var user = await _loggedUser.Get();
 
-            var goals = await _financialGoalReadOnlyRepository
+            var cacheKey = CacheKeys.FinancialGoalsAlerts(
+                user.Id ,
+                month ,
+                year);
+
+            var cached = await _redisCacheService
+                .GetAsync<ResponseFinancialGoalsAlertsJson>(cacheKey);
+
+            if ( cached is not null ) {
+                return cached;
+            }
+
+            var goalsTask = _financialGoalReadOnlyRepository
+                .GetByPeriodAsync(
+                user.Id ,
+                month ,
+                year ,
+                cancellationToken);
+
+            var expensesTask = _expenseReadOnlyRepository
                 .GetByPeriodAsync(
                     user.Id ,
                     month ,
                     year ,
                     cancellationToken);
 
-            var expenses = await _expenseReadOnlyRepository
-                .GetByPeriodAsync(
-                    user.Id ,
-                    month ,
-                    year ,
-                    cancellationToken);
+            await Task.WhenAll(
+                goalsTask ,
+                expensesTask);
+
+            var goals = await goalsTask;
+
+            var expenses = await expensesTask;
 
             var expensesByCategory = expenses
                 .GroupBy(expense => expense.CategoryId)
@@ -96,6 +120,10 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alerts
                             calculation.RemainingAmount)
                     });
             }
+            await _redisCacheService.SetAsync(
+                cacheKey ,
+                response ,
+                TimeSpan.FromMinutes(15));
 
             return response;
         }

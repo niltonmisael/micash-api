@@ -50,8 +50,9 @@ namespace UseCases.Test.Expenses.Delete
             var unityOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
+            var cacheInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new DeleteExpenseUseCase( repositoryWriteOnly, unityOfWork, loggedUser, repository, cacheService);   
+            return new DeleteExpenseUseCase( repositoryWriteOnly, unityOfWork, loggedUser, repository,cacheInvalidator, cacheService);   
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using MiCash.Communication.Requests.FinancialInsights;
+﻿using MiCash.Communication.Requests.FinancialInsights;
 using MiCash.Communication.Responses.FinancialInsights;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialInsights;
 using MiCash.Domain.Services.LoggedUser;
 
@@ -56,29 +56,35 @@ namespace MiCash.Application.UseCases.FinancialInsights.Get
                 return cachedResponse;
             }
 
-            var expenses =
-                await _expenseReadOnlyRepository
-                    .GetByPeriodAsync(
-                        user.Id ,
-                        request.Month ,
-                        request.Year ,
-                        cancellationToken);
+            var expensesTask =
+                _expenseReadOnlyRepository.GetByPeriodAsync(
+                    user.Id ,
+                    request.Month ,
+                    request.Year ,
+                    cancellationToken);
 
-            var incomes =
-                await _incomeReadOnlyRepository
-                    .GetByPeriodAsync(
-                        user.Id ,
-                        request.Month ,
-                        request.Year ,
-                        cancellationToken);
+            var incomesTask =
+                _incomeReadOnlyRepository.GetByPeriodAsync(
+                    user.Id ,
+                    request.Month ,
+                    request.Year ,
+                    cancellationToken);
 
-            var financialGoals =
-                await _financialGoalReadOnlyRepository
-                    .GetByPeriodAsync(
-                        user.Id ,
-                        request.Month ,
-                        request.Year ,
-                        cancellationToken);
+            var goalsTask =
+                _financialGoalReadOnlyRepository.GetByPeriodAsync(
+                    user.Id ,
+                    request.Month ,
+                    request.Year ,
+                    cancellationToken);
+
+            await Task.WhenAll(
+                expensesTask ,
+                incomesTask ,
+                goalsTask);
+
+            var expenses = await expensesTask;
+            var incomes = await incomesTask;
+            var financialGoals = await goalsTask;
 
             var analysisData = new FinancialAnalysisData
             {
@@ -111,7 +117,7 @@ namespace MiCash.Application.UseCases.FinancialInsights.Get
             await _redisCacheService.SetAsync(
                 cacheKey ,
                 response ,
-                TimeSpan.FromMinutes(1));
+                CacheExpiration.FinancialInsights);
 
             return response;
         }

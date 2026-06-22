@@ -1,9 +1,10 @@
-﻿using MiCash.Communication.Responses;
+﻿using MiCash.Communication.Pagination;
+using MiCash.Communication.Responses;
 
 namespace MiCash.Application.UseCases.Expenses.GetAll
 {
     public interface IGetAllExpensesUseCase
     {
-        public Task<ResponseExpensesJson> Execute (CancellationToken cancellationToken);
+        Task<ResponsePagedJson<ResponseShortExpenseJson>> Execute ( RequestPaginationJson request , CancellationToken cancellationToken );
     }
 }

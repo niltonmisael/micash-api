@@ -54,8 +54,9 @@ namespace UseCases.Test.Expenses.Register
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
+            var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService);
+            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService, financialInvalidator);
         }
     }
 }

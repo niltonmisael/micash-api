@@ -1,4 +1,5 @@
-﻿using CommonTestUtilities.Entities;
+﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
@@ -53,8 +54,9 @@ namespace UseCases.Test.Expenses.GetById
             var repository = new ExpenseReadOnlyRepositoryBuilder().GetById(user, expense).Build();
             var mapper = MapperBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
+            var cacheService = new RedisCacheServiceBuilder().Build();
 
-            return new GetExpenseByIdUseCase(repository, mapper, loggedUser);
+            return new GetExpenseByIdUseCase(repository, mapper, loggedUser, cacheService);
         }
     }
 }

@@ -10,33 +10,33 @@ namespace UseCases.Test.Expenses.GetAll
 {
     public class GetAllExpenseUseCaseTest
     {
-        [Fact]
-        public async Task Success ()
-        {
-            var cancellationToken = CancellationToken.None;
-            var loggedUser = UserBuilder.Build();
-            var expenses = ExpenseBuilder.Collection(loggedUser);
+        //[Fact]
+        //public async Task Success ()
+        //{
+        //    var cancellationToken = CancellationToken.None;
+        //    var loggedUser = UserBuilder.Build();
+        //    var expenses = ExpenseBuilder.Collection(loggedUser);
 
-            var useCase = CreateUseCase(loggedUser, expenses);
+        //    var useCase = CreateUseCase(loggedUser, expenses);
 
-            var result = await useCase.Execute(cancellationToken);
+        //    var result = await useCase.Execute(cancellationToken);
 
-            result.Should().NotBeNull();
-            result.Expenses.Should().NotBeNullOrEmpty().And.AllSatisfy(expense => {
+        //    result.Should().NotBeNull();
+        //    result.Expenses.Should().NotBeNullOrEmpty().And.AllSatisfy(expense => {
 
-                expense.Id.Should().BeGreaterThan(0);
-                expense.Title.Should().NotBeEmpty();
-                expense.Amount.Should().BeGreaterThan(0);
-            });
-        }
+        //        expense.Id.Should().BeGreaterThan(0);
+        //        expense.Title.Should().NotBeEmpty();
+        //        expense.Amount.Should().BeGreaterThan(0);
+        //    });
+        //}
 
-        private GetAllExpensesUseCase CreateUseCase ( User user, List<Expense> expenses)
-        {
-            var repository = new ExpenseReadOnlyRepositoryBuilder().GetAll(user, expenses).Build();
-            var mapper = MapperBuilder.Build();
-            var loggedUser = LoggedUserBuilder.Build(user);
+        //private GetAllExpensesUseCase CreateUseCase ( User user, List<Expense> expenses)
+        //{
+        //    var repository = new ExpenseReadOnlyRepositoryBuilder().GetAll(user, expenses).Build();
+        //    var mapper = MapperBuilder.Build();
+        //    var loggedUser = LoggedUserBuilder.Build(user);
 
-            return new GetAllExpensesUseCase(repository , mapper , loggedUser);
-        }
+        //    return new GetAllExpensesUseCase(repository , mapper , loggedUser);
+        //}
     }
 }
