@@ -1,5 +1,4 @@
 ﻿using MiCash.Domain.Entities;
-using MiCash.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess
@@ -19,6 +18,8 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<PaymentLink> PaymentLinks { get; set; }
         public DbSet<ProcessedWebhook> ProcessedWebhooks { get; set; }
         public DbSet<FinancialGoal> FinancialGoals { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationMessage> ConversationMessages { get; set; }
 
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )
@@ -31,11 +32,8 @@ namespace MiCash.Infrastructure.DataAccess
 
         protected override void ConfigureConventions ( ModelConfigurationBuilder configurationBuilder )
         {
-            configurationBuilder.Properties<ExpenseStatus>() // Se quiser configurar para todos enums do projeto, use <Enum>() ao invés de <ExpenseStatus>()
+            configurationBuilder.Properties<Enum>()
                 .HaveConversion<string>();
         }
-
-
-
     }
 }

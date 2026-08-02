@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
+using MiCash.Domain.Repositories.Conversations;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
@@ -13,15 +14,18 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Security.WebHook;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.IA;
 using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Domain.Services.Payments;
+using MiCash.Infrastructure.AI.Services;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Security.Tokens;
 using MiCash.Infrastructure.Security.WebHook;
 using MiCash.Infrastructure.Services.Cache.Redis;
+using MiCash.Infrastructure.Services.IA.Configuration;
 using MiCash.Infrastructure.Services.Jobs;
 using MiCash.Infrastructure.Services.LoggedUser;
 using MiCash.Infrastructure.Services.Payments;
@@ -40,8 +44,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<ILoggedUser , LoggedUser>();
 
             AddRepositories(services);
+            AddPayments(services , configuration);
             AddRedis(services , configuration);
             AddToken(services , configuration);
+            AddIA(services , configuration);
 
             if ( configuration.IsTestEnvironment() == false ) {
 
@@ -80,6 +86,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<IFinancialGoalReadOnlyRepository, FinancialGoalRepository>();
             services.AddScoped<IFinancialGoalWriteOnlyRepository, FinancialGoalRepository>();
             services.AddScoped<IFinancialGoalUpdateOnlyRepository, FinancialGoalRepository>();
+            services.AddScoped<IConversationMessageReadOnlyRepository, ConversationRepository>();
+            services.AddScoped<IConversationMessageWriteOnlyRepository, ConversationRepository>();
+            services.AddScoped<IConversationReadOnlyRepository, ConversationRepository>();
+            services.AddScoped<IConversationWriteOnlyRepository, ConversationRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {
@@ -120,6 +130,31 @@ namespace MiCash.Infrastructure
 
             services.AddScoped<IRedisCacheService ,
                 RedisCacheService>();
+        }
+
+        private static void AddPayments(IServiceCollection services , IConfiguration configuration )
+        {
+            services.AddHttpClient<IPaymentGateway , PagarMeService>()
+                .AddMiCashResilience();
+
+            services.Configure<PagarMeSettings>(
+                configuration.GetSection("PagarMe"));
+
+            services.Configure<WebhookSettings>(
+                configuration.GetSection("WebhookSettings"));
+        }
+
+        private static void AddIA(IServiceCollection services, IConfiguration configuration )
+        {
+            services.Configure<GeminiSettings>(
+                configuration.GetSection("Gemini"));
+
+            services.AddHttpClient<IAIService , GeminiAIService>(client => {
+                client.BaseAddress = new Uri(
+                    "https://generativelanguage.googleapis.com/v1beta/");
+
+                client.Timeout = TimeSpan.FromSeconds(30);
+            }).AddMiCashResilience();
         }
 
     } 

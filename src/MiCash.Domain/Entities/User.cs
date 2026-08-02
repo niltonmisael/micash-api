@@ -30,5 +30,7 @@
 
         public ICollection<FinancialGoal> FinancialGoals { get; set; } = [];
 
+        public ICollection<Conversation> Conversations { get; set; } = [];
+
     }
 }

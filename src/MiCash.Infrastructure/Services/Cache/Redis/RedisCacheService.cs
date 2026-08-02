@@ -34,7 +34,7 @@ namespace MiCash.Infrastructure.Services.Cache.Redis
             if ( value.IsNullOrEmpty )
                 return default;
 
-            return JsonSerializer.Deserialize<T>(value!);
+            return JsonSerializer.Deserialize<T>(value.ToString());
         }
 
         public async Task RemoveAsync ( string key )

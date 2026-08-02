@@ -45,6 +45,7 @@ using MiCash.Application.UseCases.Users.Update;
 using MiCash.Application.UseCases.WebHook;
 using MiCash.Application.UseCases.WebHook.Handlers;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
+using MiCash.Domain.Services.FinancialChat;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.FinancialInsights;
 using MiCash.Domain.Services.Jobs;
@@ -118,6 +119,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IFinancialGoalCalculator , FinancialGoalCalculator>();
             services.AddScoped<IFinancialInsightAnalyzer ,FinancialInsightAnalyzer>();
             services.AddScoped<IFinancialCacheInvalidator ,FinancialCacheInvalidator>();
+            services.AddScoped<IConversationService , ConversationService>();
+            services.AddScoped<IFinancialContextBuilder, FinancialContextBuilder>();
+            services.AddScoped<IConversationMessageService , ConversationMessageService>();
         }
     }
 }

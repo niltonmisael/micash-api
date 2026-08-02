@@ -75,6 +75,83 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("categories", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Conversation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsActive");
+
+                    b.ToTable("conversations", (string)null);
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.ConversationMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("content");
+
+                    b.Property<long>("ConversationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("ConversationId", "CreatedAt");
+
+                    b.ToTable("conversation_messages", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
                 {
                     b.Property<long>("Id")
@@ -538,6 +615,28 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Conversation", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany("Conversations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.ConversationMessage", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Expense", b =>
                 {
                     b.HasOne("MiCash.Domain.Entities.Category", "Category")
@@ -614,6 +713,11 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("FinancialGoals");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
                 {
                     b.Navigation("Subscriptions");
@@ -622,6 +726,8 @@ namespace MiCash.Infrastructure.Migrations
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>
                 {
                     b.Navigation("Categories");
+
+                    b.Navigation("Conversations");
 
                     b.Navigation("Expenses");
 

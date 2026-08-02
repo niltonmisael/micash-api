@@ -98,7 +98,7 @@ namespace MiCash.Infrastructure.Services.Payments
                     await response.Content.ReadAsStringAsync(
                         cancellationToken);
 
-                throw new Exception(
+                throw new System.Exception(
                     $"Erro ao criar checkout: {error}");
             }
 
@@ -108,7 +108,7 @@ namespace MiCash.Infrastructure.Services.Payments
                         cancellationToken);
 
             if ( checkout is null ) {
-                throw new Exception(
+                throw new System.Exception(
                     "Checkout não retornado pelo Pagar.me.");
             }
 

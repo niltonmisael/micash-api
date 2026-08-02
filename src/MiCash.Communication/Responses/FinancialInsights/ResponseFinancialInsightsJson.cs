@@ -2,6 +2,8 @@
 {
     public class ResponseFinancialInsightsJson
     {
-        public List<ResponseFinancialInsightJson> Insights { get; set; } = [];
+        public IReadOnlyList<ResponseFinancialInsightJson> Insights { get; set; } = [];
+
+        public ResponseArtificialInsightJson? ArtificialInsight { get; set; }
     }
 }

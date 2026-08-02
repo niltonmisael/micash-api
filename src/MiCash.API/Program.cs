@@ -5,14 +5,12 @@ using MiCash.API.Filters;
 using MiCash.API.Middleware;
 using MiCash.API.Token;
 using MiCash.Domain.Security.Tokens;
-using MiCash.Domain.Services.Payments;
 using MiCash.Infrastructure;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Migrations;
-using MiCash.Infrastructure.Services.Payments;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Serilog;
 using System.Text;
 
@@ -31,45 +29,32 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(config => {
     config.EnableAnnotations();
+
     config.AddSecurityDefinition("Bearer" , new OpenApiSecurityScheme
     {
         Name = "Authorization" ,
-        Description = @"JWT Authorization header using Bearer scheme. 
-                      Enter 'Bearer' [space] and then your token in the text input below.
-                      Example: 'Bearer 1234abcdf'",
-        In = ParameterLocation.Header,
-        Scheme = "Bearer",
-        Type = SecuritySchemeType.ApiKey,
+        Description = """
+            JWT Authorization header using Bearer scheme.
+            Enter 'Bearer' [space] and then your token.
+            Example: 'Bearer 1234abcdf'
+            """ ,
+        In = ParameterLocation.Header ,
+        Scheme = "Bearer" ,
+        Type = SecuritySchemeType.Http ,
+        BearerFormat = "JWT"
     });
 
-    config.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    config.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header
-            },
-            new List<string>()
-        }
-    });
+            [new OpenApiSecuritySchemeReference("Bearer" , document)] = []
+        });
 });
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
 builder.Services.AddScoped<RequireActiveSubscriptionFilter>();
 builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.AddHttpClient<IPaymentGateway , PagarMeService>();
-builder.Services.Configure<PagarMeSettings>(
-    builder.Configuration.GetSection("PagarMe"));
-builder.Services.Configure<WebhookSettings>(
-    builder.Configuration.GetSection("WebhookSettings"));
 
 builder.Services.AddHangfire(config => {
     config.UsePostgreSqlStorage(options => {

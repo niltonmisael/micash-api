@@ -1,4 +1,5 @@
-﻿using MiCash.Communication.Requests.FinancialInsights;
+﻿using MiCash.Application.AI.PromptBuilders;
+using MiCash.Communication.Requests.FinancialInsights;
 using MiCash.Communication.Responses.FinancialInsights;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
@@ -6,120 +7,142 @@ using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialInsights;
+using MiCash.Domain.Services.IA;
 using MiCash.Domain.Services.LoggedUser;
+using Microsoft.Extensions.Logging;
 
-namespace MiCash.Application.UseCases.FinancialInsights.Get
+namespace MiCash.Application.UseCases.FinancialInsights.Get;
+
+public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
 {
-    public class GetFinancialInsightsUseCase
-        : IGetFinancialInsightsUseCase
-    {
-        private readonly IExpensesReadOnlyRepository _expenseReadOnlyRepository;
-        private readonly IIncomesReadOnlyRepository _incomeReadOnlyRepository;
-        private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
-        private readonly IFinancialInsightAnalyzer _financialInsightAnalyzer;
-        private readonly ILoggedUser _loggedUser;
-        private readonly IRedisCacheService _redisCacheService;
+    private readonly IExpensesReadOnlyRepository _expenseReadOnlyRepository;
+    private readonly IIncomesReadOnlyRepository _incomeReadOnlyRepository;
+    private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
+    private readonly IFinancialInsightAnalyzer _financialInsightAnalyzer;
+    private readonly IFinancialInsightPromptBuilder _financialInsightPromptBuilder;
+    private readonly IAIService _aiService;
+    private readonly ILoggedUser _loggedUser;
+    private readonly IRedisCacheService _redisCacheService;
+    private readonly ILogger<GetFinancialInsightsUseCase> _logger;
 
-        public GetFinancialInsightsUseCase (
-            IExpensesReadOnlyRepository expenseReadOnlyRepository ,
-            IIncomesReadOnlyRepository incomeReadOnlyRepository ,
-            IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
-            IFinancialInsightAnalyzer financialInsightAnalyzer ,
-            ILoggedUser loggedUser,
-            IRedisCacheService redisCacheService)
-        {
-            _expenseReadOnlyRepository = expenseReadOnlyRepository;
-            _incomeReadOnlyRepository = incomeReadOnlyRepository;
-            _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
-            _financialInsightAnalyzer = financialInsightAnalyzer;
-            _loggedUser = loggedUser;
-            _redisCacheService = redisCacheService;
+    public GetFinancialInsightsUseCase (
+        IExpensesReadOnlyRepository expenseReadOnlyRepository ,
+        IIncomesReadOnlyRepository incomeReadOnlyRepository ,
+        IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
+        IFinancialInsightAnalyzer financialInsightAnalyzer ,
+        IFinancialInsightPromptBuilder financialInsightPromptBuilder ,
+        IAIService aiService ,
+        ILoggedUser loggedUser ,
+        IRedisCacheService redisCacheService ,
+        ILogger<GetFinancialInsightsUseCase> logger )
+    {
+        _expenseReadOnlyRepository = expenseReadOnlyRepository;
+        _incomeReadOnlyRepository = incomeReadOnlyRepository;
+        _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
+        _financialInsightAnalyzer = financialInsightAnalyzer;
+        _financialInsightPromptBuilder = financialInsightPromptBuilder;
+        _aiService = aiService;
+        _loggedUser = loggedUser;
+        _redisCacheService = redisCacheService;
+        _logger = logger;
+    }
+
+    public async Task<ResponseFinancialInsightsJson> Execute (
+        RequestFinancialInsightJson request ,
+        CancellationToken cancellationToken )
+    {
+        var user = await _loggedUser.Get();
+
+        var cacheKey = CacheKeys.FinancialInsights(
+            user.Id ,
+            request.Month ,
+            request.Year);
+
+        var cachedResponse =
+            await _redisCacheService
+                .GetAsync<ResponseFinancialInsightsJson>(cacheKey);
+
+        if ( cachedResponse is not null ) {
+            return cachedResponse;
         }
 
-        public async Task<ResponseFinancialInsightsJson> Execute (
-            RequestFinancialInsightJson request ,
-            CancellationToken cancellationToken )
-        {
-            var user = await _loggedUser.Get();
-
-            var cacheKey = CacheKeys.FinancialInsights(
+        var expensesTask =
+            _expenseReadOnlyRepository.GetByPeriodAsync(
                 user.Id ,
                 request.Month ,
-                request.Year);
+                request.Year ,
+                cancellationToken);
 
-            var cachedResponse =
-                await _redisCacheService
-                    .GetAsync<ResponseFinancialInsightsJson>(
-                        cacheKey);
+        var incomesTask =
+            _incomeReadOnlyRepository.GetByPeriodAsync(
+                user.Id ,
+                request.Month ,
+                request.Year ,
+                cancellationToken);
 
-            if ( cachedResponse is not null ) {
-                return cachedResponse;
-            }
+        var goalsTask =
+            _financialGoalReadOnlyRepository.GetByPeriodAsync(
+                user.Id ,
+                request.Month ,
+                request.Year ,
+                cancellationToken);
 
-            var expensesTask =
-                _expenseReadOnlyRepository.GetByPeriodAsync(
-                    user.Id ,
-                    request.Month ,
-                    request.Year ,
+        await Task.WhenAll(
+            expensesTask ,
+            incomesTask ,
+            goalsTask);
+
+        var analysisData = new FinancialAnalysisData
+        {
+            Expenses = await expensesTask ,
+            Incomes = await incomesTask ,
+            FinancialGoals = await goalsTask
+        };
+
+        var domainInsights =
+            _financialInsightAnalyzer
+                .Analyze(analysisData);
+
+        var response = new ResponseFinancialInsightsJson
+        {
+            Insights = domainInsights
+                .Select(insight => new ResponseFinancialInsightJson
+                {
+                    Type = ( int ) insight.Type ,
+                    TypeDescription = insight.Type.ToString() ,
+                    Title = insight.Title ,
+                    Message = insight.Message
+                })
+                .ToList()
+        };
+
+        try {
+            var aiRequest =
+                _financialInsightPromptBuilder
+                    .BuildFinancialInsights(analysisData);
+
+            var aiResponse =
+                await _aiService.GenerateResponseAsync(
+                    aiRequest ,
                     cancellationToken);
 
-            var incomesTask =
-                _incomeReadOnlyRepository.GetByPeriodAsync(
-                    user.Id ,
-                    request.Month ,
-                    request.Year ,
-                    cancellationToken);
-
-            var goalsTask =
-                _financialGoalReadOnlyRepository.GetByPeriodAsync(
-                    user.Id ,
-                    request.Month ,
-                    request.Year ,
-                    cancellationToken);
-
-            await Task.WhenAll(
-                expensesTask ,
-                incomesTask ,
-                goalsTask);
-
-            var expenses = await expensesTask;
-            var incomes = await incomesTask;
-            var financialGoals = await goalsTask;
-
-            var analysisData = new FinancialAnalysisData
-            {
-                Expenses = expenses ,
-                Incomes = incomes ,
-                FinancialGoals = financialGoals
-            };
-
-            var insights =
-                _financialInsightAnalyzer
-                    .Analyze(analysisData);
-
-            var response = new ResponseFinancialInsightsJson
-            {
-                Insights = insights
-                    .Select(insight =>
-                        new ResponseFinancialInsightJson
-                        {
-                            Type = ( int ) insight.Type ,
-
-                            TypeDescription = insight.Type.ToString() ,
-
-                            Title = insight.Title ,
-
-                            Message = insight.Message
-                        })
-                    .ToList()
-            };
-
-            await _redisCacheService.SetAsync(
-                cacheKey ,
-                response ,
-                CacheExpiration.FinancialInsights);
-
-            return response;
+            response.ArtificialInsight =
+                new ResponseArtificialInsightJson
+                {
+                    Title = "Análise da MI" ,
+                    Message = aiResponse.Content
+                };
+        } catch ( System.Exception ex ) {
+            _logger.LogWarning(
+                ex ,
+                "Erro ao gerar insights utilizando a MI.");
         }
+
+        await _redisCacheService.SetAsync(
+            cacheKey ,
+            response ,
+            CacheExpiration.FinancialInsights);
+
+        return response;
     }
 }
