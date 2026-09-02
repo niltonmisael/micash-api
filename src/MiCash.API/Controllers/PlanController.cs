@@ -2,7 +2,6 @@
 using MiCash.Application.UseCases.Plans.GetById;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Plans;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MiCash.API.Controllers
@@ -25,7 +24,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ResponsePlansJson) , StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponsePlanJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPlanById (
