@@ -50,7 +50,7 @@ namespace MiCash.Application.UseCases.Users.Register
             await Validate(request);
 
             var user = _mapper.Map<Domain.Entities.User>(request);
-            user.PasswordHash = _passwordEncripter.Encrypt(user.PasswordHash);
+            user.PasswordHash = _passwordEncripter.Encrypt(request.Password);
             user.UserIdentifier = Guid.NewGuid();
 
             await _userWriteOnlyRepository.Add(user);

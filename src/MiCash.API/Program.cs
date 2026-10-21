@@ -104,7 +104,6 @@ builder.Services.AddAuthentication(config => {
     };
 });
 
-
 var app = builder.Build();
 
 
