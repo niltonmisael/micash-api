@@ -32,37 +32,27 @@ namespace MiCash.Domain.Services.FinancialChat
         {
             var today = DateTime.UtcNow;
 
-            var incomesTask =
-                _incomesRepository.GetByPeriodAsync(
+            // DbContext is not thread-safe: queries must run sequentially.
+            var incomes =
+                await _incomesRepository.GetByPeriodAsync(
                     user.Id ,
                     today.Month ,
                     today.Year ,
                     cancellationToken);
 
-            var expensesTask =
-                _expensesRepository.GetByPeriodAsync(
+            var expenses =
+                await _expensesRepository.GetByPeriodAsync(
                     user.Id ,
                     today.Month ,
                     today.Year ,
                     cancellationToken);
 
-            var goalsTask =
-                _goalRepository.GetByPeriodAsync(
+            var goals =
+                await _goalRepository.GetByPeriodAsync(
                     user.Id ,
                     today.Month ,
                     today.Year ,
                     cancellationToken);
-
-            await Task.WhenAll(
-                incomesTask ,
-                expensesTask ,
-                goalsTask);
-
-            var incomes = await incomesTask;
-
-            var expenses = await expensesTask;
-
-            var goals = await goalsTask;
 
             var totalIncome =
                 incomes.Sum(x => x.Amount);

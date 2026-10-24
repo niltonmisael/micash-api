@@ -66,37 +66,33 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
             return cachedResponse;
         }
 
-        var expensesTask =
-            _expenseReadOnlyRepository.GetByPeriodAsync(
+        // DbContext is not thread-safe: queries must run sequentially.
+        var expenses =
+            await _expenseReadOnlyRepository.GetByPeriodAsync(
                 user.Id ,
                 request.Month ,
                 request.Year ,
                 cancellationToken);
 
-        var incomesTask =
-            _incomeReadOnlyRepository.GetByPeriodAsync(
+        var incomes =
+            await _incomeReadOnlyRepository.GetByPeriodAsync(
                 user.Id ,
                 request.Month ,
                 request.Year ,
                 cancellationToken);
 
-        var goalsTask =
-            _financialGoalReadOnlyRepository.GetByPeriodAsync(
+        var goals =
+            await _financialGoalReadOnlyRepository.GetByPeriodAsync(
                 user.Id ,
                 request.Month ,
                 request.Year ,
                 cancellationToken);
-
-        await Task.WhenAll(
-            expensesTask ,
-            incomesTask ,
-            goalsTask);
 
         var analysisData = new FinancialAnalysisData
         {
-            Expenses = await expensesTask ,
-            Incomes = await incomesTask ,
-            FinancialGoals = await goalsTask
+            Expenses = expenses ,
+            Incomes = incomes ,
+            FinancialGoals = goals
         };
 
         var domainInsights =

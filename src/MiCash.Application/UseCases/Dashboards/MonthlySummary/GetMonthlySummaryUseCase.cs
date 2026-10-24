@@ -41,26 +41,22 @@ public class GetMonthlySummaryUseCase
             return cached;
         }
 
-        var totalIncomeTask =
-            _dashboardReadOnlyRepository
+        // DbContext is not thread-safe: queries must run sequentially.
+        var totalIncome =
+            await _dashboardReadOnlyRepository
             .GetTotalAmountIncomesByMonth(
                 user.Id ,
                 year ,
                 month ,
                 cancellationToken);
 
-        var totalExpenseTask =
-            _dashboardReadOnlyRepository
+        var totalExpense =
+            await _dashboardReadOnlyRepository
                 .GetTotalAmountExpensesByMonth(
                     user.Id ,
                     year ,
                     month ,
                     cancellationToken);
-
-        await Task.WhenAll(totalIncomeTask , totalExpenseTask);
-
-        var totalIncome = await totalIncomeTask;
-        var totalExpense = await totalExpenseTask;
 
         var summary = new ResponseMonthlySummaryJson
         {

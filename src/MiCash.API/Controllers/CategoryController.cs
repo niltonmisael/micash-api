@@ -18,7 +18,7 @@ namespace MiCash.API.Controllers
     public class CategoryController : Controller
     {
         [HttpPost("create")]
-        [ProducesResponseType(typeof(ResponseRegisteredCategoryJson), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateCategory ( 
             [FromBody] RequestCreateCategoryJson request, 

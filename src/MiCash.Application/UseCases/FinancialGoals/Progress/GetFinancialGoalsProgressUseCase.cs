@@ -51,28 +51,22 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
                 return cached;
             }
 
-            var goalsTask =
-                _financialGoalReadOnlyRepository
+            // DbContext is not thread-safe: queries must run sequentially.
+            var goals =
+                await _financialGoalReadOnlyRepository
                 .GetByPeriodAsync(
                     user.Id ,
                     month ,
                     year ,
                     cancellationToken);
 
-            var expensesTask =
-                _expenseReadOnlyRepository
+            var expenses =
+                await _expenseReadOnlyRepository
                     .GetByPeriodAsync(
                         user.Id ,
                         month ,
                         year ,
                         cancellationToken);
-
-            await Task.WhenAll(
-                goalsTask ,
-                expensesTask);
-
-            var goals = await goalsTask;
-            var expenses = await expensesTask;
 
             var expensesByCategory = expenses
                 .GroupBy(expense => expense.CategoryId)
