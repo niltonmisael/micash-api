@@ -12,7 +12,7 @@ namespace MiCash.Application.UseCases.FinancialGoals
                 .InclusiveBetween(1 , 12).WithMessage(ResourceErrorMessages.MONTH_INVALID_RANGE);
 
             RuleFor(x => x.SourceYear)
-                .InclusiveBetween(FinancialGoalPeriodValidator.MIN_YEAR , FinancialGoalPeriodValidator.MAX_YEAR)
+                .InclusiveBetween(PeriodValidator.MIN_YEAR , PeriodValidator.MAX_YEAR)
                 .WithMessage(ResourceErrorMessages.YEAR_INVALID);
 
             RuleFor(x => x.TargetMonth)
@@ -20,7 +20,7 @@ namespace MiCash.Application.UseCases.FinancialGoals
 
             RuleFor(x => x.TargetYear)
                 .GreaterThanOrEqualTo(_ => DateTime.UtcNow.Year).WithMessage(ResourceErrorMessages.YEAR_LESS_THAN_CURRENT)
-                .LessThanOrEqualTo(FinancialGoalPeriodValidator.MAX_YEAR).WithMessage(ResourceErrorMessages.YEAR_INVALID);
+                .LessThanOrEqualTo(PeriodValidator.MAX_YEAR).WithMessage(ResourceErrorMessages.YEAR_INVALID);
 
             RuleFor(x => x)
                 .Must(x => x.SourceMonth != x.TargetMonth || x.SourceYear != x.TargetYear)

@@ -1,5 +1,6 @@
 using CommonTestUtilities.Requests;
 using FluentAssertions;
+using MiCash.Application.UseCases;
 using MiCash.Application.UseCases.FinancialGoals;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
@@ -80,12 +81,12 @@ namespace Validators.Tests.FinancialGoals
         }
     }
 
-    public class FinancialGoalPeriodValidatorTests
+    public class PeriodValidatorTests
     {
         [Fact]
         public void Success ()
         {
-            var act = () => FinancialGoalPeriodValidator.Validate(6 , DateTime.UtcNow.Year);
+            var act = () => PeriodValidator.Validate(6 , DateTime.UtcNow.Year);
 
             act.Should().NotThrow();
         }
@@ -97,7 +98,7 @@ namespace Validators.Tests.FinancialGoals
         [InlineData(0 , 1 , 2)]
         public void Error_Invalid_Period ( int month , int year , int expectedErrors )
         {
-            var act = () => FinancialGoalPeriodValidator.Validate(month , year);
+            var act = () => PeriodValidator.Validate(month , year);
 
             act.Should().Throw<ErrorOnValidationException>()
                 .Which.GetErrors().Should().HaveCount(expectedErrors);

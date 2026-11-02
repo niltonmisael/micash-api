@@ -10,7 +10,7 @@ namespace MiCash.Domain.Services.IA
 
     public class AIOptions
     {
-        public double Temperature { get; set; } = 0.4;
+        public double Temperature { get; set; } = 1.0;
 
         public int MaxOutputTokens { get; set; } = 1024;
 

@@ -1,4 +1,6 @@
 ﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.AI;
+using MiCash.Domain.Services.IA;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
@@ -45,6 +47,8 @@ namespace WebAPI.Test
                 .ConfigureServices(services => {
                     services.AddScoped<IRedisCacheService ,
                         FakeRedisCacheService>();
+
+                    services.AddScoped<IAIService , FakeAIService>(_ => new FakeAIService());
 
                     var provider = services
                         .AddEntityFrameworkInMemoryDatabase()

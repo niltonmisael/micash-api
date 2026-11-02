@@ -31,7 +31,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
         {
             return await _dbContext.Conversations
                 .Where(c => c.IsActive == true)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.UserId == userId , cancellationToken);
         }
 
         public async Task<IReadOnlyList<ConversationMessage>> GetLastMessagesAsync ( long conversationId , int quantity , CancellationToken cancellationToken )
@@ -40,7 +40,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .Where(cm => cm.ConversationId == conversationId)
                 .OrderByDescending(cm => cm.CreatedAt)
                 .Take(quantity)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
         public void UpdateAsync ( Conversation conversation )

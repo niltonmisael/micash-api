@@ -19,7 +19,7 @@ namespace MiCash.Application.UseCases.FinancialGoals
 
             RuleFor(x => x.Year)
                 .GreaterThanOrEqualTo(_ => DateTime.UtcNow.Year).WithMessage(ResourceErrorMessages.YEAR_LESS_THAN_CURRENT)
-                .LessThanOrEqualTo(FinancialGoalPeriodValidator.MAX_YEAR).WithMessage(ResourceErrorMessages.YEAR_INVALID);
+                .LessThanOrEqualTo(PeriodValidator.MAX_YEAR).WithMessage(ResourceErrorMessages.YEAR_INVALID);
         }
     }
 }

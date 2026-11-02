@@ -1,12 +1,12 @@
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
-namespace MiCash.Application.UseCases.FinancialGoals
+namespace MiCash.Application.UseCases
 {
     /// <summary>
-    /// Validates the month/year pair received as query parameters by the read endpoints.
+    /// Validates a month/year pair received as query parameters (goals, insights, ...).
     /// </summary>
-    public static class FinancialGoalPeriodValidator
+    public static class PeriodValidator
     {
         public const int MIN_YEAR = 2000;
         public const int MAX_YEAR = 2100;

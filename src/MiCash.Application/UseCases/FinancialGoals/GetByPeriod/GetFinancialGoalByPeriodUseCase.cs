@@ -26,7 +26,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.GetByPeriod
             int year ,
             CancellationToken cancellationToken )
         {
-            FinancialGoalPeriodValidator.Validate(month , year);
+            PeriodValidator.Validate(month , year);
 
             var user =
                 await _loggedUser.Get();

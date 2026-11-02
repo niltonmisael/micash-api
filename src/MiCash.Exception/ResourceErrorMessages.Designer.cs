@@ -419,5 +419,23 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("YEAR_INVALID", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The message is required..
+        /// </summary>
+        public static string CHAT_MESSAGE_REQUIRED {
+            get {
+                return ResourceManager.GetString("CHAT_MESSAGE_REQUIRED", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The message must have at most 1000 characters..
+        /// </summary>
+        public static string CHAT_MESSAGE_TOO_LONG {
+            get {
+                return ResourceManager.GetString("CHAT_MESSAGE_TOO_LONG", resourceCulture);
+            }
+        }
     }
 }

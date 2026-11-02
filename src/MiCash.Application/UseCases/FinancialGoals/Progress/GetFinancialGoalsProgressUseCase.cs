@@ -37,7 +37,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Progress
             int year ,
             CancellationToken cancellationToken )
         {
-            FinancialGoalPeriodValidator.Validate(month , year);
+            PeriodValidator.Validate(month , year);
 
             var user = await _loggedUser.Get();
 

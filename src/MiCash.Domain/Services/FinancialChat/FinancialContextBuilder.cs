@@ -80,12 +80,12 @@ namespace MiCash.Domain.Services.FinancialChat
 
                 ExpensesByCategory =
                     BuildExpenseCategories(
-                        ( IReadOnlyList<Expense> )  expenses  ,
+                        expenses.ToList() ,
                         totalExpense) ,
 
                 IncomesByCategory =
                     BuildIncomeCategories(
-                        ( IReadOnlyList<Income> )  incomes  ,
+                        incomes.ToList() ,
                         totalIncome) ,
 
                 ConversationHistory = history

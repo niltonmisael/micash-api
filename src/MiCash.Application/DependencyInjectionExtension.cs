@@ -1,5 +1,8 @@
 ﻿using MiCash.Application.AutoMapper;
+using MiCash.Application.AI.PromptBuilders;
 using MiCash.Application.Jobs.Subscriptions;
+using MiCash.Application.UseCases.FinancialChat;
+using MiCash.Application.UseCases.FinancialInsights.Get;
 using MiCash.Application.UseCases.Auth.Login;
 using MiCash.Application.UseCases.Auth.Logout;
 using MiCash.Application.UseCases.Categories.Create;
@@ -125,6 +128,10 @@ namespace MiCash.Infrastructure
             services.AddScoped<IConversationService , ConversationService>();
             services.AddScoped<IFinancialContextBuilder, FinancialContextBuilder>();
             services.AddScoped<IConversationMessageService , ConversationMessageService>();
+            services.AddScoped<IGetFinancialInsightsUseCase , GetFinancialInsightsUseCase>();
+            services.AddScoped<IFinancialInsightPromptBuilder , FinancialInsightPromptBuilder>();
+            services.AddScoped<IFinancialChatUseCase , FinancialChatUseCase>();
+            services.AddScoped<IFinancialChatPromptBuilder , FinancialChatPromptBuilder>();
         }
     }
 }

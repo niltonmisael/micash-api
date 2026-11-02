@@ -51,6 +51,8 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
         RequestFinancialInsightJson request ,
         CancellationToken cancellationToken )
     {
+        PeriodValidator.Validate(request.Month , request.Year);
+
         var user = await _loggedUser.Get();
 
         var cacheKey = CacheKeys.FinancialInsights(

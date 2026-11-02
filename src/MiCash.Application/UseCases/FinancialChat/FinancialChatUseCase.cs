@@ -5,6 +5,7 @@ using MiCash.Domain.Repositories;
 using MiCash.Domain.Services.FinancialChat;
 using MiCash.Domain.Services.IA;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Exception.ExceptionBase;
 
 namespace MiCash.Application.UseCases.FinancialChat
 {
@@ -40,6 +41,8 @@ namespace MiCash.Application.UseCases.FinancialChat
             RequestChatMessageJson chatMessage ,
             CancellationToken cancellationToken )
         {
+            Validate(chatMessage);
+
             var user =
                 await _loggedUser.Get();
 
@@ -85,6 +88,16 @@ namespace MiCash.Application.UseCases.FinancialChat
             {
                 Message = aiResponse.Content
             };
+        }
+
+        private static void Validate ( RequestChatMessageJson request )
+        {
+            var result = new ValidatorChatMessage().Validate(request);
+
+            if ( result.IsValid == false ) {
+                var errorMessages = result.Errors.Select(f => f.ErrorMessage).ToList();
+                throw new ErrorOnValidationException(errorMessages);
+            }
         }
     }
 }

@@ -72,6 +72,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             return await _dbContext
                 .Expenses
                 .AsNoTracking()
+                .Include(expense => expense.Category)
                 .Where(expense =>
                     expense.UserId == userId &&
                     expense.ExpenseDate >= startDate &&

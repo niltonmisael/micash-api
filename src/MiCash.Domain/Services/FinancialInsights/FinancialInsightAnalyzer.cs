@@ -58,10 +58,15 @@ namespace MiCash.Domain.Services.FinancialInsights
             var totalExpenses =
                 data.Expenses.Sum(x => x.Amount);
 
+            if ( totalExpenses <= 0 ) {
+                return;
+            }
+
+            // Group by id: with AsNoTracking each expense may carry its own Category instance.
             var highestCategory = data.Expenses
-                .GroupBy(expense => expense.Category)
+                .GroupBy(expense => expense.CategoryId)
                 .Select(group => new {
-                    Category = group.Key ,
+                    CategoryName = group.First().Category?.Name ?? "Sem categoria" ,
                     Amount = group.Sum(x => x.Amount)
                 })
                 .OrderByDescending(x => x.Amount)
@@ -77,7 +82,7 @@ namespace MiCash.Domain.Services.FinancialInsights
                 Title = "Maior gasto do mês" ,
 
                 Message =
-                    $"{highestCategory.Category.Name} representou {Math.Round(percentage , 2)}% das suas despesas neste período."
+                    $"{highestCategory.CategoryName} representou {Math.Round(percentage , 2)}% das suas despesas neste período."
             });
         }
 

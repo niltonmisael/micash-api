@@ -237,4 +237,10 @@
   <data name="YEAR_INVALID" xml:space="preserve">
     <value>Invalid year.</value>
   </data>
+  <data name="CHAT_MESSAGE_REQUIRED" xml:space="preserve">
+    <value>The message is required.</value>
+  </data>
+  <data name="CHAT_MESSAGE_TOO_LONG" xml:space="preserve">
+    <value>The message must have at most 1000 characters.</value>
+  </data>
 </root>

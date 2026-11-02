@@ -71,13 +71,15 @@ public sealed class GeminiAIService : IAIService
             throw new AIUnavailableException();
         } catch ( AIServiceException ) {
             throw;
+        } catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+            // The client cancelled the request: not a provider failure.
+            throw;
         } catch ( System.Exception ex ) {
             _logger.LogError(
                 ex ,
                 "Erro inesperado ao comunicar com o Gemini.");
 
-            throw new AIUnknownException(
-                "Ocorreu um erro inesperado ao comunicar com o serviço de IA.");
+            throw new AIUnknownException();
         }
     }
 
@@ -121,7 +123,7 @@ public sealed class GeminiAIService : IAIService
         };
     }
 
-    private static async Task EnsureSuccessStatusCode (
+    private async Task EnsureSuccessStatusCode (
         HttpResponseMessage response ,
         CancellationToken cancellationToken )
     {
@@ -148,10 +150,20 @@ public sealed class GeminiAIService : IAIService
                     await response.Content.ReadAsStringAsync(
                         cancellationToken);
 
-                throw new AIUnknownException(
-                    $"Erro ao comunicar com o Gemini: {error}");
+                // Provider details stay in the logs only; the client gets a generic message.
+                _logger.LogError(
+                    "Gemini retornou {StatusCode}: {ErrorBody}" ,
+                    ( int ) response.StatusCode ,
+                    Truncate(error , MAX_LOGGED_ERROR_LENGTH));
+
+                throw new AIUnknownException();
         }
     }
+
+    private const int MAX_LOGGED_ERROR_LENGTH = 2000;
+
+    private static string Truncate ( string value , int maxLength ) =>
+        value.Length <= maxLength ? value : value[..maxLength] + "...";
 
     private static void ValidateResponse (
         GeminiResponse? response )
@@ -174,9 +186,7 @@ public sealed class GeminiAIService : IAIService
             throw new AIInvalidResponseException();
         }
 
-        var part = candidate.Content.Parts[0];
-
-        if ( string.IsNullOrWhiteSpace(part.Text) )
+        if ( string.IsNullOrWhiteSpace(ExtractAnswerText(candidate.Content)) )
             throw new AIInvalidResponseException();
     }
 
@@ -187,7 +197,15 @@ public sealed class GeminiAIService : IAIService
 
         return new AIResponse
         {
-            Content = candidate.Content.Parts[0].Text
+            Content = ExtractAnswerText(candidate.Content)
         };
     }
+
+    // Gemini 3 may split the answer into several parts, add reasoning ("thought") parts
+    // and put a thoughtSignature on a part with empty text: join only the answer text.
+    private static string ExtractAnswerText ( GeminiContent content ) =>
+        string.Concat(content.Parts
+            .Where(part => part.Thought != true && !string.IsNullOrEmpty(part.Text))
+            .Select(part => part.Text))
+        .Trim();
 }

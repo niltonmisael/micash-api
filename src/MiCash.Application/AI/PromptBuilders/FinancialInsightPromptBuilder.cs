@@ -102,19 +102,54 @@ namespace MiCash.Application.AI.PromptBuilders
 
             builder.AppendLine(
                 $"Despesa total: R$ {totalExpense:N2}");
+
+            if ( totalExpense <= 0 ) {
+                return;
+            }
+
+            builder.AppendLine();
+
+            builder.AppendLine("Despesas por categoria:");
+
+            var byCategory = analysisData.Expenses
+                .GroupBy(expense => expense.CategoryId)
+                .Select(group => new {
+                    Name = group.First().Category?.Name ?? "Sem categoria" ,
+                    Amount = group.Sum(expense => expense.Amount)
+                })
+                .OrderByDescending(category => category.Amount);
+
+            foreach ( var category in byCategory ) {
+                var percentage = Math.Round(category.Amount / totalExpense * 100 , 1);
+
+                builder.AppendLine(
+                    $"- {category.Name}: R$ {category.Amount:N2} ({percentage:N1}%)");
+            }
         }
 
         private static void AppendGoals (
             StringBuilder builder ,
             FinancialAnalysisData analysisData )
         {
+            if ( analysisData.FinancialGoals.Count == 0 ) {
+                return;
+            }
+
             builder.AppendLine();
 
-            builder.AppendLine("Metas:");
+            builder.AppendLine("Metas de gastos por categoria (limite / gasto até agora):");
 
             foreach ( var goal in analysisData.FinancialGoals ) {
+                var spent = analysisData.Expenses
+                    .Where(expense => expense.CategoryId == goal.CategoryId)
+                    .Sum(expense => expense.Amount);
+
+                var percentage = goal.TargetAmount == 0
+                    ? 0
+                    : Math.Round(spent / goal.TargetAmount * 100 , 1);
+
                 builder.AppendLine(
-                    $"{goal.Category.Name}: R$ {goal.TargetAmount:N2}");
+                    $"- {goal.Category?.Name ?? "Sem categoria"}: limite R$ {goal.TargetAmount:N2} / gasto R$ {spent:N2} ({percentage:N1}%)");
             }
         }
 
