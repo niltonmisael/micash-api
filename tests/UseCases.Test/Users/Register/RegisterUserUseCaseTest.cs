@@ -1,5 +1,6 @@
 ﻿using CommonTestUtilities.Cache;
 using CommonTestUtilities.Cryptography;
+using CommonTestUtilities.Jobs;
 using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
@@ -8,6 +9,7 @@ using FluentAssertions;
 using MiCash.Application.UseCases.Users.Register;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace UseCases.Test.Users.Register
 {
@@ -60,7 +62,43 @@ namespace UseCases.Test.Users.Register
             result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
         }
 
-        private RegisterUserUseCase CreateUseCase ( string? email = null)
+        [Fact]
+        public async Task Welcome_Email_Is_Queued_After_The_Account_Is_Saved ()
+        {
+            var jobs = new FakeBackgroundJobService();
+
+            await CreateUseCase(jobs: jobs).Execute(RequestRegisterUserJsonBuilder.Build() , CancellationToken.None);
+
+            jobs.EnqueuedWelcomeEmails.Should().ContainSingle();
+        }
+
+        [Fact]
+        public async Task Registration_Succeeds_Even_If_The_Welcome_Email_Cannot_Be_Queued ()
+        {
+            var jobs = new FakeBackgroundJobService { ThrowOnEnqueue = true };
+            var request = RequestRegisterUserJsonBuilder.Build();
+
+            var result = await CreateUseCase(jobs: jobs).Execute(request , CancellationToken.None);
+
+            result.Name.Should().Be(request.Name);
+            result.Token.Should().NotBeNullOrWhiteSpace();
+            jobs.EnqueuedWelcomeEmails.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task Invalid_Registration_Does_Not_Queue_The_Welcome_Email ()
+        {
+            var jobs = new FakeBackgroundJobService();
+            var request = RequestRegisterUserJsonBuilder.Build();
+            request.Name = string.Empty;
+
+            var act = () => CreateUseCase(jobs: jobs).Execute(request , CancellationToken.None);
+
+            await act.Should().ThrowAsync<ErrorOnValidationException>();
+            jobs.EnqueuedWelcomeEmails.Should().BeEmpty();
+        }
+
+        private RegisterUserUseCase CreateUseCase ( string? email = null , FakeBackgroundJobService? jobs = null )
         {
             var mapper = MapperBuilder.Build();
             var passwordEncripter = new PasswordEncrypterBuilder().Build();
@@ -83,7 +121,9 @@ namespace UseCases.Test.Users.Register
                 unitOfWork , 
                 tokenGenerator,
                 refreshTokenGenerator,
-                redisCacheService.Build()
+                redisCacheService.Build() ,
+                jobs ?? new FakeBackgroundJobService() ,
+                NullLogger<RegisterUserUseCase>.Instance
                 );
 
         }

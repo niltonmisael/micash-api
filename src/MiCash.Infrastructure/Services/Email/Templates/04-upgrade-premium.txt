@@ -1,0 +1,28 @@
+PREMIUM ATIVO
+
+Seu plano agora é Premium, {{nome}}!
+
+Pagamento confirmado e plano atualizado. Obrigado por apoiar o MiCash, tudo do Premium já está liberado na sua conta.
+
+Plano contratado: {{plano_nome}}
+Valor: {{plano_valor}} / {{plano_periodicidade}}
+Início: {{data_inicio}}
+Próxima renovação: {{data_renovacao}}
+
+O que você ganhou:
+- Contas e categorias ilimitadas
+- Metas financeiras ilimitadas
+- Relatórios avançados e comparativos
+- Exportação dos seus dados
+- Mi Assistente sem limite de perguntas e com registro por voz
+- Suporte prioritário
+
+Aproveitar o Premium: {{url_app}}
+
+Você pode ver ou gerenciar sua assinatura a qualquer momento em Perfil → Assinatura: {{url_assinatura}}
+
+--
+Você recebeu este e-mail porque a assinatura da sua conta MiCash foi alterada.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

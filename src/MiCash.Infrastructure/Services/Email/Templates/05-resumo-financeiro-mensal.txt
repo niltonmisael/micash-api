@@ -1,0 +1,31 @@
+Resumo mensal · {{mes_referencia}}
+
+Seu mês em números, {{nome}}
+Veja como foram suas finanças em {{mes_referencia}}.
+
+Saldo do mês: {{saldo_mensal}}
+Receitas: {{total_receitas}}
+Despesas: {{total_despesas}}
+
+Comparado a {{mes_anterior}}:
+- Receitas: {{receitas_variacao}}
+- Despesas: {{despesas_variacao}}
+{{#categorias_bloco}}
+Onde você mais gastou:
+{{#categorias}}- {{cat_nome}}: {{cat_valor}} ({{cat_percentual}}%)
+{{/categorias}}{{/categorias_bloco}}
+Mais destaques:
+- Maior despesa: {{maior_despesa_valor}} ({{maior_despesa_descricao}})
+- Transações no mês: {{qtd_transacoes}}
+- Meta em foco: {{meta_percentual}} ({{meta_nome}})
+
+Ver relatório completo: {{url_app}}
+
+Pequenos ajustes todo mês fazem grande diferença. Continue assim!
+
+--
+Você recebe este resumo porque ativou os e-mails mensais no MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+Gerenciar e-mails: {{url_preferencias}}
+© {{ano}} MiCash. Controle financeiro pessoal.

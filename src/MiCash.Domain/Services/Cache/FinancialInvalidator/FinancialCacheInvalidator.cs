@@ -48,6 +48,12 @@
                     CacheKeys.ExpensesByCategory(
                         userId ,
                         year ,
+                        month)) ,
+
+                _redisCacheService.RemoveAsync(
+                    CacheKeys.DailySummary(
+                        userId ,
+                        year ,
                         month))
             );
         }

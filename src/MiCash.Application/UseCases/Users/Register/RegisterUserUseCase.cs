@@ -8,6 +8,8 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.Models;
+using MiCash.Domain.Services.Jobs;
+using Microsoft.Extensions.Logging;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
@@ -23,6 +25,8 @@ namespace MiCash.Application.UseCases.Users.Register
         private readonly IAccessTokenGenerator _tokenGenerator;
         private readonly IRefreshTokenGenerator _refreshTokenGenerator;
         private readonly IRedisCacheService _redisCacheService;
+        private readonly IBackgroundJobService _backgroundJobs;
+        private readonly ILogger<RegisterUserUseCase> _logger;
 
         public RegisterUserUseCase (
             IMapper mapper, 
@@ -32,9 +36,13 @@ namespace MiCash.Application.UseCases.Users.Register
             IUnitOfWork unitOfWork, 
             IAccessTokenGenerator tokenGenerator,
             IRefreshTokenGenerator refreshTokenGenerator ,
-            IRedisCacheService redisCacheService
+            IRedisCacheService redisCacheService ,
+            IBackgroundJobService backgroundJobs ,
+            ILogger<RegisterUserUseCase> logger
         )
         {
+            _backgroundJobs = backgroundJobs;
+            _logger = logger;
             _mapper = mapper;
             _passwordEncripter = passwordEncripter;
             _userReadOnlyRepository = userReadOnlyRepository;
@@ -57,6 +65,8 @@ namespace MiCash.Application.UseCases.Users.Register
 
             await _unitOfWork.Commit(cancellationToken);
 
+            EnqueueWelcomeEmail(user.Id);
+
             var token = _tokenGenerator.Generate(user);
 
             var refreshToken = _refreshTokenGenerator.Generate();
@@ -65,7 +75,8 @@ namespace MiCash.Application.UseCases.Users.Register
             {
                 UserIdentifier = user.UserIdentifier,
                 Token = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                ExpiresAt = DateTime.UtcNow.AddDays(7) ,
+                IssuedAt = DateTime.UtcNow
             };
 
             await _redisCacheService.SetAsync(
@@ -80,6 +91,16 @@ namespace MiCash.Application.UseCases.Users.Register
                 Token = token ,
                 RefreshToken = refreshToken ,
             };
+        }
+
+        // Sent by Hangfire (with retries): the account is already saved and a failure here never undoes it.
+        private void EnqueueWelcomeEmail ( long userId )
+        {
+            try {
+                _backgroundJobs.EnqueueWelcomeEmail(userId);
+            } catch ( System.Exception ex ) {
+                _logger.LogError(ex , "Could not enqueue the welcome e-mail of user {UserId}." , userId);
+            }
         }
 
         private async Task Validate (RequestRegisterUserJson request)

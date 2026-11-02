@@ -3,11 +3,13 @@ using Hangfire.PostgreSql;
 using MiCash.API.Extensions;
 using MiCash.API.Filters;
 using MiCash.API.Middleware;
+using MiCash.API.RateLimiting;
 using MiCash.API.Token;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Infrastructure;
 using MiCash.Infrastructure.Extensions;
 using MiCash.Infrastructure.Migrations;
+using MiCash.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -52,6 +54,7 @@ builder.Services.AddSwaggerGen(config => {
 });
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
 builder.Services.AddScoped<RequireActiveSubscriptionFilter>();
+builder.Services.AddPasswordResetRateLimit();
 builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
@@ -126,12 +129,17 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseRateLimiter();
+
 app.MapControllers();
 
 if(builder.Configuration.IsTestEnvironment() == false ) {
      
     await MigrateDataBase();
 
+    // Push notifications: dispatch (every minute) and Expo receipts (every 5 min) on the existing Hangfire.
+    PushNotificationRecurringJobs.Register(
+        app.Services.GetRequiredService<IRecurringJobManager>());
 }
 
 

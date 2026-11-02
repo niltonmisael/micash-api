@@ -6,6 +6,12 @@
         int month )
         => $"dashboard:monthly-summary:{userId}:{year}:{month}";
 
+    public static string DailySummary (
+        long userId ,
+        int year ,
+        int month )
+        => $"dashboard:daily-summary:{userId}:{year}:{month}";
+
     public static string ExpensesByCategory (
         long userId ,
         int year ,

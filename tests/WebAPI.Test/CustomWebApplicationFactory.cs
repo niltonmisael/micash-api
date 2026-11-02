@@ -1,5 +1,9 @@
 ﻿using CommonTestUtilities.Cache;
 using CommonTestUtilities.AI;
+using CommonTestUtilities.Jobs;
+using CommonTestUtilities.Email;
+using MiCash.Domain.Services.Email;
+using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.IA;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Enums;
@@ -26,6 +30,10 @@ namespace WebAPI.Test
         private long _expenseId;
         private long _categoryId;
         private string _tokenWithoutSubscription = string.Empty;
+
+        public FakeBackgroundJobService BackgroundJobs { get; } = new();
+
+        public FakeEmailService Emails { get; } = new();
 
         public string GetToken () => _token;
 
@@ -54,6 +62,12 @@ namespace WebAPI.Test
                         FakeRedisCacheService>();
 
                     services.AddScoped<IAIService , FakeAIService>(_ => new FakeAIService());
+
+                    // No Hangfire storage in tests: record what would be enqueued.
+                    services.AddSingleton<IBackgroundJobService>(BackgroundJobs);
+
+                    // No real e-mails: the jobs render the templates and hand them to this fake.
+                    services.AddSingleton<IEmailService>(Emails);
 
                     var provider = services
                         .AddEntityFrameworkInMemoryDatabase()

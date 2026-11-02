@@ -1,6 +1,15 @@
 ﻿using MiCash.Application.AutoMapper;
 using MiCash.Application.AI.PromptBuilders;
 using MiCash.Application.Jobs.Subscriptions;
+using MiCash.Application.Jobs.PushNotifications;
+using MiCash.Application.Jobs.Email;
+using MiCash.Application.UseCases.Auth.PasswordReset;
+using MiCash.Application.Services.Email;
+using MiCash.Application.Services.PushNotifications;
+using MiCash.Domain.Services.Email;
+using MiCash.Application.UseCases.PushDevices;
+using MiCash.Application.UseCases.Notifications;
+using MiCash.Domain.Services.PushNotifications;
 using MiCash.Application.UseCases.FinancialChat;
 using MiCash.Application.UseCases.FinancialChat.History;
 using MiCash.Application.UseCases.FinancialChat.StartConversation;
@@ -17,6 +26,7 @@ using MiCash.Application.UseCases.Dashboard.GetExpensesByCategory;
 using MiCash.Application.UseCases.Dashboards.ExpensesByCategory;
 using MiCash.Application.UseCases.Dashboards.LatestExpenses;
 using MiCash.Application.UseCases.Dashboards.MonthlySummary;
+using MiCash.Application.UseCases.Dashboards.DailySummary;
 using MiCash.Application.UseCases.Expenses.Delete;
 using MiCash.Application.UseCases.Expenses.GetAll;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -109,6 +119,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IUpdateIncomeUseCase , UpdateIncomeUseCase>();
             services.AddScoped<IDeleteExpenseUseCase , DeleteExpenseUseCase>();
             services.AddScoped<IGetMonthlySummaryUseCase , GetMonthlySummaryUseCase>();
+            services.AddScoped<IGetDailySummaryUseCase , GetDailySummaryUseCase>();
             services.AddScoped<IGetExpensesByCategoryUseCase , GetExpensesByCategoryUseCase>();
             services.AddScoped<IGetLatestExpensesUseCase , GetLatestExpensesUseCase>();
             services.AddScoped<IGetAllPlansUseCase , GetAllPlansUseCase>();
@@ -151,6 +162,23 @@ namespace MiCash.Infrastructure
             services.AddScoped<IFinancialChatPromptBuilder , FinancialChatPromptBuilder>();
             services.AddScoped<IGetChatHistoryUseCase , GetChatHistoryUseCase>();
             services.AddScoped<IStartConversationUseCase , StartConversationUseCase>();
+            services.AddScoped<IRegisterPushDeviceUseCase , RegisterPushDeviceUseCase>();
+            services.AddScoped<IDeactivatePushDeviceUseCase , DeactivatePushDeviceUseCase>();
+            services.AddScoped<IGetPushDevicesUseCase , GetPushDevicesUseCase>();
+            services.AddScoped<ISendTestPushNotificationUseCase , SendTestPushNotificationUseCase>();
+            services.AddScoped<IPushNotificationService , PushNotificationService>();
+            services.AddScoped<ITransactionalEmailService , TransactionalEmailService>();
+            services.AddScoped<IGetNotificationsUseCase , GetNotificationsUseCase>();
+            services.AddScoped<IGetUnreadNotificationsCountUseCase , GetUnreadNotificationsCountUseCase>();
+            services.AddScoped<IMarkNotificationAsReadUseCase , MarkNotificationAsReadUseCase>();
+            services.AddScoped<IMarkAllNotificationsAsReadUseCase , MarkAllNotificationsAsReadUseCase>();
+            services.AddScoped<IWelcomeEmailJob , WelcomeEmailJob>();
+            services.AddScoped<IPasswordResetEmailJob , PasswordResetEmailJob>();
+            services.AddScoped<IRequestPasswordResetUseCase , RequestPasswordResetUseCase>();
+            services.AddScoped<IVerifyPasswordResetCodeUseCase , VerifyPasswordResetCodeUseCase>();
+            services.AddScoped<IResetPasswordUseCase , ResetPasswordUseCase>();
+            services.AddScoped<IPushNotificationDispatchJob , PushNotificationDispatchJob>();
+            services.AddScoped<IPushReceiptCheckJob , PushReceiptCheckJob>();
         }
     }
 }

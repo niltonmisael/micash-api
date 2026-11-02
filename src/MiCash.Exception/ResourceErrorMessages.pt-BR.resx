@@ -279,4 +279,40 @@
   <data name="SAVINGS_GOAL_NOT_FOUND" xml:space="preserve">
     <value>Meta de economia não encontrada.</value>
   </data>
+  <data name="PUSH_TOKEN_INVALID" xml:space="preserve">
+    <value>Token de notificação inválido.</value>
+  </data>
+  <data name="PUSH_PLATFORM_INVALID" xml:space="preserve">
+    <value>A plataforma deve ser android ou ios.</value>
+  </data>
+  <data name="PUSH_DEVICE_ID_TOO_LONG" xml:space="preserve">
+    <value>O identificador do aparelho deve ter no máximo 200 caracteres.</value>
+  </data>
+  <data name="PUSH_DEVICE_NAME_TOO_LONG" xml:space="preserve">
+    <value>O nome do aparelho deve ter no máximo 100 caracteres.</value>
+  </data>
+  <data name="PUSH_DEVICE_NOT_FOUND" xml:space="preserve">
+    <value>Aparelho não encontrado.</value>
+  </data>
+  <data name="PUSH_NO_ACTIVE_DEVICES" xml:space="preserve">
+    <value>Nenhum aparelho com notificações ativadas.</value>
+  </data>
+  <data name="PASSWORD_RESET_CODE_FORMAT" xml:space="preserve">
+    <value>Informe o código de 6 dígitos enviado por e-mail.</value>
+  </data>
+  <data name="PASSWORD_RESET_CODE_INVALID" xml:space="preserve">
+    <value>Código inválido ou expirado. Confira o código ou solicite um novo.</value>
+  </data>
+  <data name="PASSWORD_RESET_TOKEN_INVALID" xml:space="preserve">
+    <value>A autorização para redefinir a senha expirou ou já foi usada. Solicite um novo código.</value>
+  </data>
+  <data name="TOO_MANY_REQUESTS" xml:space="preserve">
+    <value>Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.</value>
+  </data>
+  <data name="NOTIFICATION_NOT_FOUND" xml:space="preserve">
+    <value>Notificação não encontrada.</value>
+  </data>
+  <data name="NEW_PASSWORD_SAME_AS_CURRENT" xml:space="preserve">
+    <value>A nova senha deve ser diferente da senha atual.</value>
+  </data>
 </root>

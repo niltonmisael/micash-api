@@ -38,6 +38,15 @@ namespace MiCash.Application.UseCases.Login.Refresh
                 throw new InvalidTokenException();
             }
 
+            // After a password reset, sessions opened before it can no longer be renewed.
+            var passwordChanged = await _redisCacheService.GetAsync<PasswordChangedData>(
+                PasswordChangedData.Key(refreshTokenData.UserIdentifier));
+
+            if ( passwordChanged != null && refreshTokenData.IssuedAt < passwordChanged.ChangedAt ) {
+                await _redisCacheService.RemoveAsync($"refreshToken:{request.RefreshToken}");
+                throw new InvalidTokenException();
+            }
+
             var user = await _userReadOnlyRepository.GetByUserIdentifier(refreshTokenData.UserIdentifier);
 
             if( user == null ) {
@@ -54,7 +63,8 @@ namespace MiCash.Application.UseCases.Login.Refresh
             {
                 UserIdentifier = user.UserIdentifier ,
                 Token = newRefreshToken ,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7) ,
+                IssuedAt = DateTime.UtcNow
             };
 
             await _redisCacheService.SetAsync(

@@ -6,8 +6,10 @@ using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Repositories.SavingsGoals;
 using MiCash.Domain.Repositories.Incomes;
+using MiCash.Domain.Repositories.PasswordResets;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
+using MiCash.Domain.Repositories.PushNotifications;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Repositories.WebHook;
@@ -15,10 +17,12 @@ using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Security.WebHook;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Email;
 using MiCash.Domain.Services.IA;
 using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Domain.Services.Payments;
+using MiCash.Domain.Services.PushNotifications;
 using MiCash.Infrastructure.AI.Services;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
@@ -27,13 +31,17 @@ using MiCash.Infrastructure.Resilience.Policies;
 using MiCash.Infrastructure.Security.Tokens;
 using MiCash.Infrastructure.Security.WebHook;
 using MiCash.Infrastructure.Services.Cache.Redis;
+using MiCash.Infrastructure.Services.Email;
 using MiCash.Infrastructure.Services.IA.Configuration;
 using MiCash.Infrastructure.Services.Jobs;
 using MiCash.Infrastructure.Services.LoggedUser;
 using MiCash.Infrastructure.Services.Payments;
+using MiCash.Infrastructure.Services.PushNotifications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Resend;
 using StackExchange.Redis;
 
 namespace MiCash.Infrastructure
@@ -50,6 +58,8 @@ namespace MiCash.Infrastructure
             AddRedis(services , configuration);
             AddToken(services , configuration);
             AddIA(services , configuration);
+            AddPushNotifications(services , configuration);
+            AddEmail(services , configuration);
 
             if ( configuration.IsTestEnvironment() == false ) {
 
@@ -95,6 +105,17 @@ namespace MiCash.Infrastructure
             services.AddScoped<ISavingsGoalReadOnlyRepository , SavingsGoalRepository>();
             services.AddScoped<ISavingsGoalWriteOnlyRepository , SavingsGoalRepository>();
             services.AddScoped<ISavingsGoalUpdateOnlyRepository , SavingsGoalRepository>();
+            services.AddScoped<IPushDeviceReadOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPushDeviceWriteOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPushDeviceUpdateOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPushNotificationReadOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPushNotificationWriteOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPushDeliveryUpdateOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<INotificationCenterReadOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<INotificationCenterUpdateOnlyRepository , PushNotificationRepository>();
+            services.AddScoped<IPasswordResetReadOnlyRepository , PasswordResetRepository>();
+            services.AddScoped<IPasswordResetWriteOnlyRepository , PasswordResetRepository>();
+            services.AddScoped<IPasswordResetUpdateOnlyRepository , PasswordResetRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {
@@ -162,5 +183,60 @@ namespace MiCash.Infrastructure
             }).AddAIResilience();
         }
 
-    } 
+        private static void AddPushNotifications ( IServiceCollection services , IConfiguration configuration )
+        {
+            services.Configure<ExpoPushSettings>(
+                configuration.GetSection(ExpoPushSettings.SECTION));
+
+            var settings = configuration.GetSection(ExpoPushSettings.SECTION).Get<ExpoPushSettings>() ?? new ExpoPushSettings();
+
+            // Circuit breaker only: no HTTP retry, a resent "send" could duplicate notifications
+            // (temporary failures are retried by the dispatch job).
+            services.AddHttpClient<IExpoPushClient , ExpoPushClient>(client => {
+                client.BaseAddress = new Uri(settings.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AutomaticDecompression = System.Net.DecompressionMethods.All
+            })
+            .AddPolicyHandler(HttpCircuitBreakerPolicy.Create());
+        }
+
+        private static void AddEmail ( IServiceCollection services , IConfiguration configuration )
+        {
+            // Validated on first use (first e-mail), not at startup: the API keeps running in an
+            // environment without Resend configured, and only sending e-mails fails.
+            services.AddOptions<ResendOptions>()
+                .Bind(configuration.GetSection(ResendOptions.SECTION));
+
+            services.AddSingleton<IValidateOptions<ResendOptions> , ResendOptionsValidator>();
+
+            // The SDK options come from ours, so the key is read from a single place.
+            services.AddOptions<ResendClientOptions>()
+                .Configure<IOptions<ResendOptions>>(( client , resend ) => {
+                    client.ApiToken = resend.Value.ApiKey;
+                    client.ThrowExceptions = true;
+                });
+
+            // Circuit breaker only: no HTTP retry, a resent request could duplicate the e-mail
+            // (the caller decides, using EmailServiceException.IsTransient and an idempotency key).
+            services.AddHttpClient<IResend , ResendClient>(client => {
+                client.Timeout = EMAIL_TIMEOUT;
+            })
+            .AddPolicyHandler(HttpCircuitBreakerPolicy.Create());
+
+            services.AddScoped<IEmailService , ResendEmailService>();
+
+            // Templates (embedded in this assembly) and their links.
+            services.AddOptions<EmailTemplateOptions>()
+                .Bind(configuration.GetSection(EmailTemplateOptions.SECTION));
+
+            services.AddSingleton<IValidateOptions<EmailTemplateOptions> , EmailTemplateOptionsValidator>();
+            services.AddSingleton<IEmailTemplateRenderer , EmailTemplateRenderer>();
+        }
+
+        private static readonly TimeSpan EMAIL_TIMEOUT = TimeSpan.FromSeconds(15);
+
+    }
 }

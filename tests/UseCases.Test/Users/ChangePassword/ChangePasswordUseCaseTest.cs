@@ -1,4 +1,8 @@
-﻿using CommonTestUtilities.Cryptography;
+﻿using CommonTestUtilities.Cache;
+using CommonTestUtilities.Cryptography;
+using CommonTestUtilities.Time;
+using MiCash.Domain.Services.Cache.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Repositories;
@@ -69,14 +73,64 @@ namespace UseCases.Test.Users.ChangePassword
                     e.GetErrors().Contains(ResourceErrorMessages.PASSWORD_DIFFERENT_CURRENT_PASSWORD));
         }
 
-        private static ChangePasswordUseCase CreateUseCase ( User user , string? password = null )
+        [Fact]
+        public async Task Error_NewPassword_Same_As_Current ()
+        {
+            var user = UserBuilder.Build();
+            var request = RequestChangePasswordJsonBuilder.Build();
+            request.Password = "SenhaAtual1!";
+            request.NewPassword = "SenhaAtual1!";
+            var cache = new FakeRedisCacheService();
+
+            var act = () => CreateUseCase(user , request.Password , cache).Execute(request , CancellationToken.None);
+
+            (await act.Should().ThrowAsync<ErrorOnValidationException>())
+                .Which.GetErrors().Should().ContainSingle(ResourceErrorMessages.NEW_PASSWORD_SAME_AS_CURRENT);
+            (await cache.GetAsync<PasswordChangedData>(PasswordChangedData.Key(user.UserIdentifier))).Should().BeNull();
+        }
+
+        [Fact]
+        public async Task Sessions_Opened_Before_The_Change_Can_No_Longer_Be_Renewed ()
+        {
+            var user = UserBuilder.Build();
+            var request = RequestChangePasswordJsonBuilder.Build();
+            var cache = new FakeRedisCacheService();
+            var time = new MutableTimeProvider(new DateTimeOffset(2026 , 11 , 2 , 12 , 0 , 0 , TimeSpan.Zero));
+
+            await CreateUseCase(user , request.Password , cache , time).Execute(request , CancellationToken.None);
+
+            var changed = await cache.GetAsync<PasswordChangedData>(PasswordChangedData.Key(user.UserIdentifier));
+            changed!.ChangedAt.Should().Be(time.UtcNow);
+        }
+
+        [Fact]
+        public async Task Wrong_Current_Password_Does_Not_Revoke_Sessions ()
+        {
+            var user = UserBuilder.Build();
+            var cache = new FakeRedisCacheService();
+
+            var act = () => CreateUseCase(user , cache: cache).Execute(RequestChangePasswordJsonBuilder.Build() , CancellationToken.None);
+
+            await act.Should().ThrowAsync<ErrorOnValidationException>();
+            (await cache.GetAsync<PasswordChangedData>(PasswordChangedData.Key(user.UserIdentifier))).Should().BeNull();
+        }
+
+        private static ChangePasswordUseCase CreateUseCase (
+            User user ,
+            string? password = null ,
+            FakeRedisCacheService? cache = null ,
+            TimeProvider? time = null )
         {
             var unitOfWork = UnitOfWorkBuilder.Build();
             var userUpdateRepository = UserUpdateOnlyRepositoryBuilder.Build(user);
             var loggedUser = LoggedUserBuilder.Build(user);
             var passwordEncripter = new PasswordEncrypterBuilder().Verify(password).Build();
 
-            return new ChangePasswordUseCase(loggedUser , userUpdateRepository , unitOfWork, passwordEncripter);
+            return new ChangePasswordUseCase(
+                loggedUser , userUpdateRepository , unitOfWork , passwordEncripter ,
+                cache ?? new FakeRedisCacheService() ,
+                time ?? TimeProvider.System ,
+                NullLogger<ChangePasswordUseCase>.Instance);
         }
     }
 }

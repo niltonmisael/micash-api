@@ -545,5 +545,77 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("SAVINGS_GOAL_NOT_FOUND", resourceCulture);
             }
         }
+
+        public static string PUSH_TOKEN_INVALID {
+            get {
+                return ResourceManager.GetString("PUSH_TOKEN_INVALID", resourceCulture);
+            }
+        }
+
+        public static string PUSH_PLATFORM_INVALID {
+            get {
+                return ResourceManager.GetString("PUSH_PLATFORM_INVALID", resourceCulture);
+            }
+        }
+
+        public static string PUSH_DEVICE_ID_TOO_LONG {
+            get {
+                return ResourceManager.GetString("PUSH_DEVICE_ID_TOO_LONG", resourceCulture);
+            }
+        }
+
+        public static string PUSH_DEVICE_NAME_TOO_LONG {
+            get {
+                return ResourceManager.GetString("PUSH_DEVICE_NAME_TOO_LONG", resourceCulture);
+            }
+        }
+
+        public static string PUSH_DEVICE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("PUSH_DEVICE_NOT_FOUND", resourceCulture);
+            }
+        }
+
+        public static string PUSH_NO_ACTIVE_DEVICES {
+            get {
+                return ResourceManager.GetString("PUSH_NO_ACTIVE_DEVICES", resourceCulture);
+            }
+        }
+
+        public static string PASSWORD_RESET_CODE_FORMAT {
+            get {
+                return ResourceManager.GetString("PASSWORD_RESET_CODE_FORMAT", resourceCulture);
+            }
+        }
+
+        public static string PASSWORD_RESET_CODE_INVALID {
+            get {
+                return ResourceManager.GetString("PASSWORD_RESET_CODE_INVALID", resourceCulture);
+            }
+        }
+
+        public static string PASSWORD_RESET_TOKEN_INVALID {
+            get {
+                return ResourceManager.GetString("PASSWORD_RESET_TOKEN_INVALID", resourceCulture);
+            }
+        }
+
+        public static string NEW_PASSWORD_SAME_AS_CURRENT {
+            get {
+                return ResourceManager.GetString("NEW_PASSWORD_SAME_AS_CURRENT", resourceCulture);
+            }
+        }
+
+        public static string NOTIFICATION_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("NOTIFICATION_NOT_FOUND", resourceCulture);
+            }
+        }
+
+        public static string TOO_MANY_REQUESTS {
+            get {
+                return ResourceManager.GetString("TOO_MANY_REQUESTS", resourceCulture);
+            }
+        }
     }
 }

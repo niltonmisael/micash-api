@@ -48,6 +48,21 @@ namespace WebAPI.Test
             return await _httpClient.DeleteAsync(requestUri);
 
         }
+        protected async Task<HttpResponseMessage> DoDelete ( string requestUri , object request , string token , string culture = "pt-BR" )
+        {
+
+            AuthorizeRequest(token);
+            ChangeRequestCulture(culture);
+
+            using var message = new HttpRequestMessage(HttpMethod.Delete , requestUri)
+            {
+                Content = JsonContent.Create(request)
+            };
+
+            return await _httpClient.SendAsync(message);
+
+        }
+
         protected async Task<HttpResponseMessage> DoPut ( string requestUri , object request, string token , string culture = "pt-BR" )
         {
 

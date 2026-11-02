@@ -60,7 +60,8 @@ namespace MiCash.Application.UseCases.Auth.Login
             {
                 UserIdentifier = user.UserIdentifier ,
                 Token = refreshToken ,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7) ,
+                IssuedAt = DateTime.UtcNow
             };
 
             await _redisCacheService.SetAsync(

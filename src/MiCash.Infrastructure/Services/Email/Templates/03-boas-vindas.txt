@@ -1,0 +1,20 @@
+Bem-vindo ao MiCash, {{nome}}!
+
+Sua conta está pronta. O MiCash foi criado para deixar o controle do seu dinheiro simples, claro e sem planilhas complicadas.
+
+- Receitas e despesas: registre tudo em poucos toques e acompanhe o saldo do mês em tempo real.
+- Categorias: organize seus gastos do seu jeito e descubra para onde o dinheiro está indo.
+- Relatórios claros: gráficos e comparativos mensais para você tomar decisões com mais segurança.
+- Metas financeiras: defina objetivos, limites de gasto por categoria e acompanhe seu progresso.
+- Mi Assistente: pergunte sobre suas finanças ou registre uma despesa só escrevendo, como numa conversa.
+
+Que tal começar agora? Cadastre sua primeira receita ou despesa, leva menos de um minuto.
+Começar a organizar: {{url_app}}
+
+Qualquer dúvida, é só responder pela Central de ajuda. Estamos aqui para ajudar.
+
+--
+Você recebeu este e-mail porque criou uma conta no MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

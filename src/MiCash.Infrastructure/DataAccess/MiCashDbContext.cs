@@ -22,6 +22,10 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<ConversationMessage> ConversationMessages { get; set; }
         public DbSet<SavingsGoal> SavingsGoals { get; set; }
         public DbSet<SavingsGoalMovement> SavingsGoalMovements { get; set; }
+        public DbSet<PushDevice> PushDevices { get; set; }
+        public DbSet<PushNotification> PushNotifications { get; set; }
+        public DbSet<PushNotificationDelivery> PushNotificationDeliveries { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
 
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )

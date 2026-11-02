@@ -1,0 +1,17 @@
+Recuperação de senha
+
+Olá, {{nome}}! Recebemos uma solicitação para redefinir a senha da conta associada a este e-mail. Use o código abaixo no aplicativo para criar uma nova senha.
+
+Seu código: {{codigo}}
+
+O código expira em {{validade_minutos}} minutos e só pode ser usado uma vez.
+
+Se não foi você quem pediu, ignore este e-mail. Sua senha atual continua a mesma e nada será alterado.
+
+Por segurança, nunca compartilhe este código. O MiCash não pede senha ou código por telefone, mensagem ou e-mail.
+
+--
+Você recebeu este e-mail porque houve um pedido de recuperação de senha no MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

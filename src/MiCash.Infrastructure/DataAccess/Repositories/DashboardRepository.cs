@@ -29,6 +29,28 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .SumAsync(i => i.Amount , cancellationToken);
         }
 
+        // The filters below must stay identical to GetTotalAmount*ByMonth: the last cumulative day of the
+        // daily summary has to match the monthly-summary totals.
+        public async Task<IReadOnlyList<DailyAmount>> GetDailyIncomesByMonthAsync ( long userId , int year , int month , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Incomes
+                .AsNoTracking()
+                .Where(i => i.UserId == userId && i.ReceivedAt.Year == year && i.ReceivedAt.Month == month)
+                .GroupBy(i => i.ReceivedAt.Day)
+                .Select(group => new DailyAmount { Day = group.Key , Amount = group.Sum(i => i.Amount) })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<DailyAmount>> GetDailyExpensesByMonthAsync ( long userId , int year , int month , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Expenses
+                .AsNoTracking()
+                .Where(expense => expense.UserId == userId && expense.ExpenseDate.Year == year && expense.ExpenseDate.Month == month)
+                .GroupBy(expense => expense.ExpenseDate.Day)
+                .Select(group => new DailyAmount { Day = group.Key , Amount = group.Sum(expense => expense.Amount) })
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<IEnumerable<ExpenseCategorySummary>> GetExpensesByCategoryAsync (
             long userId ,
             int year ,

@@ -1,0 +1,17 @@
+Confirme seu e-mail
+
+Olá, {{nome}}! Falta pouco para você começar a organizar suas finanças. Digite o código abaixo no aplicativo para confirmar seu endereço de e-mail.
+
+Seu código: {{codigo}}
+
+Este código é válido por {{validade_minutos}} minutos e só pode ser usado uma vez.
+
+Por segurança, não compartilhe este código com ninguém. A equipe do MiCash nunca pede seu código.
+
+Não criou uma conta no MiCash? Pode ignorar este e-mail com tranquilidade, nenhuma conta será ativada.
+
+--
+Você recebeu este e-mail porque um cadastro foi iniciado com este endereço.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.
