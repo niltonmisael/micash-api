@@ -180,7 +180,7 @@ namespace MiCash.Application.AI.PromptBuilders
 
             builder.AppendLine();
 
-            foreach ( var message in history.OrderBy(x => x.CreatedAt) ) {
+            foreach ( var message in history.OrderBy(x => x.Id) ) {
                 var role = message.Role switch
                 {
                     ConversationRole.User => "Usuário",

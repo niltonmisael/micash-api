@@ -1,6 +1,7 @@
 ﻿using MiCash.Application.AI.PromptBuilders;
 using MiCash.Communication.Requests.Chat;
 using MiCash.Communication.Responses.Chat;
+using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Services.FinancialChat;
 using MiCash.Domain.Services.IA;
@@ -47,7 +48,7 @@ namespace MiCash.Application.UseCases.FinancialChat
                 await _loggedUser.Get();
 
             var conversation =
-                await _conversationService.GetOrCreateConversationAsync(
+                await GetOrCreateConversationAsync(
                     user ,
                     cancellationToken);
 
@@ -67,27 +68,46 @@ namespace MiCash.Application.UseCases.FinancialChat
             var aiRequest =
                 _financialChatPromptBuilder.Build(context);
 
-            await _conversationMessageService.SaveUserMessageAsync(
-                conversation ,
-                chatMessage.Message ,
-                cancellationToken);
+            // Messages are only persisted (single commit below) if the AI answers.
+            var userMessage =
+                await _conversationMessageService.SaveUserMessageAsync(
+                    conversation ,
+                    chatMessage.Message ,
+                    cancellationToken);
 
             var aiResponse =
                 await _aiService.GenerateResponseAsync(
                     aiRequest ,
                     cancellationToken);
 
-            await _conversationMessageService.SaveAssistantMessageAsync(
-                conversation ,
-                aiResponse.Content ,
-                cancellationToken);
+            var assistantMessage =
+                await _conversationMessageService.SaveAssistantMessageAsync(
+                    conversation ,
+                    aiResponse.Content ,
+                    cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
 
             return new ResponseChatMessageJson
             {
-                Message = aiResponse.Content
+                Id = assistantMessage.Id ,
+                UserMessageId = userMessage.Id ,
+                ConversationId = conversation.Id ,
+                Message = aiResponse.Content ,
+                CreatedAt = assistantMessage.CreatedAt
             };
+        }
+
+        private async Task<Conversation> GetOrCreateConversationAsync ( User user , CancellationToken cancellationToken )
+        {
+            try {
+                return await _conversationService.GetOrCreateConversationAsync(user , cancellationToken);
+            } catch ( ConflictException ) {
+                // A concurrent first message (e.g. double tap) created the active conversation first;
+                // the unique index rejected ours, so continue in the winner.
+                return await _conversationService.GetActiveConversationAsync(user , cancellationToken)
+                    ?? throw new ConflictException();
+            }
         }
 
         private static void Validate ( RequestChatMessageJson request )

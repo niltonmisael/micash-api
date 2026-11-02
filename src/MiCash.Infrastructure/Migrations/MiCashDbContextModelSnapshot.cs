@@ -17,7 +17,7 @@ namespace MiCash.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.7")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -111,6 +111,10 @@ namespace MiCash.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId", "IsActive");
+
+                    b.HasIndex(new[] { "UserId" }, "ux_conversations_user_active")
+                        .IsUnique()
+                        .HasFilter("\"is_active\" = true");
 
                     b.ToTable("conversations", (string)null);
                 });
@@ -457,6 +461,105 @@ namespace MiCash.Infrastructure.Migrations
                     b.ToTable("processed_webhook", (string)null);
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.SavingsGoal", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly?>("Deadline")
+                        .HasColumnType("date")
+                        .HasColumnName("deadline");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("icon");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("TargetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("target_amount");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("savings_goal", (string)null);
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.SavingsGoalMovement", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<long>("SavingsGoalId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("savings_goal_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SavingsGoalId");
+
+                    b.ToTable("savings_goal_movement", (string)null);
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Subscription", b =>
                 {
                     b.Property<long>("Id")
@@ -687,6 +790,28 @@ namespace MiCash.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MiCash.Domain.Entities.SavingsGoal", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.SavingsGoalMovement", b =>
+                {
+                    b.HasOne("MiCash.Domain.Entities.SavingsGoal", "SavingsGoal")
+                        .WithMany("Movements")
+                        .HasForeignKey("SavingsGoalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SavingsGoal");
+                });
+
             modelBuilder.Entity("MiCash.Domain.Entities.Subscription", b =>
                 {
                     b.HasOne("MiCash.Domain.Entities.Plan", "Plan")
@@ -721,6 +846,11 @@ namespace MiCash.Infrastructure.Migrations
             modelBuilder.Entity("MiCash.Domain.Entities.Plan", b =>
                 {
                     b.Navigation("Subscriptions");
+                });
+
+            modelBuilder.Entity("MiCash.Domain.Entities.SavingsGoal", b =>
+                {
+                    b.Navigation("Movements");
                 });
 
             modelBuilder.Entity("MiCash.Domain.Entities.User", b =>

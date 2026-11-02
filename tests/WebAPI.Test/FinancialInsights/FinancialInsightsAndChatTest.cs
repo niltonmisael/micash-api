@@ -12,12 +12,26 @@ namespace WebAPI.Test.FinancialInsights
         private const string CHAT = "api/Chat/message";
 
         private readonly string _token;
+        private readonly string _tokenWithoutSubscription;
         private readonly DateTime _expenseDate;
 
         public FinancialInsightsAndChatTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
             _token = webApplicationFactory.GetToken();
+            _tokenWithoutSubscription = webApplicationFactory.GetTokenWithoutSubscription();
             _expenseDate = webApplicationFactory.GetDate();
+        }
+
+        [Fact]
+        public async Task Insights_Error_Without_Subscription ()
+        {
+            var result = await DoGet($"{INSIGHTS}?month={_expenseDate.Month}&year={_expenseDate.Year}" , _tokenWithoutSubscription);
+
+            result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+            var body = JsonDocument.Parse(await result.Content.ReadAsStringAsync()).RootElement;
+            // The second user only has a Pending checkout.
+            body.GetProperty("errorMessages")[0].GetString().Should().Be("Sua assinatura não está ativa.");
         }
 
         [Fact]

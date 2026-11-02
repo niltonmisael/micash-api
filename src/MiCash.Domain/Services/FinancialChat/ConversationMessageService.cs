@@ -21,7 +21,7 @@ namespace MiCash.Domain.Services.FinancialChat
             _unitOfWork = unitOfWork;
         }
 
-        public async Task SaveUserMessageAsync (
+        public async Task<ConversationMessage> SaveUserMessageAsync (
             Conversation conversation ,
             string message ,
             CancellationToken cancellationToken )
@@ -36,9 +36,10 @@ namespace MiCash.Domain.Services.FinancialChat
                 conversationMessage ,
                 cancellationToken);
 
+            return conversationMessage;
         }
 
-        public async Task SaveAssistantMessageAsync (
+        public async Task<ConversationMessage> SaveAssistantMessageAsync (
             Conversation conversation ,
             string message ,
             CancellationToken cancellationToken )
@@ -53,6 +54,7 @@ namespace MiCash.Domain.Services.FinancialChat
                 conversationMessage ,
                 cancellationToken);
 
+            return conversationMessage;
         }
 
         public async Task<IReadOnlyList<ConversationMessage>> GetHistoryAsync (

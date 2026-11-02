@@ -2,6 +2,8 @@
 using MiCash.Application.AI.PromptBuilders;
 using MiCash.Application.Jobs.Subscriptions;
 using MiCash.Application.UseCases.FinancialChat;
+using MiCash.Application.UseCases.FinancialChat.History;
+using MiCash.Application.UseCases.FinancialChat.StartConversation;
 using MiCash.Application.UseCases.FinancialInsights.Get;
 using MiCash.Application.UseCases.Auth.Login;
 using MiCash.Application.UseCases.Auth.Logout;
@@ -23,6 +25,12 @@ using MiCash.Application.UseCases.Expenses.Reports.Excel;
 using MiCash.Application.UseCases.Expenses.Reports.PDF;
 using MiCash.Application.UseCases.Expenses.Update;
 using MiCash.Application.UseCases.FinancialGoals.Alert;
+using MiCash.Application.UseCases.SavingsGoals.Delete;
+using MiCash.Application.UseCases.SavingsGoals.GetAll;
+using MiCash.Application.UseCases.SavingsGoals.GetById;
+using MiCash.Application.UseCases.SavingsGoals.Movements;
+using MiCash.Application.UseCases.SavingsGoals.Register;
+using MiCash.Application.UseCases.SavingsGoals.Update;
 using MiCash.Application.UseCases.FinancialGoals.Copy;
 using MiCash.Application.UseCases.FinancialGoals.Delete;
 using MiCash.Application.UseCases.FinancialGoals.GetById;
@@ -50,6 +58,7 @@ using MiCash.Application.UseCases.WebHook;
 using MiCash.Application.UseCases.WebHook.Handlers;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.FinancialChat;
+using MiCash.Domain.Services.Clock;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.FinancialInsights;
 using MiCash.Domain.Services.Jobs;
@@ -123,6 +132,14 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetFinancialGoalsProgressUseCase , GetFinancialGoalsProgressUseCase>();
             services.AddScoped<IGetFinancialGoalsAlertsUseCase , GetFinancialGoalsAlertsUseCase>();
             services.AddScoped<IFinancialGoalCalculator , FinancialGoalCalculator>();
+            services.AddSingleton(TimeProvider.System);
+            services.AddSingleton<IBrazilClock , BrazilClock>();
+            services.AddScoped<IRegisterSavingsGoalUseCase , RegisterSavingsGoalUseCase>();
+            services.AddScoped<IGetAllSavingsGoalsUseCase , GetAllSavingsGoalsUseCase>();
+            services.AddScoped<IGetSavingsGoalByIdUseCase , GetSavingsGoalByIdUseCase>();
+            services.AddScoped<IUpdateSavingsGoalUseCase , UpdateSavingsGoalUseCase>();
+            services.AddScoped<IDeleteSavingsGoalUseCase , DeleteSavingsGoalUseCase>();
+            services.AddScoped<IRegisterSavingsMovementUseCase , RegisterSavingsMovementUseCase>();
             services.AddScoped<IFinancialInsightAnalyzer ,FinancialInsightAnalyzer>();
             services.AddScoped<IFinancialCacheInvalidator ,FinancialCacheInvalidator>();
             services.AddScoped<IConversationService , ConversationService>();
@@ -132,6 +149,8 @@ namespace MiCash.Infrastructure
             services.AddScoped<IFinancialInsightPromptBuilder , FinancialInsightPromptBuilder>();
             services.AddScoped<IFinancialChatUseCase , FinancialChatUseCase>();
             services.AddScoped<IFinancialChatPromptBuilder , FinancialChatPromptBuilder>();
+            services.AddScoped<IGetChatHistoryUseCase , GetChatHistoryUseCase>();
+            services.AddScoped<IStartConversationUseCase , StartConversationUseCase>();
         }
     }
 }

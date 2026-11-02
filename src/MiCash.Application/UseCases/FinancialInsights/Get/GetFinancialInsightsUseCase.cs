@@ -136,10 +136,15 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
                 "Erro ao gerar insights utilizando a MI.");
         }
 
-        await _redisCacheService.SetAsync(
-            cacheKey ,
-            response ,
-            CacheExpiration.FinancialInsights);
+        // Only cache the complete response: if the AI failed (transient outage), the next
+        // request should try again instead of serving a response without the AI analysis
+        // for the whole cache window. The circuit breaker protects the provider meanwhile.
+        if ( response.ArtificialInsight is not null ) {
+            await _redisCacheService.SetAsync(
+                cacheKey ,
+                response ,
+                CacheExpiration.FinancialInsights);
+        }
 
         return response;
     }

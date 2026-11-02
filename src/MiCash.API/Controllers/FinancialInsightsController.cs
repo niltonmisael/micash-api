@@ -1,4 +1,5 @@
-﻿using MiCash.Application.UseCases.FinancialInsights.Get;
+﻿using MiCash.API.Attributes;
+using MiCash.Application.UseCases.FinancialInsights.Get;
 using MiCash.Communication.Requests.FinancialInsights;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.FinancialInsights;
@@ -14,10 +15,12 @@ namespace MiCash.API.Controllers
     public class FinancialInsightsController : ControllerBase
     {
         [HttpGet]
+        [RequireActiveSubscription]
         [ProducesResponseType(
             typeof(ResponseFinancialInsightsJson) ,
             StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Get (
             [FromServices] IGetFinancialInsightsUseCase useCase ,
             [FromQuery] RequestFinancialInsightJson request ,

@@ -2,6 +2,7 @@
 using CommonTestUtilities.AI;
 using MiCash.Domain.Services.IA;
 using MiCash.Domain.Entities;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.Cache;
@@ -24,8 +25,12 @@ namespace WebAPI.Test
         private DateTime _date = DateTime.Now;
         private long _expenseId;
         private long _categoryId;
+        private string _tokenWithoutSubscription = string.Empty;
 
         public string GetToken () => _token;
+
+        /// <summary>Token of a second user whose only subscription is still Pending (not a subscriber).</summary>
+        public string GetTokenWithoutSubscription () => _tokenWithoutSubscription;
 
         public string GetEmail () => _email;
 
@@ -134,6 +139,60 @@ namespace WebAPI.Test
             _date = expense.ExpenseDate;
 
             _token = accessTokenGenerator.Generate(user);
+
+            SeedSubscriptions(dbContext , accessTokenGenerator , passwordEncripter , user);
+        }
+
+        // The main user is an active subscriber. A second user has only a Pending checkout,
+        // inserted BEFORE the active one on purpose: it guards against the old
+        // "(UserId && Active) || Pending" precedence bug that returned another user's subscription.
+        private void SeedSubscriptions (
+            MiCashDbContext dbContext ,
+            IAccessTokenGenerator accessTokenGenerator ,
+            IPasswordEncripter passwordEncripter ,
+            User subscriber )
+        {
+            var plan = new Plan
+            {
+                Name = "Premium" ,
+                Price = 19.90m ,
+                IsActive = true ,
+                PagarmePlanId = "plan_test"
+            };
+
+            dbContext.Plans.Add(plan);
+
+            var otherUser = new User
+            {
+                Name = "Usuário Sem Assinatura" ,
+                Email = "sem.assinatura@micash.com" ,
+                Phone = "43988888888" ,
+                PasswordHash = passwordEncripter.Encrypt("123456") ,
+                UserIdentifier = Guid.NewGuid()
+            };
+
+            dbContext.Users.Add(otherUser);
+            dbContext.SaveChanges();
+
+            dbContext.Subscriptions.Add(new Subscription
+            {
+                UserId = otherUser.Id ,
+                PlanId = plan.Id ,
+                Status = SubscriptionStatus.Pending ,
+                StartsAt = DateTime.UtcNow
+            });
+            dbContext.SaveChanges();
+
+            dbContext.Subscriptions.Add(new Subscription
+            {
+                UserId = subscriber.Id ,
+                PlanId = plan.Id ,
+                Status = SubscriptionStatus.Active ,
+                StartsAt = DateTime.UtcNow
+            });
+            dbContext.SaveChanges();
+
+            _tokenWithoutSubscription = accessTokenGenerator.Generate(otherUser);
         }
     }
 }

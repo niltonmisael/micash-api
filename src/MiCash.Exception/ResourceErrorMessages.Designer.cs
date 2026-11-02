@@ -437,5 +437,113 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("CHAT_MESSAGE_TOO_LONG", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a This feature requires an active subscription..
+        /// </summary>
+        public static string SUBSCRIPTION_REQUIRED {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_REQUIRED", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your subscription is not active..
+        /// </summary>
+        public static string SUBSCRIPTION_NOT_ACTIVE {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_NOT_ACTIVE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The operation conflicted with another one in progress. Please try again..
+        /// </summary>
+        public static string RESOURCE_CONFLICT {
+            get {
+                return ResourceManager.GetString("RESOURCE_CONFLICT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The goal name must have at most 100 characters..
+        /// </summary>
+        public static string SAVINGS_GOAL_NAME_TOO_LONG {
+            get {
+                return ResourceManager.GetString("SAVINGS_GOAL_NAME_TOO_LONG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The goal amount must be greater than zero, with at most 2 decimal places..
+        /// </summary>
+        public static string SAVINGS_GOAL_TARGET_AMOUNT_INVALID {
+            get {
+                return ResourceManager.GetString("SAVINGS_GOAL_TARGET_AMOUNT_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The deadline cannot be before the current month..
+        /// </summary>
+        public static string SAVINGS_GOAL_DEADLINE_IN_PAST {
+            get {
+                return ResourceManager.GetString("SAVINGS_GOAL_DEADLINE_IN_PAST", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The amount already saved cannot be negative and must have at most 2 decimal places..
+        /// </summary>
+        public static string SAVINGS_GOAL_INITIAL_AMOUNT_INVALID {
+            get {
+                return ResourceManager.GetString("SAVINGS_GOAL_INITIAL_AMOUNT_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The amount must be greater than zero, with at most 2 decimal places..
+        /// </summary>
+        public static string SAVINGS_MOVEMENT_AMOUNT_INVALID {
+            get {
+                return ResourceManager.GetString("SAVINGS_MOVEMENT_AMOUNT_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The date is required..
+        /// </summary>
+        public static string SAVINGS_MOVEMENT_DATE_REQUIRED {
+            get {
+                return ResourceManager.GetString("SAVINGS_MOVEMENT_DATE_REQUIRED", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The date cannot be in the future..
+        /// </summary>
+        public static string SAVINGS_MOVEMENT_DATE_IN_FUTURE {
+            get {
+                return ResourceManager.GetString("SAVINGS_MOVEMENT_DATE_IN_FUTURE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The withdrawal amount is greater than the amount saved in the goal..
+        /// </summary>
+        public static string SAVINGS_WITHDRAWAL_EXCEEDS_BALANCE {
+            get {
+                return ResourceManager.GetString("SAVINGS_WITHDRAWAL_EXCEEDS_BALANCE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Savings goal not found..
+        /// </summary>
+        public static string SAVINGS_GOAL_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("SAVINGS_GOAL_NOT_FOUND", resourceCulture);
+            }
+        }
     }
 }

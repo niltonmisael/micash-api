@@ -103,6 +103,55 @@ namespace WebAPI.Test.Services
             handler.LastRequestBody.Should().NotContain("thought");
         }
 
+        [Theory]
+        [InlineData(HttpStatusCode.Unauthorized , "{}")]
+        [InlineData(HttpStatusCode.Forbidden , "{}")]
+        [InlineData(HttpStatusCode.BadRequest , """{"error":{"code":400,"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}""")]
+        public async Task Invalid_Credential_Is_503_Never_401 ( HttpStatusCode providerStatus , string body )
+        {
+            var logger = new CapturingLogger();
+            var service = CreateService(providerStatus , body , logger);
+
+            var act = async () => await service.GenerateResponseAsync(new AIRequest() , CancellationToken.None);
+
+            // 401 would make the app think the user's session expired and log them out.
+            var exception = (await act.Should().ThrowAsync<AIAuthenticationException>()).Which;
+            exception.StatusCode.Should().Be(( int ) HttpStatusCode.ServiceUnavailable);
+            exception.Message.Should().Be("O serviço de IA encontra-se indisponível.");
+
+            logger.Messages.Should().Contain(m => m.Contains("credencial"));
+        }
+
+        [Fact]
+        public async Task HttpClient_Timeout_Is_503 ()
+        {
+            var httpClient = new HttpClient(new SlowHandler())
+            {
+                BaseAddress = new Uri("https://example.test/") ,
+                Timeout = TimeSpan.FromMilliseconds(100)
+            };
+
+            var service = new GeminiAIService(
+                httpClient ,
+                Options.Create(new GeminiSettings { ApiKey = "test" }) ,
+                new CapturingLogger());
+
+            var act = async () => await service.GenerateResponseAsync(new AIRequest() , CancellationToken.None);
+
+            (await act.Should().ThrowAsync<AIUnavailableException>())
+                .Which.StatusCode.Should().Be(( int ) HttpStatusCode.ServiceUnavailable);
+        }
+
+        private sealed class SlowHandler : HttpMessageHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync ( HttpRequestMessage request , CancellationToken cancellationToken )
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10) , cancellationToken);
+
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+        }
+
         private static GeminiAIService CreateService ( HttpStatusCode status , string body , ILogger<GeminiAIService> logger ) =>
             CreateService(new StubHandler(status , body) , logger);
 

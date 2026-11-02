@@ -4,6 +4,7 @@ using MiCash.Domain.Repositories.Conversations;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
+using MiCash.Domain.Repositories.SavingsGoals;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
@@ -22,6 +23,7 @@ using MiCash.Infrastructure.AI.Services;
 using MiCash.Infrastructure.DataAccess;
 using MiCash.Infrastructure.DataAccess.Repositories;
 using MiCash.Infrastructure.Extensions;
+using MiCash.Infrastructure.Resilience.Policies;
 using MiCash.Infrastructure.Security.Tokens;
 using MiCash.Infrastructure.Security.WebHook;
 using MiCash.Infrastructure.Services.Cache.Redis;
@@ -90,6 +92,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IConversationMessageWriteOnlyRepository, ConversationRepository>();
             services.AddScoped<IConversationReadOnlyRepository, ConversationRepository>();
             services.AddScoped<IConversationWriteOnlyRepository, ConversationRepository>();
+            services.AddScoped<ISavingsGoalReadOnlyRepository , SavingsGoalRepository>();
+            services.AddScoped<ISavingsGoalWriteOnlyRepository , SavingsGoalRepository>();
+            services.AddScoped<ISavingsGoalUpdateOnlyRepository , SavingsGoalRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {
@@ -153,8 +158,8 @@ namespace MiCash.Infrastructure
                 client.BaseAddress = new Uri(
                     "https://generativelanguage.googleapis.com/v1beta/");
 
-                client.Timeout = TimeSpan.FromSeconds(30);
-            }).AddMiCashResilience();
+                client.Timeout = AIHttpPolicies.TotalTimeout;
+            }).AddAIResilience();
         }
 
     } 

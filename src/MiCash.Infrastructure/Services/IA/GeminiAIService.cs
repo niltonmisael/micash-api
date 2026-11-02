@@ -74,6 +74,13 @@ public sealed class GeminiAIService : IAIService
         } catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
             // The client cancelled the request: not a provider failure.
             throw;
+        } catch ( OperationCanceledException ex ) {
+            // HttpClient.Timeout elapsed (TaskCanceledException without client cancellation).
+            _logger.LogError(
+                ex ,
+                "Timeout total ao comunicar com o Gemini.");
+
+            throw new AIUnavailableException();
         } catch ( System.Exception ex ) {
             _logger.LogError(
                 ex ,
@@ -133,6 +140,10 @@ public sealed class GeminiAIService : IAIService
         switch ( response.StatusCode ) {
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:
+                _logger.LogCritical(
+                    "Gemini recusou a credencial ({StatusCode}). Verifique Gemini:ApiKey e o projeto no Google AI Studio." ,
+                    ( int ) response.StatusCode);
+
                 throw new AIAuthenticationException();
 
             case HttpStatusCode.TooManyRequests:
@@ -149,6 +160,15 @@ public sealed class GeminiAIService : IAIService
                 var error =
                     await response.Content.ReadAsStringAsync(
                         cancellationToken);
+
+                // Gemini answers an invalid key with 400 INVALID_ARGUMENT + reason API_KEY_INVALID.
+                if ( response.StatusCode == HttpStatusCode.BadRequest &&
+                    error.Contains("API_KEY_INVALID" , StringComparison.Ordinal) ) {
+                    _logger.LogCritical(
+                        "Gemini recusou a credencial (API_KEY_INVALID). Verifique Gemini:ApiKey.");
+
+                    throw new AIAuthenticationException();
+                }
 
                 // Provider details stay in the logs only; the client gets a generic message.
                 _logger.LogError(

@@ -52,6 +52,11 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 x.UserId ,
                 x.IsActive
             });
+
+            // At most one active conversation per user (protects against concurrent first messages).
+            builder.HasIndex(x => x.UserId , "ux_conversations_user_active")
+                .IsUnique()
+                .HasFilter("\"is_active\" = true");
         }
     }
 }

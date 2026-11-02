@@ -132,6 +132,35 @@ namespace UseCases.Test.FinancialInsights
         }
 
         [Fact]
+        public async Task Response_Without_AI_Is_Not_Cached ()
+        {
+            var user = UserBuilder.Build();
+            var ai = new FakeAIService(new AIUnavailableException());
+
+            var useCase = CreateUseCase(user , ai);
+
+            await useCase.Execute(Request() , CancellationToken.None);
+            await useCase.Execute(Request() , CancellationToken.None);
+
+            // Not served from cache: the AI is tried again on the next request.
+            ai.Requests.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task Complete_Response_Is_Cached ()
+        {
+            var user = UserBuilder.Build();
+            var ai = new FakeAIService();
+
+            var useCase = CreateUseCase(user , ai);
+
+            await useCase.Execute(Request() , CancellationToken.None);
+            await useCase.Execute(Request() , CancellationToken.None);
+
+            ai.Requests.Should().ContainSingle();
+        }
+
+        [Fact]
         public async Task Error_Invalid_Period ()
         {
             var user = UserBuilder.Build();

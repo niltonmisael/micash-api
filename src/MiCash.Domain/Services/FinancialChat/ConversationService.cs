@@ -22,6 +22,13 @@ namespace MiCash.Domain.Services.FinancialChat
             _unitOfWork = unitOfWork;
         }
 
+        public Task<Conversation?> GetActiveConversationAsync (
+            User user ,
+            CancellationToken cancellationToken )
+        {
+            return _readOnlyRepository.GetActiveConversationAsync(user.Id , cancellationToken);
+        }
+
         public async Task<Conversation> GetOrCreateConversationAsync (
             User user ,
             CancellationToken cancellationToken )
@@ -44,6 +51,36 @@ namespace MiCash.Domain.Services.FinancialChat
                 conversation ,
                 cancellationToken);
 
+            // A concurrent first message violates the unique "one active conversation" index;
+            // the caller (application layer) handles that conflict.
+            await _unitOfWork.Commit(cancellationToken);
+
+            return conversation;
+        }
+
+        public async Task<Conversation> StartNewConversationAsync (
+            User user ,
+            CancellationToken cancellationToken )
+        {
+            var current =
+                await _readOnlyRepository
+                    .GetActiveConversationAsync(
+                        user.Id ,
+                        cancellationToken);
+
+            current?.Close();
+
+            var conversation =
+                new Conversation(
+                    user.Id ,
+                    string.Empty);
+
+            await _writeOnlyRepository.AddAsync(
+                conversation ,
+                cancellationToken);
+
+            // EF orders the UPDATE (close) before the INSERT, so the unique index is respected;
+            // a concurrent "new conversation" surfaces as ConflictException (409).
             await _unitOfWork.Commit(cancellationToken);
 
             return conversation;

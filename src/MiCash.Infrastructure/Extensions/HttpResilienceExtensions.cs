@@ -13,5 +13,18 @@ namespace MiCash.Infrastructure.Extensions
                 .AddPolicyHandler(HttpTimeoutPolicy.Create())
                 .AddPolicyHandler(HttpCircuitBreakerPolicy.Create());
         }
+
+        /// <summary>
+        /// Policies for the AI provider (see <see cref="AIHttpPolicies"/>).
+        /// Order: retry (outer) → per-try timeout → circuit breaker (inner).
+        /// </summary>
+        public static IHttpClientBuilder AddAIResilience (
+            this IHttpClientBuilder builder )
+        {
+            return builder
+                .AddPolicyHandler(AIHttpPolicies.Retry())
+                .AddPolicyHandler(AIHttpPolicies.Timeout())
+                .AddPolicyHandler(HttpCircuitBreakerPolicy.Create());
+        }
     }
 }

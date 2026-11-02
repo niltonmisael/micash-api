@@ -54,9 +54,13 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .Subscriptions
                 .AsNoTracking()
                 .Include(x => x.Plan)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                      x.UserId == userId &&
-                     x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.Pending);
+                     ( x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.Pending ))
+                // An active subscription wins over a pending checkout (e.g. plan change in progress).
+                .OrderByDescending(x => x.Status == SubscriptionStatus.Active)
+                .ThenByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<List<Subscription>> GetHistoryByUserIdAsync ( long userId , CancellationToken cancellationToken )

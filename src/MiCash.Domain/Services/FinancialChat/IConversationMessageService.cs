@@ -4,12 +4,12 @@ namespace MiCash.Domain.Services.FinancialChat
 {
     public interface IConversationMessageService
     {
-        Task SaveUserMessageAsync (
+        Task<ConversationMessage> SaveUserMessageAsync (
             Conversation conversation ,
             string message ,
             CancellationToken cancellationToken );
 
-        Task SaveAssistantMessageAsync (
+        Task<ConversationMessage> SaveAssistantMessageAsync (
             Conversation conversation ,
             string message ,
             CancellationToken cancellationToken );

@@ -243,4 +243,40 @@
   <data name="CHAT_MESSAGE_TOO_LONG" xml:space="preserve">
     <value>A mensagem deve ter no máximo 1000 caracteres.</value>
   </data>
+  <data name="SUBSCRIPTION_REQUIRED" xml:space="preserve">
+    <value>Esta funcionalidade requer uma assinatura ativa.</value>
+  </data>
+  <data name="SUBSCRIPTION_NOT_ACTIVE" xml:space="preserve">
+    <value>Sua assinatura não está ativa.</value>
+  </data>
+  <data name="RESOURCE_CONFLICT" xml:space="preserve">
+    <value>A operação conflitou com outra em andamento. Tente novamente.</value>
+  </data>
+  <data name="SAVINGS_GOAL_NAME_TOO_LONG" xml:space="preserve">
+    <value>O nome da meta deve ter no máximo 100 caracteres.</value>
+  </data>
+  <data name="SAVINGS_GOAL_TARGET_AMOUNT_INVALID" xml:space="preserve">
+    <value>O valor da meta deve ser maior que zero, com no máximo 2 casas decimais.</value>
+  </data>
+  <data name="SAVINGS_GOAL_DEADLINE_IN_PAST" xml:space="preserve">
+    <value>O prazo não pode ser anterior ao mês atual.</value>
+  </data>
+  <data name="SAVINGS_GOAL_INITIAL_AMOUNT_INVALID" xml:space="preserve">
+    <value>O valor já guardado não pode ser negativo e deve ter no máximo 2 casas decimais.</value>
+  </data>
+  <data name="SAVINGS_MOVEMENT_AMOUNT_INVALID" xml:space="preserve">
+    <value>O valor deve ser maior que zero, com no máximo 2 casas decimais.</value>
+  </data>
+  <data name="SAVINGS_MOVEMENT_DATE_REQUIRED" xml:space="preserve">
+    <value>A data é obrigatória.</value>
+  </data>
+  <data name="SAVINGS_MOVEMENT_DATE_IN_FUTURE" xml:space="preserve">
+    <value>A data não pode ser futura.</value>
+  </data>
+  <data name="SAVINGS_WITHDRAWAL_EXCEEDS_BALANCE" xml:space="preserve">
+    <value>O valor da retirada é maior que o valor guardado na meta.</value>
+  </data>
+  <data name="SAVINGS_GOAL_NOT_FOUND" xml:space="preserve">
+    <value>Meta de economia não encontrada.</value>
+  </data>
 </root>
