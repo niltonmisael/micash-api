@@ -225,4 +225,16 @@
   <data name="FINANCIAL_GOAL_NOT_FOUND" xml:space="preserve">
     <value>Financial goal not found</value>
   </data>
+  <data name="FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY" xml:space="preserve">
+    <value>There are no financial goals in the source period.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_TARGET_PERIOD_NOT_EMPTY" xml:space="preserve">
+    <value>The target period already has financial goals.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_SAME_PERIOD" xml:space="preserve">
+    <value>The source and target periods must be different.</value>
+  </data>
+  <data name="YEAR_INVALID" xml:space="preserve">
+    <value>Invalid year.</value>
+  </data>
 </root>

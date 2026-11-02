@@ -7,7 +7,7 @@ using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
-namespace MiCash.Application.UseCases.FinancialGols.GetById
+namespace MiCash.Application.UseCases.FinancialGoals.GetById
 {
     public class GetFinancialGoalByIdUseCase : IGetFinancialGoalByIdUseCase
     {
@@ -48,6 +48,7 @@ namespace MiCash.Application.UseCases.FinancialGols.GetById
             var financialGoal =
                 await _financialGoalReadOnlyRepository
                     .GetByIdAsync(
+                        user.Id ,
                         id ,
                         cancellationToken);
 

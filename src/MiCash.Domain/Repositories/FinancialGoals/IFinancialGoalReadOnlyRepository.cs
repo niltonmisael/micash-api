@@ -4,14 +4,15 @@ namespace MiCash.Domain.Repositories.FinancialGoals
 {
     public interface IFinancialGoalReadOnlyRepository
     {
-        Task<bool> ExistsAsync ( 
-            long userId , 
-            long categoryId , 
-            int month , 
-            int year , 
+        Task<bool> ExistsAsync (
+            long userId ,
+            long categoryId ,
+            int month ,
+            int year ,
             CancellationToken cancellationToken );
 
         Task<FinancialGoal?> GetByIdAsync (
+            long userId ,
             long id ,
             CancellationToken cancellationToken );
 
@@ -19,16 +20,6 @@ namespace MiCash.Domain.Repositories.FinancialGoals
             long userId ,
             int month ,
             int year ,
-            CancellationToken cancellationToken );
-
-        Task<List<FinancialGoal>> GetByPeriodAndCategoriesAsync (
-            long userId ,
-            int month ,
-            int year ,
-            CancellationToken cancellationToken );
-
-        Task<IReadOnlyCollection<FinancialGoal>> GetHistoryByUserIdAsync (
-            long userId ,
             CancellationToken cancellationToken );
 
         Task<(IReadOnlyCollection<FinancialGoal> Goals , int TotalRecords)> GetHistoryByUserIdPagedAsync (

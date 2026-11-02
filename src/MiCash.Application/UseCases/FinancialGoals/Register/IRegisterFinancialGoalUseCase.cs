@@ -2,7 +2,7 @@
 using MiCash.Communication.Requests.FinancialGoals;
 using MiCash.Communication.Responses.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.Register
+namespace MiCash.Application.UseCases.FinancialGoals.Register
 {
     public interface IRegisterFinancialGoalUseCase
     {

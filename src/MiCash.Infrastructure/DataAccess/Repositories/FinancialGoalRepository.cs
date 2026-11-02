@@ -4,27 +4,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess.Repositories
 {
-    public sealed class FinancialGoalRepository : 
-        IFinancialGoalReadOnlyRepository, 
-        IFinancialGoalWriteOnlyRepository, 
+    public sealed class FinancialGoalRepository :
+        IFinancialGoalReadOnlyRepository,
+        IFinancialGoalWriteOnlyRepository,
         IFinancialGoalUpdateOnlyRepository
     {
         private readonly MiCashDbContext _dbContext;
 
         public FinancialGoalRepository (
-            MiCashDbContext dbContext)
+            MiCashDbContext dbContext )
         {
             _dbContext = dbContext;
         }
 
         public async Task AddAsync ( FinancialGoal goal , CancellationToken cancellationToken )
         {
-            await _dbContext.FinancialGoals.AddAsync ( goal , cancellationToken );
+            await _dbContext.FinancialGoals.AddAsync(goal , cancellationToken);
         }
 
         public async Task AddRangeAsync ( IEnumerable<FinancialGoal> goals , CancellationToken cancellationToken )
         {
-            await _dbContext.FinancialGoals.AddRangeAsync ( goals , cancellationToken );
+            await _dbContext.FinancialGoals.AddRangeAsync(goals , cancellationToken);
         }
 
         public void Delete ( FinancialGoal goal )
@@ -34,37 +34,48 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         public Task<bool> ExistsAsync ( long userId , long categoryId , int month , int year , CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            return _dbContext
+                .FinancialGoals
+                .AsNoTracking()
+                .AnyAsync(goal =>
+                    goal.UserId == userId &&
+                    goal.CategoryId == categoryId &&
+                    goal.Month == month &&
+                    goal.Year == year ,
+                    cancellationToken);
         }
 
-        public Task<FinancialGoal?> GetByIdAsync ( long id , CancellationToken cancellationToken )
+        Task<FinancialGoal?> IFinancialGoalReadOnlyRepository.GetByIdAsync ( long userId , long id , CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            return _dbContext
+                .FinancialGoals
+                .AsNoTracking()
+                .Include(goal => goal.Category)
+                .FirstOrDefaultAsync(goal => goal.Id == id && goal.UserId == userId , cancellationToken);
         }
 
-        public Task<List<FinancialGoal>> GetByPeriodAndCategoriesAsync ( long userId , int month , int year , CancellationToken cancellationToken )
+        Task<FinancialGoal?> IFinancialGoalUpdateOnlyRepository.GetByIdAsync ( long userId , long id , CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            return _dbContext
+                .FinancialGoals
+                .FirstOrDefaultAsync(goal => goal.Id == id && goal.UserId == userId , cancellationToken);
         }
 
         public Task<List<FinancialGoal>> GetByPeriodAsync ( long userId , int month , int year , CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IReadOnlyCollection<FinancialGoal>> GetHistoryByUserIdAsync ( long userId , CancellationToken cancellationToken )
-        {
-            return await _dbContext
+            return _dbContext
                 .FinancialGoals
                 .AsNoTracking()
-                .Include(x => x.Category)
-                .Where(x => x.UserId == userId)
-                .OrderByDescending(x => x.Year)
-                .ThenByDescending(x => x.Month)
+                .Include(goal => goal.Category)
+                .Where(goal =>
+                    goal.UserId == userId &&
+                    goal.Month == month &&
+                    goal.Year == year)
+                .OrderBy(goal => goal.Category.Name)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<(IReadOnlyCollection<FinancialGoal> , int)> GetHistoryByUserIdPagedAsync (
+        public async Task<(IReadOnlyCollection<FinancialGoal> Goals , int TotalRecords)> GetHistoryByUserIdPagedAsync (
             long userId ,
             int page ,
             int pageSize ,
@@ -73,16 +84,17 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             var query = _dbContext
                 .FinancialGoals
                 .AsNoTracking()
-                .Include(x => x.Category)
-                .Where(x => x.UserId == userId);
+                .Include(goal => goal.Category)
+                .Where(goal => goal.UserId == userId);
 
             var totalRecords =
                 await query.CountAsync(cancellationToken);
 
             var goals =
                 await query
-                    .OrderByDescending(x => x.Year)
-                    .ThenByDescending(x => x.Month)
+                    .OrderByDescending(goal => goal.Year)
+                    .ThenByDescending(goal => goal.Month)
+                    .ThenBy(goal => goal.Category.Name)
                     .Skip(( page - 1 ) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(cancellationToken);
@@ -92,7 +104,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         public void Update ( FinancialGoal goal )
         {
-            _dbContext.FinancialGoals.Update (goal);
+            _dbContext.FinancialGoals.Update(goal);
         }
     }
 }

@@ -4,7 +4,7 @@ using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.LoggedUser;
 
-namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
+namespace MiCash.Application.UseCases.FinancialGoals.GetByPeriod
 {
     public class GetFinancialGoalByPeriodUseCase : IGetFinancialGoalByPeriodUseCase
     {
@@ -26,6 +26,8 @@ namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
             int year ,
             CancellationToken cancellationToken )
         {
+            FinancialGoalPeriodValidator.Validate(month , year);
+
             var user =
                 await _loggedUser.Get();
 

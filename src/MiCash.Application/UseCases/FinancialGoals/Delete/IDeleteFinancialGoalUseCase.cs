@@ -1,4 +1,4 @@
-﻿namespace MiCash.Application.UseCases.FinancialGols.Delete
+﻿namespace MiCash.Application.UseCases.FinancialGoals.Delete
 {
     public interface IDeleteFinancialGoalUseCase
     {

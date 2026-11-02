@@ -1,6 +1,6 @@
 ﻿using MiCash.Communication.Responses.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.GetByPeriod
+namespace MiCash.Application.UseCases.FinancialGoals.GetByPeriod
 {
     public interface IGetFinancialGoalByPeriodUseCase
     {

@@ -1,6 +1,6 @@
 ﻿using MiCash.Communication.Responses.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.Progress
+namespace MiCash.Application.UseCases.FinancialGoals.Progress
 {
     public interface IGetFinancialGoalsProgressUseCase
     {

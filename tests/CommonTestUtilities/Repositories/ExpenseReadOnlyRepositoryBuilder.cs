@@ -52,6 +52,15 @@ namespace CommonTestUtilities.Repositories
             return this;
         }
 
+        public ExpenseReadOnlyRepositoryBuilder GetByPeriod ( User user , int month , int year , List<Expense> expenses )
+        {
+            _repository
+                .Setup(repository => repository.GetByPeriodAsync(user.Id , month , year , It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expenses);
+
+            return this;
+        }
+
         public IExpensesReadOnlyRepository Build() => _repository.Object;
     }
 }

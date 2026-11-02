@@ -65,7 +65,7 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             int year ,
             CancellationToken cancellationToken )
         {
-            var startDate = new DateTime(year , month , 1);
+            var startDate = new DateTime(year , month , 1 , 0 , 0 , 0 , DateTimeKind.Utc);
 
             var endDate = startDate.AddMonths(1);
 

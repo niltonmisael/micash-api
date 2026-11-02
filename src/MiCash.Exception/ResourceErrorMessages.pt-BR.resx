@@ -223,6 +223,18 @@
     <value>Já existe uma meta cadastrada para esta categoria neste mês.</value>
   </data>
   <data name="FINANCIAL_GOAL_NOT_FOUND" xml:space="preserve">
-    <value>Meta não encontrado</value>
+    <value>Meta não encontrada</value>
+  </data>
+  <data name="FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY" xml:space="preserve">
+    <value>Não existem metas cadastradas no período de origem.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_TARGET_PERIOD_NOT_EMPTY" xml:space="preserve">
+    <value>O período de destino já possui metas cadastradas.</value>
+  </data>
+  <data name="FINANCIAL_GOAL_SAME_PERIOD" xml:space="preserve">
+    <value>Os períodos de origem e destino devem ser diferentes.</value>
+  </data>
+  <data name="YEAR_INVALID" xml:space="preserve">
+    <value>Ano inválido.</value>
   </data>
 </root>

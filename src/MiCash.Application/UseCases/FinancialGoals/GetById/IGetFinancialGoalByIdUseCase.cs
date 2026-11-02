@@ -1,6 +1,6 @@
 ﻿using MiCash.Communication.Responses.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.GetById
+namespace MiCash.Application.UseCases.FinancialGoals.GetById
 {
     public interface IGetFinancialGoalByIdUseCase
     {

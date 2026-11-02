@@ -1,7 +1,7 @@
 ﻿using MiCash.Communication.Requests;
 using MiCash.Communication.Requests.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.Update
+namespace MiCash.Application.UseCases.FinancialGoals.Update
 {
     public interface IUpdateFinancialGoalUseCase
     {

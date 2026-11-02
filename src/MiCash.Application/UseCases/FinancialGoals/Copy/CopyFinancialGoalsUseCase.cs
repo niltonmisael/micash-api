@@ -1,11 +1,10 @@
-﻿using MiCash.Application.UseCases.FinancialGols.Copy;
-using MiCash.Communication.Requests.FinancialGoals;
+﻿using MiCash.Communication.Requests.FinancialGoals;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.FinancialGoals;
-using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
 namespace MiCash.Application.UseCases.FinancialGoals.Copy
@@ -36,6 +35,8 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
             RequestCopyFinancialGoalsJson request ,
             CancellationToken cancellationToken )
         {
+            Validate(request);
+
             var user = await _loggedUser.Get();
 
             var sourceGoals =
@@ -46,12 +47,9 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
                         request.SourceYear ,
                         cancellationToken);
 
-            if ( !sourceGoals.Any() ) {
+            if ( sourceGoals.Count == 0 ) {
                 throw new ErrorOnValidationException(
-                    new List<string>
-                    {
-                        "Não existem metas cadastradas no período de origem."
-                    });
+                    [ResourceErrorMessages.FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY]);
             }
 
             var targetGoals =
@@ -62,15 +60,15 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
                         request.TargetYear ,
                         cancellationToken);
 
-            if ( targetGoals.Any() ) {
+            if ( targetGoals.Count != 0 ) {
                 throw new ErrorOnValidationException(
-                    new List<string>
-                    {
-                        "O período de destino já possui metas cadastradas."
-                    });
+                    [ResourceErrorMessages.FINANCIAL_GOAL_TARGET_PERIOD_NOT_EMPTY]);
             }
 
+            var now = DateTime.UtcNow;
+
             var financialGoals = sourceGoals
+                .Where(goal => goal.Category.IsActive)
                 .Select(goal => new FinancialGoal
                 {
                     UserId = user.Id ,
@@ -78,20 +76,20 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
                     TargetAmount = goal.TargetAmount ,
                     Month = request.TargetMonth ,
                     Year = request.TargetYear ,
-                    CreatedAt = DateTime.UtcNow ,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = now ,
+                    UpdatedAt = now
                 })
                 .ToList();
+
+            if ( financialGoals.Count == 0 ) {
+                throw new ErrorOnValidationException(
+                    [ResourceErrorMessages.FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY]);
+            }
 
             await _financialGoalWriteOnlyRepository
                 .AddRangeAsync(
                     financialGoals ,
                     cancellationToken);
-
-            await _financialGoalWriteOnlyRepository
-                .AddRangeAsync(
-                financialGoals ,
-                cancellationToken);
 
             await _unitOfWork.Commit(cancellationToken);
 
@@ -100,7 +98,16 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
                     user.Id ,
                     request.TargetMonth ,
                     request.TargetYear);
+        }
 
+        private static void Validate ( RequestCopyFinancialGoalsJson request )
+        {
+            var result = new ValidatorCopyFinancialGoals().Validate(request);
+
+            if ( result.IsValid == false ) {
+                var errorMessages = result.Errors.Select(f => f.ErrorMessage).ToList();
+                throw new ErrorOnValidationException(errorMessages);
+            }
         }
     }
 }

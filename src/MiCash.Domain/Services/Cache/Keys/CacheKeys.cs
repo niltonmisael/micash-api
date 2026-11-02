@@ -38,8 +38,8 @@
     
     public static string FinancialGoalsProgress (
         long userId ,
-        int year ,
-        int month )
+        int month ,
+        int year )
         => $"financial-goals:progress:{userId}:{year}:{month}";
 
     public static string FinancialGoalsAlerts (

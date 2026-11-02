@@ -21,6 +21,7 @@ namespace WebAPI.Test
         private string _password = string.Empty;
         private DateTime _date = DateTime.Now;
         private long _expenseId;
+        private long _categoryId;
 
         public string GetToken () => _token;
 
@@ -31,6 +32,8 @@ namespace WebAPI.Test
         public string GetPassword () => _password;
 
         public long GetExpenseId () => _expenseId;
+
+        public long GetCategoryId () => _categoryId;
 
         public DateTime GetDate() => _date;
 
@@ -106,6 +109,8 @@ namespace WebAPI.Test
 
             dbContext.Categories.Add(category);
             dbContext.SaveChanges();
+
+            _categoryId = category.Id;
 
             var expense = new Expense
             {

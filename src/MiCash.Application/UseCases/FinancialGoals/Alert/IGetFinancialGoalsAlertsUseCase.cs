@@ -1,6 +1,6 @@
 ﻿using MiCash.Communication.Responses.FinancialGoals;
 
-namespace MiCash.Application.UseCases.FinancialGols.Alert
+namespace MiCash.Application.UseCases.FinancialGoals.Alert
 {
     public interface IGetFinancialGoalsAlertsUseCase
     {

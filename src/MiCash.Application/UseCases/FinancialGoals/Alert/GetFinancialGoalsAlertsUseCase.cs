@@ -1,13 +1,14 @@
-﻿using MiCash.Application.UseCases.FinancialGols.Alert;
+﻿using MiCash.Application.UseCases.FinancialGoals.Alert;
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Services.Cache;
+using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.LoggedUser;
 
-namespace MiCash.Application.UseCases.FinancialGoals.Alerts
+namespace MiCash.Application.UseCases.FinancialGoals.Alert
 {
     public class GetFinancialGoalsAlertsUseCase
         : IGetFinancialGoalsAlertsUseCase
@@ -37,6 +38,8 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alerts
             int year ,
             CancellationToken cancellationToken )
         {
+            FinancialGoalPeriodValidator.Validate(month , year);
+
             var user = await _loggedUser.Get();
 
             var cacheKey = CacheKeys.FinancialGoalsAlerts(
@@ -116,7 +119,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alerts
             await _redisCacheService.SetAsync(
                 cacheKey ,
                 response ,
-                TimeSpan.FromMinutes(15));
+                CacheExpiration.FinancialGoals);
 
             return response;
         }

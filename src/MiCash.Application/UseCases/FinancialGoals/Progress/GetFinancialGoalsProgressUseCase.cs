@@ -7,7 +7,7 @@ using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.LoggedUser;
 
-namespace MiCash.Application.UseCases.FinancialGols.Progress
+namespace MiCash.Application.UseCases.FinancialGoals.Progress
 {
     public class GetFinancialGoalsProgressUseCase
         : IGetFinancialGoalsProgressUseCase
@@ -37,6 +37,8 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
             int year ,
             CancellationToken cancellationToken )
         {
+            FinancialGoalPeriodValidator.Validate(month , year);
+
             var user = await _loggedUser.Get();
 
             var cacheKey = CacheKeys.FinancialGoalsProgress(
@@ -109,10 +111,7 @@ namespace MiCash.Application.UseCases.FinancialGols.Progress
             }
 
             await _redisCacheService.SetAsync(
-                CacheKeys.FinancialGoalsProgress(
-                    user.Id ,
-                    month ,
-                    year) ,
+                cacheKey ,
                 response ,
                 CacheExpiration.FinancialGoals);
 

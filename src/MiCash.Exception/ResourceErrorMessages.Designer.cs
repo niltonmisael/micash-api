@@ -383,5 +383,41 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("YEAR_LESS_THAN_CURRENT", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a There are no financial goals in the source period..
+        /// </summary>
+        public static string FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY {
+            get {
+                return ResourceManager.GetString("FINANCIAL_GOAL_SOURCE_PERIOD_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The target period already has financial goals..
+        /// </summary>
+        public static string FINANCIAL_GOAL_TARGET_PERIOD_NOT_EMPTY {
+            get {
+                return ResourceManager.GetString("FINANCIAL_GOAL_TARGET_PERIOD_NOT_EMPTY", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The source and target periods must be different..
+        /// </summary>
+        public static string FINANCIAL_GOAL_SAME_PERIOD {
+            get {
+                return ResourceManager.GetString("FINANCIAL_GOAL_SAME_PERIOD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid year..
+        /// </summary>
+        public static string YEAR_INVALID {
+            get {
+                return ResourceManager.GetString("YEAR_INVALID", resourceCulture);
+            }
+        }
     }
 }
