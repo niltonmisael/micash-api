@@ -1,27 +1,32 @@
-﻿using MiCash.Domain.Enums;
-using MiCash.Domain.Repositories;
+﻿using MiCash.Application.Services.Subscriptions;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Subscriptions;
+using MiCash.Domain.Services.Payments;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace MiCash.Application.UseCases.WebHook.Handlers
 {
+    /// <summary>
+    /// First charge (activation) and every renewal. Each paid charge refreshes the next billing date, which
+    /// the cancellation schedule and the app depend on.
+    /// </summary>
     public class ChargePaidHandler : IPagarMeWebhookHandler
     {
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPaymentGateway _paymentGateway;
         private readonly ILogger<ChargePaidHandler> _logger;
 
         public ChargePaidHandler (
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository ,
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
-            IUnitOfWork unitOfWork ,
+            IPaymentGateway paymentGateway ,
             ILogger<ChargePaidHandler> logger )
         {
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
-            _unitOfWork = unitOfWork;
+            _paymentGateway = paymentGateway;
             _logger = logger;
         }
 
@@ -31,22 +36,14 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
         {
             var data = payload.GetProperty("data");
 
-            var chargeId =
-                data.GetProperty("id")
-                    .GetString();
-
-            var paidAt =
-                data.GetProperty("paid_at")
-                    .GetString();
-
-            var subscriptionId =
-                data.GetProperty("invoice")
-                    .GetProperty("subscriptionId")
-                    .GetString();
+            var chargeId = WebhookPayload.GetString(data , "id");
+            var paidAt = WebhookPayload.GetUtcDateTime(data , "paid_at");
+            var subscriptionId = ChargeWebhook.GetSubscriptionId(data);
 
             if ( string.IsNullOrWhiteSpace(subscriptionId) ) {
-                _logger.LogWarning(
-                    "SubscriptionId não encontrado no webhook charge.paid.");
+                _logger.LogInformation(
+                    "charge.paid {ChargeId} sem assinatura vinculada; ignorado." ,
+                    chargeId);
 
                 return;
             }
@@ -58,40 +55,71 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                         cancellationToken);
 
             if ( subscription is null ) {
+                // charge.paid can arrive before subscription.created: let Pagar.me deliver it again.
+                throw new WebhookNotReadyException(
+                    $"Subscription {subscriptionId} ainda não registrada.");
+            }
+
+            if ( subscription.Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired ) {
                 _logger.LogWarning(
-                    "Subscription {SubscriptionId} não encontrada." ,
-                    subscriptionId);
+                    "Cobrança {ChargeId} paga para a Subscription {SubscriptionId} já encerrada ({Status}). Verificar estorno." ,
+                    chargeId ,
+                    subscriptionId ,
+                    subscription.Status);
 
                 return;
             }
 
-            // Idempotência
-            if ( subscription.Status == SubscriptionStatus.Active ) {
-                _logger.LogInformation(
-                    "Subscription {SubscriptionId} já está ativa." ,
-                    subscriptionId);
+            if ( SubscriptionCancellationRules.ChargesStopped(subscription) ) {
+                // Renewal charged before the cancellation reached Pagar.me: the access still ends as promised.
+                _logger.LogWarning(
+                    "Cobrança {ChargeId} paga para a Subscription {SubscriptionId} já cancelada (acesso até {EndsAt}). Verificar estorno." ,
+                    chargeId ,
+                    subscriptionId ,
+                    subscription.EndsAt);
 
                 return;
             }
+
+            var wasActive = subscription.Status == SubscriptionStatus.Active;
 
             subscription.Status = SubscriptionStatus.Active;
-
             subscription.PagarmeChargeId = chargeId;
-
+            subscription.StartsAt ??= paidAt ?? DateTime.UtcNow;
             subscription.UpdatedAt = DateTime.UtcNow;
 
-            if ( !string.IsNullOrWhiteSpace(paidAt) ) {
-                subscription.StartsAt ??=
-                    DateTime.Parse(paidAt);
-            }
+            await RefreshNextBillingDateAsync(subscription , subscriptionId , cancellationToken);
 
             _subscriptionsUpdateOnlyRepository.Update(subscription, cancellationToken);
 
-            await _unitOfWork.Commit(cancellationToken);
-
             _logger.LogInformation(
-                "Subscription {SubscriptionId} ativada com sucesso." ,
-                subscriptionId);
+                wasActive
+                    ? "Subscription {SubscriptionId} renovada. Próxima cobrança: {NextBillingDate}"
+                    : "Subscription {SubscriptionId} ativada. Próxima cobrança: {NextBillingDate}" ,
+                subscriptionId ,
+                subscription.NextBillingDate);
+        }
+
+        private async Task RefreshNextBillingDateAsync (
+            Domain.Entities.Subscription subscription ,
+            string subscriptionId ,
+            CancellationToken cancellationToken )
+        {
+            try {
+                var remote = await _paymentGateway.GetSubscriptionAsync(subscriptionId , cancellationToken);
+
+                if ( remote?.NextBillingAt is { } nextBillingAt &&
+                     ( subscription.NextBillingDate is null || nextBillingAt > subscription.NextBillingDate ) ) {
+                    subscription.NextBillingDate = nextBillingAt;
+                }
+            } catch ( System.Exception ex ) when ( ex is not OperationCanceledException ) {
+                // The payment is confirmed: activating the user must not depend on the gateway API being up.
+                // The daily reconciliation job fixes the billing date later.
+                _logger.LogWarning(
+                    ex ,
+                    "Não foi possível atualizar a próxima cobrança da Subscription {SubscriptionId}." ,
+                    subscriptionId);
+            }
         }
     }
 }

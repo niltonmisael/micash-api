@@ -9,6 +9,7 @@ using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialInsights;
 using MiCash.Domain.Services.IA;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Domain.Services.Plans;
 using Microsoft.Extensions.Logging;
 
 namespace MiCash.Application.UseCases.FinancialInsights.Get;
@@ -24,6 +25,7 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
     private readonly ILoggedUser _loggedUser;
     private readonly IRedisCacheService _redisCacheService;
     private readonly ILogger<GetFinancialInsightsUseCase> _logger;
+    private readonly IUserPlanService _userPlanService;
 
     public GetFinancialInsightsUseCase (
         IExpensesReadOnlyRepository expenseReadOnlyRepository ,
@@ -34,7 +36,8 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
         IAIService aiService ,
         ILoggedUser loggedUser ,
         IRedisCacheService redisCacheService ,
-        ILogger<GetFinancialInsightsUseCase> logger )
+        ILogger<GetFinancialInsightsUseCase> logger ,
+        IUserPlanService userPlanService )
     {
         _expenseReadOnlyRepository = expenseReadOnlyRepository;
         _incomeReadOnlyRepository = incomeReadOnlyRepository;
@@ -45,6 +48,7 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
         _loggedUser = loggedUser;
         _redisCacheService = redisCacheService;
         _logger = logger;
+        _userPlanService = userPlanService;
     }
 
     public async Task<ResponseFinancialInsightsJson> Execute (
@@ -55,17 +59,23 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
 
         var user = await _loggedUser.Get();
 
+        var limits = await _userPlanService.GetLimitsAsync(user , cancellationToken);
+
         var cacheKey = CacheKeys.FinancialInsights(
             user.Id ,
             request.Month ,
             request.Year);
 
-        var cachedResponse =
-            await _redisCacheService
-                .GetAsync<ResponseFinancialInsightsJson>(cacheKey);
+        // The cache only holds the full (Premium) response; the Free preview is cheap and never cached,
+        // so an upgrade shows the full analysis at once.
+        if ( limits.FullInsights ) {
+            var cachedResponse =
+                await _redisCacheService
+                    .GetAsync<ResponseFinancialInsightsJson>(cacheKey);
 
-        if ( cachedResponse is not null ) {
-            return cachedResponse;
+            if ( cachedResponse is not null ) {
+                return cachedResponse;
+            }
         }
 
         // DbContext is not thread-safe: queries must run sequentially.
@@ -114,6 +124,10 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
                 .ToList()
         };
 
+        if ( limits.FullInsights == false ) {
+            return ToPreview(response);
+        }
+
         try {
             var aiRequest =
                 _financialInsightPromptBuilder
@@ -148,4 +162,15 @@ public class GetFinancialInsightsUseCase : IGetFinancialInsightsUseCase
 
         return response;
     }
+
+    /// <summary>
+    /// Free plan: only the first insight, no AI analysis (no AI cost). The app shows the rest as locked.
+    /// </summary>
+    private static ResponseFinancialInsightsJson ToPreview ( ResponseFinancialInsightsJson full ) => new()
+    {
+        Insights = full.Insights.Take(1).ToList() ,
+        IsPreview = true ,
+        // The hidden rule-based insights plus the AI analysis.
+        LockedInsightsCount = Math.Max(full.Insights.Count - 1 , 0) + 1
+    };
 }

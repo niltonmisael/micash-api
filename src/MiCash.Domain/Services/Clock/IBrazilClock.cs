@@ -8,5 +8,11 @@ namespace MiCash.Domain.Services.Clock
     public interface IBrazilClock
     {
         DateOnly Today { get; }
+
+        /// <summary>Current instant in UTC.</summary>
+        DateTime UtcNow { get; }
+
+        /// <summary>The UTC instant at which <paramref name="date"/> starts in Brasília (00:00 local).</summary>
+        DateTime StartOfDayUtc ( DateOnly date );
     }
 }

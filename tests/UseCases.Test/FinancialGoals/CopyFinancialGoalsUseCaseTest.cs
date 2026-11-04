@@ -1,3 +1,5 @@
+using CommonTestUtilities.Plans;
+using MiCash.Domain.Services.Plans;
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
@@ -36,6 +38,21 @@ namespace UseCases.Test.FinancialGoals
                         goals.All(g => g.Month == request.TargetMonth && g.Year == request.TargetYear && g.UserId == user.Id)) ,
                     It.IsAny<CancellationToken>()) ,
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task Free_Plan_Cannot_Copy ()
+        {
+            var user = UserBuilder.Build();
+            var request = RequestFinancialGoalJsonBuilder.BuildCopy();
+            var writeRepository = new FinancialGoalWriteOnlyRepositoryBuilder();
+
+            var useCase = CreateUseCase(user , new FinancialGoalReadOnlyRepositoryBuilder() , writeRepository , PlanLimits.Free);
+
+            (await FluentActions.Awaiting(() => useCase.Execute(request , CancellationToken.None)).Should().ThrowAsync<PlanLimitException>())
+                .Which.GetErrors().Should().ContainSingle().Which.Should().Be(ResourceErrorMessages.PLAN_LIMIT_COPY_FINANCIAL_GOALS);
+
+            writeRepository.GetMock().Verify(r => r.AddRangeAsync(It.IsAny<IEnumerable<FinancialGoal>>() , It.IsAny<CancellationToken>()) , Times.Never);
         }
 
         [Fact]
@@ -98,14 +115,16 @@ namespace UseCases.Test.FinancialGoals
         private static CopyFinancialGoalsUseCase CreateUseCase (
             User user ,
             FinancialGoalReadOnlyRepositoryBuilder readRepository ,
-            FinancialGoalWriteOnlyRepositoryBuilder writeRepository )
+            FinancialGoalWriteOnlyRepositoryBuilder writeRepository ,
+            PlanLimits? plan = null )
         {
             return new CopyFinancialGoalsUseCase(
                 readRepository.Build() ,
                 writeRepository.Build() ,
                 LoggedUserBuilder.Build(user) ,
                 UnitOfWorkBuilder.Build() ,
-                new FinancialCacheInvalidatorBuilder().Build());
+                new FinancialCacheInvalidatorBuilder().Build() ,
+                UserPlanServiceBuilder.Build(plan));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Dashboards.DTOs;
+using MiCash.Domain.Services.Clock;
 using Microsoft.EntityFrameworkCore;
 
 namespace MiCash.Infrastructure.DataAccess.Repositories
@@ -13,11 +14,15 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             _dbContext = dbContext;
         }
 
+        // ExpenseDate is a UTC instant: every expense query uses the Brasília month (BrazilClock.MonthRangeUtc),
+        // so an expense at 22:30 on the last day stays in that month. Incomes use DateOnly and need nothing.
         public async Task<decimal> GetTotalAmountExpensesByMonth ( long id , int year , int month , CancellationToken cancellationToken )
         {
+            var (start, end) = BrazilClock.MonthRangeUtc(year , month);
+
             return await _dbContext.Expenses
                 .AsNoTracking()
-                .Where(expense => expense.UserId == id && expense.ExpenseDate.Year == year && expense.ExpenseDate.Month == month)
+                .Where(expense => expense.UserId == id && expense.ExpenseDate >= start && expense.ExpenseDate < end)
                 .SumAsync(expense => expense.Amount , cancellationToken);
         }
 
@@ -43,12 +48,19 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
 
         public async Task<IReadOnlyList<DailyAmount>> GetDailyExpensesByMonthAsync ( long userId , int year , int month , CancellationToken cancellationToken )
         {
-            return await _dbContext.Expenses
+            var (start, end) = BrazilClock.MonthRangeUtc(year , month);
+
+            var expenses = await _dbContext.Expenses
                 .AsNoTracking()
-                .Where(expense => expense.UserId == userId && expense.ExpenseDate.Year == year && expense.ExpenseDate.Month == month)
-                .GroupBy(expense => expense.ExpenseDate.Day)
-                .Select(group => new DailyAmount { Day = group.Key , Amount = group.Sum(expense => expense.Amount) })
+                .Where(expense => expense.UserId == userId && expense.ExpenseDate >= start && expense.ExpenseDate < end)
+                .Select(expense => new { expense.ExpenseDate , expense.Amount })
                 .ToListAsync(cancellationToken);
+
+            // Grouped in memory by the Brasília day (one user's month is small; same result on every provider).
+            return expenses
+                .GroupBy(expense => BrazilClock.ToBrasilia(expense.ExpenseDate).Day)
+                .Select(group => new DailyAmount { Day = group.Key , Amount = group.Sum(expense => expense.Amount) })
+                .ToList();
         }
 
         public async Task<IEnumerable<ExpenseCategorySummary>> GetExpensesByCategoryAsync (
@@ -57,12 +69,14 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             int month ,
             CancellationToken cancellationToken )
         {
+            var (start, end) = BrazilClock.MonthRangeUtc(year , month);
+
             return await _dbContext.Expenses
                 .AsNoTracking()
                 .Where(expense =>
                     expense.UserId == userId &&
-                    expense.ExpenseDate.Year == year &&
-                    expense.ExpenseDate.Month == month)
+                    expense.ExpenseDate >= start &&
+                    expense.ExpenseDate < end)
                 .GroupBy(expense => new {
                     expense.CategoryId ,
                     expense.Category.Name

@@ -3,7 +3,9 @@ using MiCash.Domain.Services.Payments;
 using MiCash.Domain.Services.Payments.Models;
 using MiCash.Infrastructure.Services.Payments.Requests;
 using MiCash.Infrastructure.Services.Payments.Responses;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -12,37 +14,97 @@ namespace MiCash.Infrastructure.Services.Payments
 {
     public class PagarMeService : IPaymentGateway
     {
-
-        private const string CustomersEndpoint = "customers";
         private const string SubscriptionsEndpoint = "subscriptions";
         private const string PaymentsLinks = "paymentlinks";
 
         private readonly HttpClient _httpClient;
-        private readonly PagarMeSettings _settings;
+        private readonly ILogger<PagarMeService> _logger;
 
-        public PagarMeService ( 
+        public PagarMeService (
             HttpClient httpClient,
-            IOptions<PagarMeSettings> settings)
+            IOptions<PagarMeSettings> settings,
+            ILogger<PagarMeService> logger)
         {
             _httpClient = httpClient;
-            _settings = settings.Value;
+            _logger = logger;
 
-            _httpClient.BaseAddress = new Uri(_settings.BaseUrl);
+            var pagarMeSettings = settings.Value;
+
+            _httpClient.BaseAddress = new Uri(pagarMeSettings.BaseUrl);
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     "Basic" , Convert.ToBase64String(
-                        Encoding.UTF8.GetBytes($"{_settings.ApiKey}:")));
+                        Encoding.UTF8.GetBytes($"{pagarMeSettings.ApiKey}:")));
         }
 
-        public Task CancelSubscriptionAsync ( string subscriptionId , CancellationToken cancellationToken )
+        public async Task<GatewaySubscription?> GetSubscriptionAsync ( string subscriptionId , CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            using var response =
+                await _httpClient.GetAsync(
+                    $"{SubscriptionsEndpoint}/{Uri.EscapeDataString(subscriptionId)}" ,
+                    cancellationToken);
+
+            if ( response.StatusCode == HttpStatusCode.NotFound ) {
+                return null;
+            }
+
+            await EnsureSuccessAsync(response , "consultar assinatura" , cancellationToken);
+
+            var subscription =
+                await response.Content.ReadFromJsonAsync<PagarMeSubscriptionResponse>(cancellationToken)
+                ?? throw new PaymentGatewayException("Assinatura não retornada pelo Pagar.me.");
+
+            return new GatewaySubscription
+            {
+                Id = subscription.Id ,
+                Status = subscription.Status ,
+                NextBillingAt = subscription.NextBillingAt?.UtcDateTime ,
+                CanceledAt = subscription.CanceledAt?.UtcDateTime
+            };
         }
 
+        public async Task CancelSubscriptionAsync ( string subscriptionId , CancellationToken cancellationToken )
+        {
+            // Idempotent: Hangfire retries this job, and the subscription may have been canceled at the
+            // Pagar.me dashboard in the meantime.
+            var current = await GetSubscriptionAsync(subscriptionId , cancellationToken);
+
+            if ( current is null ) {
+                _logger.LogWarning(
+                    "Subscription {SubscriptionId} não existe no Pagar.me; nada a cancelar." ,
+                    subscriptionId);
+
+                return;
+            }
+
+            if ( current.IsCanceled ) {
+                _logger.LogInformation(
+                    "Subscription {SubscriptionId} já está cancelada no Pagar.me." ,
+                    subscriptionId);
+
+                return;
+            }
+
+            using var request =
+                new HttpRequestMessage(
+                    HttpMethod.Delete ,
+                    $"{SubscriptionsEndpoint}/{Uri.EscapeDataString(subscriptionId)}")
+                {
+                    // Pending invoices would still be charged after the cancellation.
+                    Content = JsonContent.Create(new { cancel_pending_invoices = true })
+                };
+
+            using var response = await _httpClient.SendAsync(request , cancellationToken);
+
+            if ( response.StatusCode == HttpStatusCode.NotFound ) {
+                return;
+            }
+
+            await EnsureSuccessAsync(response , "cancelar assinatura" , cancellationToken);
+        }
 
         public async Task<CreateCheckoutResult> CreateSubscriptionCheckoutAsync ( User user , Plan plan , CancellationToken cancellationToken )
         {
-
             var orderCode = $"micash_{user.Id}_{Guid.NewGuid():N}";
 
             var request = new CreatePaymentLinkRequest
@@ -78,7 +140,6 @@ namespace MiCash.Infrastructure.Services.Payments
                 {
                     Recurrences =
                     [
-            
                         new PaymentLinkRecurrence
                         {
                             PlanId = plan.PagarmePlanId
@@ -87,30 +148,19 @@ namespace MiCash.Infrastructure.Services.Payments
                 }
             };
 
-            var response =
+            using var response =
                 await _httpClient.PostAsJsonAsync(
                     PaymentsLinks ,
                     request ,
                     cancellationToken);
 
-            if ( !response.IsSuccessStatusCode ) {
-                var error =
-                    await response.Content.ReadAsStringAsync(
-                        cancellationToken);
-
-                throw new System.Exception(
-                    $"Erro ao criar checkout: {error}");
-            }
+            await EnsureSuccessAsync(response , "criar checkout" , cancellationToken);
 
             var checkout =
                 await response.Content
                     .ReadFromJsonAsync<CreatePaymentLinkResponse>(
-                        cancellationToken);
-
-            if ( checkout is null ) {
-                throw new System.Exception(
-                    "Checkout não retornado pelo Pagar.me.");
-            }
+                        cancellationToken)
+                ?? throw new PaymentGatewayException("Checkout não retornado pelo Pagar.me.");
 
             return new CreateCheckoutResult
             {
@@ -118,6 +168,29 @@ namespace MiCash.Infrastructure.Services.Payments
                 CheckoutUrl = checkout.Url,
                 OrderCode = orderCode ,
             };
+        }
+
+        private async Task EnsureSuccessAsync (
+            HttpResponseMessage response ,
+            string operation ,
+            CancellationToken cancellationToken )
+        {
+            if ( response.IsSuccessStatusCode ) {
+                return;
+            }
+
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            // The gateway body goes to the logs only; the API client gets the generic error.
+            _logger.LogError(
+                "Pagar.me falhou ao {Operation}. Status={StatusCode} Body={Body}" ,
+                operation ,
+                ( int ) response.StatusCode ,
+                body);
+
+            throw new PaymentGatewayException(
+                $"Pagar.me falhou ao {operation} (HTTP {( int ) response.StatusCode})." ,
+                response.StatusCode);
         }
     }
 }

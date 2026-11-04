@@ -19,6 +19,7 @@ namespace MiCash.Application.UseCases.FinancialChat
         private readonly IFinancialChatPromptBuilder _financialChatPromptBuilder;
         private readonly IAIService _aiService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IChatUsageLimiter _chatUsageLimiter;
 
         public FinancialChatUseCase (
             ILoggedUser loggedUser ,
@@ -27,8 +28,10 @@ namespace MiCash.Application.UseCases.FinancialChat
             IFinancialContextBuilder financialContextBuilder ,
             IFinancialChatPromptBuilder financialChatPromptBuilder ,
             IAIService aiService ,
-            IUnitOfWork unitOfWork )
+            IUnitOfWork unitOfWork ,
+            IChatUsageLimiter chatUsageLimiter )
         {
+            _chatUsageLimiter = chatUsageLimiter;
             _loggedUser = loggedUser;
             _conversationService = conversationService;
             _conversationMessageService = conversationMessageService;
@@ -46,6 +49,9 @@ namespace MiCash.Application.UseCases.FinancialChat
 
             var user =
                 await _loggedUser.Get();
+
+            // Before any AI call: the limit is what keeps the AI cost bounded.
+            await _chatUsageLimiter.EnsureCanSendAsync(user , cancellationToken);
 
             var conversation =
                 await GetOrCreateConversationAsync(

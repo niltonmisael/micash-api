@@ -23,15 +23,18 @@ namespace WebAPI.Test.FinancialInsights
         }
 
         [Fact]
-        public async Task Insights_Error_Without_Subscription ()
+        public async Task Insights_Preview_Without_Subscription ()
         {
+            // The second user only has a Pending checkout: Free plan.
             var result = await DoGet($"{INSIGHTS}?month={_expenseDate.Month}&year={_expenseDate.Year}" , _tokenWithoutSubscription);
 
-            result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            result.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var body = JsonDocument.Parse(await result.Content.ReadAsStringAsync()).RootElement;
-            // The second user only has a Pending checkout.
-            body.GetProperty("errorMessages")[0].GetString().Should().Be("Sua assinatura não está ativa.");
+            body.GetProperty("isPreview").GetBoolean().Should().BeTrue();
+            body.GetProperty("insights").GetArrayLength().Should().BeLessThanOrEqualTo(1);
+            body.GetProperty("artificialInsight").ValueKind.Should().Be(JsonValueKind.Null);
+            body.GetProperty("lockedInsightsCount").GetInt32().Should().BeGreaterThanOrEqualTo(1);
         }
 
         [Fact]

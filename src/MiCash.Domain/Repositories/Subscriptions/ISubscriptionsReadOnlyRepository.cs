@@ -11,5 +11,13 @@ namespace MiCash.Domain.Repositories.Subscriptions
         Task<bool> ExistsByPagarmeSubscriptionIdAsync ( string subscriptionId ,CancellationToken cancellationToken );
         Task<List<Subscription>> GetHistoryByUserIdAsync (long userId , CancellationToken cancellationToken );
 
+        /// <summary>
+        /// Active subscriptions whose next billing date is before <paramref name="billingDateBefore"/>: the renewal
+        /// should already have been reported by webhook, so they are checked against the gateway.
+        /// </summary>
+        Task<List<Subscription>> GetActiveWithBillingDateBeforeAsync ( DateTime billingDateBefore , CancellationToken cancellationToken );
+
+        /// <summary>Canceled subscriptions still Active whose paid period (EndsAt) is over.</summary>
+        Task<List<Subscription>> GetActiveEndedBeforeAsync ( DateTime endedBefore , CancellationToken cancellationToken );
     }
 }

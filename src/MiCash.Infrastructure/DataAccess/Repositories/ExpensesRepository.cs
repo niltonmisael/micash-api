@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories.Expenses;
+using MiCash.Domain.Services.Clock;
 using MiCash.Domain.Services.Pagination;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,30 +45,14 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             _dbContext.Expenses.Update(expense);
         }
 
-        public async Task<List<Expense>> FilterByMonth ( User user, DateOnly date, CancellationToken cancellationToken )
-        {
-            var startDate = new DateTime(date.Year , date.Month , 1 , 0 , 0 , 0 , DateTimeKind.Utc);
-            var daysInMonth = DateTime.DaysInMonth(year: date.Year , month: date.Month);
-            var endDate = new DateTime(date.Year , date.Month , daysInMonth , 23 , 59 , 59 , DateTimeKind.Utc);
-
-            return await _dbContext
-                .Expenses
-                .AsNoTracking()
-                .Where(expense => expense.UserId == user.Id && expense.ExpenseDate >= startDate && expense.ExpenseDate <= endDate)
-                .OrderBy(expense => expense.ExpenseDate)
-                .ThenBy(expense => expense.Title)
-                .ToListAsync(cancellationToken);
-        }
-
         public async Task<IReadOnlyCollection<Expense>> GetByPeriodAsync (
             long userId ,
             int month ,
             int year ,
             CancellationToken cancellationToken )
         {
-            var startDate = new DateTime(year , month , 1 , 0 , 0 , 0 , DateTimeKind.Utc);
-
-            var endDate = startDate.AddMonths(1);
+            // Month of the Brasília calendar (ExpenseDate is a UTC instant).
+            var (startDate, endDate) = BrazilClock.MonthRangeUtc(year , month);
 
             return await _dbContext
                 .Expenses

@@ -16,6 +16,12 @@ namespace MiCash.Domain.Repositories.Conversations
         /// Cursor page for the chat screen: up to <paramref name="quantity"/> messages older than
         /// <paramref name="beforeId"/> (or the newest ones when null), newest first.
         /// </summary>
+        /// <summary>Messages the user sent (role User), in any of their conversations, at or after <paramref name="sinceUtc"/>.</summary>
+        Task<int> CountUserMessagesSinceAsync (
+            long userId ,
+            DateTime sinceUtc ,
+            CancellationToken cancellationToken );
+
         Task<IReadOnlyList<ConversationMessage>> GetPageAsync (
             long conversationId ,
             long? beforeId ,

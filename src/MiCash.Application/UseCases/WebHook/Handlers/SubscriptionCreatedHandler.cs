@@ -1,6 +1,5 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Enums;
-using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Repositories.Users;
@@ -15,7 +14,6 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
         private readonly IUserReadOnlyRepository _userReadOnlyRepository;
         private readonly ISubscriptionsWriteOnlyRepository _subscriptionsWriteOnlyRepository;
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IPaymentLinkRepository _paymentLinkRepository;
         private readonly ILogger<SubscriptionCreatedHandler> _logger;
 
@@ -24,7 +22,6 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             IUserReadOnlyRepository userReadOnlyRepository,
             ISubscriptionsWriteOnlyRepository subscriptionsWriteOnlyRepository,
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository,
-            IUnitOfWork unitOfWork,
             IPaymentLinkRepository paymentLinkRepository,
             ILogger<SubscriptionCreatedHandler> logger)
         {
@@ -32,29 +29,28 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             _userReadOnlyRepository = userReadOnlyRepository;
             _subscriptionsWriteOnlyRepository = subscriptionsWriteOnlyRepository;
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
-            _unitOfWork = unitOfWork;
             _paymentLinkRepository = paymentLinkRepository;
             _logger = logger;
         }
+
         public string EventName => "subscription.created";
 
         public async Task HandleAsync ( JsonElement payload , CancellationToken cancellationToken )
         {
             var data = payload.GetProperty("data");
 
-            var pagarmeSubscriptionId =
-                data.GetProperty("id").GetString();
+            var pagarmeSubscriptionId = WebhookPayload.GetString(data , "id");
 
             if ( string.IsNullOrWhiteSpace(pagarmeSubscriptionId) ) {
                 _logger.LogWarning(
-                    "SubscriptionId não encontrado no webhook.");
+                    "SubscriptionId não encontrado no webhook subscription.created.");
 
                 return;
             }
 
             var exists =
                 await _subscriptionsReadOnlyRepository
-                .ExistsByPagarmeSubscriptionIdAsync( pagarmeSubscriptionId , cancellationToken);
+                    .ExistsByPagarmeSubscriptionIdAsync( pagarmeSubscriptionId , cancellationToken);
 
             if ( exists ) {
                 _logger.LogInformation(
@@ -64,18 +60,15 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                 return;
             }
 
-            var pagarmeCustomerId =
-                data.GetProperty("customer")
-                    .GetProperty("id")
-                    .GetString();
+            var pagarmeCustomerId = WebhookPayload.GetString(data , "customer" , "id");
 
-            var paymentLinkId =
-                data.GetProperty("code")
-                    .GetString();
+            // The payment link created by CreateCheckoutUseCase becomes the subscription "code".
+            var paymentLinkId = WebhookPayload.GetString(data , "code");
 
             if ( string.IsNullOrWhiteSpace(paymentLinkId) ) {
                 _logger.LogWarning(
-                    "PaymentLinkId não encontrado no webhook.");
+                    "PaymentLinkId não encontrado no webhook da subscription {SubscriptionId}." ,
+                    pagarmeSubscriptionId);
 
                 return;
             }
@@ -96,17 +89,28 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
 
             var user =
                 await _userReadOnlyRepository
-                .GetByIdAsync(
-                    paymentLink.UserId ,
-                    cancellationToken);
+                    .GetByIdAsync(
+                        paymentLink.UserId ,
+                        cancellationToken);
 
-            if ( string.IsNullOrWhiteSpace(user!.PagarMeCustomerId) ||
-                user.PagarMeCustomerId != pagarmeCustomerId ) {
+            if ( user is null ) {
+                _logger.LogWarning(
+                    "Usuário {UserId} do PaymentLink {PaymentLinkId} não encontrado." ,
+                    paymentLink.UserId ,
+                    paymentLinkId);
+
+                return;
+            }
+
+            if ( !string.IsNullOrWhiteSpace(pagarmeCustomerId) &&
+                 user.PagarMeCustomerId != pagarmeCustomerId ) {
 
                 user.PagarMeCustomerId = pagarmeCustomerId;
 
                 _userUpdateOnlyRepository.Update(user);
             }
+
+            var now = DateTime.UtcNow;
 
             var subscription = new Subscription
             {
@@ -116,30 +120,20 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                 PagarmeSubscriptionId = pagarmeSubscriptionId ,
                 PagarmeCustomerId = pagarmeCustomerId ,
 
+                // Becomes Active on charge.paid.
                 Status = SubscriptionStatus.Pending ,
 
-                StartsAt = DateTime.SpecifyKind(
-                    DateTime.Parse(
-                        data.GetProperty("start_at")
-                        .GetString()!) ,
-                    DateTimeKind.Utc),
+                StartsAt = WebhookPayload.GetUtcDateTime(data , "start_at") ?? now ,
+                NextBillingDate = WebhookPayload.GetUtcDateTime(data , "next_billing_at") ,
 
-                NextBillingDate = DateTime.SpecifyKind(
-                    DateTime.Parse(
-                        data.GetProperty("next_billing_at")
-                        .GetString()!) ,
-                    DateTimeKind.Utc),
-
-                CreatedAt = DateTime.UtcNow ,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = now ,
+                UpdatedAt = now
             };
 
             await _subscriptionsWriteOnlyRepository
                 .AddAsync(
                     subscription ,
                     cancellationToken);
-
-            await _unitOfWork.Commit(cancellationToken);
 
             _logger.LogInformation(
                 "Subscription criada. UserId={UserId}, SubscriptionId={SubscriptionId}" ,

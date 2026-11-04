@@ -10,7 +10,15 @@ namespace CommonTestUtilities.Jobs
 
         public bool ThrowOnEnqueue { get; set; }
 
+        public ConcurrentQueue<(long SubscriptionId, DateTime ExecuteAt)> ScheduledExpirations { get; } = new();
+
         public string ScheduleSubscriptionCancellation ( long subscriptionId , DateTime executeAt ) => $"sub-{subscriptionId}";
+
+        public string ScheduleSubscriptionExpiration ( long subscriptionId , DateTime executeAt )
+        {
+            ScheduledExpirations.Enqueue((subscriptionId, executeAt));
+            return $"expire-{subscriptionId}";
+        }
 
         public string EnqueuePushNotificationDispatch ( long notificationId )
         {

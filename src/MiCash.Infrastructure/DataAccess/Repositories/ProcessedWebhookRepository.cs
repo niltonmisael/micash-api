@@ -19,9 +19,14 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             await _dbContext.AddAsync ( webhookLog , cancellationToken);
         }
 
-        public async Task<bool> ExistsByWebhookIdAsync ( string webhookId , CancellationToken cancellationToken )
+        public async Task<ProcessedWebhook?> GetByWebhookIdAsync ( string webhookId , CancellationToken cancellationToken )
         {
-            return await _dbContext.ProcessedWebhooks.AnyAsync(w  => w.WebhookId == webhookId, cancellationToken);
+            return await _dbContext.ProcessedWebhooks.FirstOrDefaultAsync(w => w.WebhookId == webhookId , cancellationToken);
+        }
+
+        public void Update ( ProcessedWebhook webhookLog )
+        {
+            _dbContext.ProcessedWebhooks.Update(webhookLog);
         }
     }
 }

@@ -14,6 +14,11 @@ namespace MiCash.Infrastructure.DataAccess
             _dbContext = dbContext;
         }
 
+        public void DiscardChanges ()
+        {
+            _dbContext.ChangeTracker.Clear();
+        }
+
         public async Task Commit ( CancellationToken cancellationToken )
         {
             try {

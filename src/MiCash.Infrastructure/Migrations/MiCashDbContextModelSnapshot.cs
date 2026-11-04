@@ -530,7 +530,8 @@ namespace MiCash.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WebhookId");
+                    b.HasIndex("WebhookId")
+                        .IsUnique();
 
                     b.ToTable("processed_webhook", (string)null);
                 });

@@ -1,6 +1,7 @@
 ﻿using MiCash.Communication.Requests.Checkout;
 using MiCash.Communication.Responses.Checkout;
 using MiCash.Domain.Entities;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
@@ -14,6 +15,9 @@ namespace MiCash.Application.UseCases.Checkout
 {
     public class CreateCheckoutUseCase : ICreateCheckoutUseCase
     {
+        /// <summary>How long a Pending subscription (payment awaiting confirmation) blocks a new checkout.</summary>
+        public static readonly TimeSpan PendingPaymentWindow = TimeSpan.FromHours(1);
+
         private readonly ILoggedUser _loggedUser;
         private readonly IPlansReadOnlyRepository _plansRepository;
         private readonly IPaymentGateway _paymentGateway;
@@ -44,17 +48,23 @@ namespace MiCash.Application.UseCases.Checkout
 
             var plan = await _plansRepository.GetByIdAsync(request.PlanId, cancellationToken);
 
-            if ( plan is null ) {
+            // A plan withdrawn from sale is not offered anymore.
+            if ( plan is null || !plan.IsActive || string.IsNullOrWhiteSpace(plan.PagarmePlanId) ) {
                 throw new NotFoundException(ResourceErrorMessages.PLAN_NOT_FOUND);
             }
 
-            var activeSubscription = await _subscriptionsRepository.GetActiveByUserIdAsync( loggedUser.Id , cancellationToken);
+            // Active first, then the most recent Pending.
+            var currentSubscription = await _subscriptionsRepository.GetCurrentByUserIdAsync(loggedUser.Id , cancellationToken);
 
-            if ( activeSubscription is not null ) {
-                throw new ErrorOnValidationException(
-                [
-                    "Você já possui uma assinatura ativa."
-                ]);
+            if ( currentSubscription?.Status == SubscriptionStatus.Active ) {
+                throw new ErrorOnValidationException([ResourceErrorMessages.USER_ALREADY_HAS_ACTIVE_SUBSCRIPTION]);
+            }
+
+            // Payment just made and not confirmed yet: a second checkout would charge the user twice.
+            // Time-boxed so a subscription stuck in Pending never blocks the user for good.
+            if ( currentSubscription?.Status == SubscriptionStatus.Pending &&
+                 currentSubscription.CreatedAt > DateTime.UtcNow - PendingPaymentWindow ) {
+                throw new ErrorOnValidationException([ResourceErrorMessages.SUBSCRIPTION_PAYMENT_IN_PROGRESS]);
             }
 
             var checkout = await _paymentGateway.CreateSubscriptionCheckoutAsync(loggedUser , plan , cancellationToken);

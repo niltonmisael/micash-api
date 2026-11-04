@@ -5,10 +5,12 @@ using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
 using FluentAssertions;
+using MiCash.Application.Services.FinancialGoals;
 using MiCash.Application.UseCases.Expenses.Register;
 using MiCash.Domain.Entities;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
+using Moq;
 
 namespace UseCases.Test.Expenses.Register
 {
@@ -30,6 +32,18 @@ namespace UseCases.Test.Expenses.Register
         }
 
         [Fact]
+        public async Task Success_Checks_The_Goal_Alert_Of_The_Category ()
+        {
+            var loggedUser = UserBuilder.Build();
+            var request = RequestExpenseJsonBuilder.Build();
+            var notifier = new Mock<IFinancialGoalAlertNotifier>();
+
+            await CreateUseCase(loggedUser , notifier).Execute(request , CancellationToken.None);
+
+            notifier.Verify(n => n.NotifyAsync(loggedUser , request.CategoryId , It.IsAny<DateTime>() , It.IsAny<CancellationToken>()) , Times.Once);
+        }
+
+        [Fact]
         public async Task Error_Title_Empty ()
         {
             var cancellationToken = CancellationToken.None;
@@ -47,7 +61,7 @@ namespace UseCases.Test.Expenses.Register
 
         }
 
-        private RegisterExpenseUseCase CreateUseCase(User user )
+        private RegisterExpenseUseCase CreateUseCase(User user , Mock<IFinancialGoalAlertNotifier>? goalAlertNotifier = null )
         {
             var repository = ExpenseWriteOnlyRepositoryBuilder.Build();
             var mapper = MapperBuilder.Build();
@@ -56,7 +70,7 @@ namespace UseCases.Test.Expenses.Register
             var cacheService = new RedisCacheServiceBuilder().Build();
             var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService, financialInvalidator);
+            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService, financialInvalidator, ( goalAlertNotifier ?? new Mock<IFinancialGoalAlertNotifier>() ).Object);
         }
     }
 }

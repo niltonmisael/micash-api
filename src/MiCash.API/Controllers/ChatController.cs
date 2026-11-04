@@ -18,7 +18,6 @@ namespace MiCash.API.Controllers
     public class ChatController : ControllerBase
     {
         [HttpPost("message")]
-        [RequireActiveSubscription]
         [SwaggerOperation(
             Summary = "Enviar mensagem para a MI" ,
             Description = "Envia uma mensagem na conversa ativa (criada automaticamente) e retorna a resposta da MI. As mensagens só são gravadas se a IA responder."
@@ -57,7 +56,6 @@ namespace MiCash.API.Controllers
         }
 
         [HttpPost("conversations")]
-        [RequireActiveSubscription]
         [SwaggerOperation(
             Summary = "Iniciar nova conversa" ,
             Description = "Encerra a conversa ativa (as mensagens ficam guardadas) e abre uma nova, vazia. A MI deixa de considerar o histórico anterior."

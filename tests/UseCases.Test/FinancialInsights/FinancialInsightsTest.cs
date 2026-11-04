@@ -1,3 +1,5 @@
+using CommonTestUtilities.Plans;
+using MiCash.Domain.Services.Plans;
 using CommonTestUtilities.AI;
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
@@ -119,6 +121,26 @@ namespace UseCases.Test.FinancialInsights
         }
 
         [Fact]
+        public async Task Free_Plan_Gets_A_Preview_Without_AI ()
+        {
+            var user = UserBuilder.Build();
+            var ai = new FakeAIService();
+
+            var full = await CreateUseCase(user , new FakeAIService()).Execute(Request() , CancellationToken.None);
+            var preview = await CreateUseCase(user , ai , PlanLimits.Free).Execute(Request() , CancellationToken.None);
+
+            full.Insights.Count.Should().BeGreaterThan(1 , "the scenario must have something to lock");
+            preview.IsPreview.Should().BeTrue();
+            preview.Insights.Should().ContainSingle().Which.Title.Should().Be(full.Insights[0].Title);
+            preview.ArtificialInsight.Should().BeNull();
+            preview.LockedInsightsCount.Should().Be(full.Insights.Count - 1 + 1);
+            ai.Requests.Should().BeEmpty("the Free preview never pays for an AI call");
+
+            full.IsPreview.Should().BeFalse();
+            full.LockedInsightsCount.Should().Be(0);
+        }
+
+        [Fact]
         public async Task Success_When_AI_Fails_Returns_Rule_Based_Insights ()
         {
             var user = UserBuilder.Build();
@@ -176,7 +198,7 @@ namespace UseCases.Test.FinancialInsights
         private static RequestFinancialInsightJson Request () =>
             new() { Month = InsightScenario.MONTH , Year = InsightScenario.YEAR };
 
-        private static GetFinancialInsightsUseCase CreateUseCase ( User user , FakeAIService ai )
+        private static GetFinancialInsightsUseCase CreateUseCase ( User user , FakeAIService ai , PlanLimits? plan = null )
         {
             var data = InsightScenario.Build(user);
 
@@ -194,7 +216,8 @@ namespace UseCases.Test.FinancialInsights
                 ai ,
                 LoggedUserBuilder.Build(user) ,
                 new FakeRedisCacheService() ,
-                NullLogger<GetFinancialInsightsUseCase>.Instance);
+                NullLogger<GetFinancialInsightsUseCase>.Instance ,
+                UserPlanServiceBuilder.Build(plan));
         }
     }
 }

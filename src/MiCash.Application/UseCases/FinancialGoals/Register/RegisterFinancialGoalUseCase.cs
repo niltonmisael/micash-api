@@ -7,6 +7,7 @@ using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Domain.Services.Plans;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
@@ -21,6 +22,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
+        private readonly IUserPlanService _userPlanService;
 
         public RegisterFinancialGoalUseCase (
             IFinancialGoalWriteOnlyRepository financialGoalWriteOnlyRepository ,
@@ -29,8 +31,10 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
             ILoggedUser loggedUser ,
             IMapper mapper ,
             IUnitOfWork unitOfWork ,
-            IFinancialCacheInvalidator financialCacheInvalidator )
+            IFinancialCacheInvalidator financialCacheInvalidator ,
+            IUserPlanService userPlanService )
         {
+            _userPlanService = userPlanService;
             _financialGoalWriteOnlyRepository = financialGoalWriteOnlyRepository;
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _categoriesReadOnlyRepository = categoriesReadOnlyRepository;
@@ -60,6 +64,17 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
 
             if ( alreadyExists ) {
                 throw new BadRequestException([ResourceErrorMessages.CATEGORY_MONTHLY_GOAL_DUPLICATED]);
+            }
+
+            var limits = await _userPlanService.GetLimitsAsync(user , cancellationToken);
+
+            if ( limits.MaxFinancialGoalsPerMonth is int max ) {
+                var goalsInMonth = await _financialGoalReadOnlyRepository
+                    .GetByPeriodAsync(user.Id , request.Month , request.Year , cancellationToken);
+
+                if ( goalsInMonth.Count >= max ) {
+                    throw new PlanLimitException(string.Format(ResourceErrorMessages.PLAN_LIMIT_FINANCIAL_GOALS , max));
+                }
             }
 
             var financialGoal = _mapper.Map<FinancialGoal>(request);

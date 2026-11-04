@@ -1,3 +1,5 @@
+using CommonTestUtilities.Plans;
+using MiCash.Domain.Services.Plans;
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
@@ -26,6 +28,29 @@ namespace UseCases.Test.FinancialGoals
             var act = async () => await useCase.Execute(request , CancellationToken.None);
 
             await act.Should().NotThrowAsync();
+        }
+
+        [Theory]
+        [InlineData(2 , false)]
+        [InlineData(3 , true)]
+        public async Task Free_Plan_Allows_Up_To_3_Goals_Per_Month ( int existing , bool blocked )
+        {
+            var user = UserBuilder.Build();
+            var category = CategoryBuilder.Build(user);
+            var request = RequestFinancialGoalJsonBuilder.BuildRegister(category.Id);
+
+            var goalRepository = new FinancialGoalReadOnlyRepositoryBuilder()
+                .GetByPeriod(user , request.Month , request.Year , FinancialGoalBuilder.Collection(user , (uint) existing , request.Month , request.Year));
+
+            var act = async () => await CreateUseCase(user , category , goalRepository , PlanLimits.Free).Execute(request , CancellationToken.None);
+
+            if ( blocked ) {
+                var error = (await act.Should().ThrowAsync<PlanLimitException>()).Which;
+                error.ErrorCode.Should().Be(PlanLimitException.CODE);
+                error.GetErrors().Should().ContainSingle().Which.Should().Contain("3");
+            } else {
+                await act.Should().NotThrowAsync();
+            }
         }
 
         [Fact]
@@ -96,7 +121,8 @@ namespace UseCases.Test.FinancialGoals
         private static RegisterFinancialGoalUseCase CreateUseCase (
             User user ,
             Category? category ,
-            FinancialGoalReadOnlyRepositoryBuilder? goalReadOnlyRepository = null )
+            FinancialGoalReadOnlyRepositoryBuilder? goalReadOnlyRepository = null ,
+            PlanLimits? plan = null )
         {
             return new RegisterFinancialGoalUseCase(
                 new FinancialGoalWriteOnlyRepositoryBuilder().Build() ,
@@ -105,7 +131,8 @@ namespace UseCases.Test.FinancialGoals
                 LoggedUserBuilder.Build(user) ,
                 MapperBuilder.Build() ,
                 UnitOfWorkBuilder.Build() ,
-                new FinancialCacheInvalidatorBuilder().Build());
+                new FinancialCacheInvalidatorBuilder().Build() ,
+                UserPlanServiceBuilder.Build(plan));
         }
     }
 }

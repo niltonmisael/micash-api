@@ -1,4 +1,5 @@
 ﻿using MiCash.Domain.Entities;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Conversations;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,6 +62,17 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .OrderByDescending(cm => cm.Id)
                 .Take(quantity)
                 .ToListAsync(cancellationToken);
+        }
+
+        public Task<int> CountUserMessagesSinceAsync ( long userId , DateTime sinceUtc , CancellationToken cancellationToken )
+        {
+            return _dbContext.ConversationMessages
+                .AsNoTracking()
+                .Where(cm =>
+                    cm.Conversation.UserId == userId &&
+                    cm.Role == ConversationRole.User &&
+                    cm.CreatedAt >= sinceUtc)
+                .CountAsync(cancellationToken);
         }
 
         public void UpdateAsync ( Conversation conversation )

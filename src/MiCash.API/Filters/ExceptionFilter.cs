@@ -24,7 +24,11 @@ namespace MiCash.API.Filters
         private void HandleProjectException (ExceptionContext context)
         {
             var miCash = context.Exception as MiCashException;
-            var errorResponse = new ResponseErrorJson(miCash!.GetErrors());
+            var errorResponse = new ResponseErrorJson(miCash!.GetErrors())
+            {
+                ErrorCode = miCash.ErrorCode ,
+                RetryAt = miCash.RetryAt
+            };
 
             context.HttpContext.Response.StatusCode = miCash.StatusCode;
             context.Result = new ObjectResult(errorResponse);

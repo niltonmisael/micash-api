@@ -1,4 +1,5 @@
-﻿using MiCash.Domain.Repositories;
+﻿using MiCash.Application.Services.Subscriptions;
+using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.LoggedUser;
@@ -42,6 +43,12 @@ namespace MiCash.Application.UseCases.Subscriptions.Reactivate
 
             if ( !subscription.CancelAtPeriodEnd ) {
                 throw new BadRequestException([ResourceErrorMessages.THIS_SUBSCRIPTION_DOES_NOT_HAVE_A_SCHEDULED_CANCELLATION]);
+            }
+
+            // Already canceled at Pagar.me (last hours of the period): a canceled gateway subscription cannot be
+            // resumed. The user keeps Premium until the period ends and can subscribe again afterwards.
+            if ( SubscriptionCancellationRules.ChargesStopped(subscription) ) {
+                throw new BadRequestException([ResourceErrorMessages.SUBSCRIPTION_CANCELLATION_ALREADY_PROCESSED]);
             }
 
             if ( !string.IsNullOrWhiteSpace(subscription.CancellationJobId) ) {

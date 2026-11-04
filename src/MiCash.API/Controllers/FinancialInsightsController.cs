@@ -1,4 +1,5 @@
-﻿using MiCash.API.Attributes;
+﻿using MiCash.API.Filters;
+using MiCash.API.Attributes;
 using MiCash.Application.UseCases.FinancialInsights.Get;
 using MiCash.Communication.Requests.FinancialInsights;
 using MiCash.Communication.Responses;
@@ -15,7 +16,7 @@ namespace MiCash.API.Controllers
     public class FinancialInsightsController : ControllerBase
     {
         [HttpGet]
-        [RequireActiveSubscription]
+        [PlanHistoryLimit]
         [ProducesResponseType(
             typeof(ResponseFinancialInsightsJson) ,
             StatusCodes.Status200OK)]

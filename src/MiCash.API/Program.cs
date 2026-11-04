@@ -140,6 +140,10 @@ if(builder.Configuration.IsTestEnvironment() == false ) {
     // Push notifications: dispatch (every minute) and Expo receipts (every 5 min) on the existing Hangfire.
     PushNotificationRecurringJobs.Register(
         app.Services.GetRequiredService<IRecurringJobManager>());
+
+    // Subscriptions: daily reconciliation with Pagar.me (safety net for lost webhooks).
+    SubscriptionRecurringJobs.Register(
+        app.Services.GetRequiredService<IRecurringJobManager>());
 }
 
 

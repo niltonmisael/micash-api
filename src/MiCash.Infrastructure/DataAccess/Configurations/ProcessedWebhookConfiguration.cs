@@ -34,7 +34,9 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 .HasColumnName("processed_at");
 
             //Indexes
-            builder.HasIndex(x => x.WebhookId);
+            // One row per Pagar.me event: retries update it; concurrent duplicate deliveries hit the constraint.
+            builder.HasIndex(x => x.WebhookId)
+                .IsUnique();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MiCash.Domain.Enums;
-using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Subscriptions;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -10,18 +9,15 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
     {
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ChargePaymentFailedHandler> _logger;
 
         public ChargePaymentFailedHandler (
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository ,
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
-            IUnitOfWork unitOfWork ,
             ILogger<ChargePaymentFailedHandler> logger )
         {
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
-            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -33,18 +29,13 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
         {
             var data = payload.GetProperty("data");
 
-            var chargeId =
-                data.GetProperty("id")
-                    .GetString();
-
-            var subscriptionId =
-                data.GetProperty("invoice")
-                    .GetProperty("subscriptionId")
-                    .GetString();
+            var chargeId = WebhookPayload.GetString(data , "id");
+            var subscriptionId = ChargeWebhook.GetSubscriptionId(data);
 
             if ( string.IsNullOrWhiteSpace(subscriptionId) ) {
-                _logger.LogWarning(
-                    "SubscriptionId não encontrado no webhook charge.payment_failed.");
+                _logger.LogInformation(
+                    "charge.payment_failed {ChargeId} sem assinatura vinculada; ignorado." ,
+                    chargeId);
 
                 return;
             }
@@ -56,51 +47,43 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                         cancellationToken);
 
             if ( subscription is null ) {
-                _logger.LogWarning(
-                    "Subscription {SubscriptionId} não encontrada." ,
-                    subscriptionId);
-
-                return;
+                // Can arrive before subscription.created: without the retry the subscription would stay Pending.
+                throw new WebhookNotReadyException(
+                    $"Subscription {subscriptionId} ainda não registrada.");
             }
 
-            if ( subscription.Status == SubscriptionStatus.Cancelled ) {
+            if ( subscription.Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired ) {
                 _logger.LogInformation(
-                    "Subscription {SubscriptionId} já cancelada. Ignorando charge.payment_failed." ,
+                    "Subscription {SubscriptionId} já encerrada. Ignorando charge.payment_failed." ,
                     subscriptionId);
 
                 return;
             }
 
-            string? failureReason = null;
+            var failureReason = GetFailureReason(data);
 
-            try {
-                failureReason =
-                    data.GetProperty("last_transaction")
-                        .GetProperty("gateway_response")
-                        .GetProperty("errors")[0]
-                        .GetProperty("message")
-                        .GetString();
-            } catch (System.Exception ex) {
-                _logger.LogWarning(
-                    ex,
-                    "Não foi possível obter o motivo da falha para a subscription {SubscriptionId}" ,
-                    subscriptionId);
-            }
-
+            // Pagar.me keeps retrying the charge; a later charge.paid makes the subscription Active again.
             subscription.Status = SubscriptionStatus.PaymentFailed;
-
             subscription.PagarmeChargeId = chargeId;
-
             subscription.UpdatedAt = DateTime.UtcNow;
 
             _subscriptionsUpdateOnlyRepository.Update(subscription, cancellationToken);
-
-            await _unitOfWork.Commit(cancellationToken);
 
             _logger.LogWarning(
                 "Pagamento da Subscription {SubscriptionId} falhou. Motivo: {Reason}" ,
                 subscriptionId ,
                 failureReason ?? "Motivo não informado");
+        }
+
+        private static string? GetFailureReason ( JsonElement data )
+        {
+            var errors = WebhookPayload.Get(data , "last_transaction" , "gateway_response" , "errors");
+
+            if ( errors is { ValueKind: JsonValueKind.Array } array && array.GetArrayLength() > 0 ) {
+                return WebhookPayload.GetString(array[0] , "message");
+            }
+
+            return WebhookPayload.GetString(data , "last_transaction" , "acquirer_message");
         }
     }
 }

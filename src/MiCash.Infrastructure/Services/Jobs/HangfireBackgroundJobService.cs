@@ -11,6 +11,12 @@ namespace MiCash.Infrastructure.Services.Jobs
                 x => x.ExecuteAsync( subscriptionId , CancellationToken.None) ,executeAt );
         }
 
+        public string ScheduleSubscriptionExpiration ( long subscriptionId , DateTime executeAt )
+        {
+            return BackgroundJob.Schedule<ISubscriptionExpirationJob>(
+                x => x.ExecuteAsync( subscriptionId , CancellationToken.None) ,executeAt );
+        }
+
         public string EnqueuePushNotificationDispatch ( long notificationId )
         {
             return BackgroundJob.Enqueue<IPushNotificationDispatchJob>(

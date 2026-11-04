@@ -54,6 +54,12 @@
                     CacheKeys.DailySummary(
                         userId ,
                         year ,
+                        month)) ,
+
+                _redisCacheService.RemoveAsync(
+                    CacheKeys.MonthForecast(
+                        userId ,
+                        year ,
                         month))
             );
         }

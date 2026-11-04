@@ -1,6 +1,9 @@
-﻿using MiCash.Application.UseCases.Dashboards.DailySummary;
+﻿using MiCash.API.Filters;
+using MiCash.API.Attributes;
+using MiCash.Application.UseCases.Dashboards.DailySummary;
 using MiCash.Application.UseCases.Dashboards.ExpensesByCategory;
 using MiCash.Application.UseCases.Dashboards.LatestExpenses;
+using MiCash.Application.UseCases.Dashboards.MonthForecast;
 using MiCash.Application.UseCases.Dashboards.MonthlySummary;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Dashboards;
@@ -16,6 +19,7 @@ namespace MiCash.API.Controllers
     {
 
         [HttpGet("monthly-summary")]
+        [PlanHistoryLimit]
         [ProducesResponseType(typeof(ResponseMonthlySummaryJson) , StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMonthlySummary (
             [FromServices] IGetMonthlySummaryUseCase useCase ,
@@ -36,6 +40,7 @@ namespace MiCash.API.Controllers
         /// The last day's cumulative values equal the monthly-summary totals of the same month.
         /// </summary>
         [HttpGet("daily-summary")]
+        [PlanHistoryLimit]
         [ProducesResponseType(typeof(ResponseDailySummaryJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetDailySummary (
@@ -49,7 +54,25 @@ namespace MiCash.API.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Premium: month-end forecast of the current month (Brasília) at today's spending pace, overall and per
+        /// spending goal. On the last day of the month ProjectedExpense equals the daily-summary cumulative expense.
+        /// </summary>
+        [HttpGet("month-forecast")]
+        [RequireActiveSubscription]
+        [ProducesResponseType(typeof(ResponseMonthForecastJson) , StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetMonthForecast (
+            [FromServices] IGetMonthForecastUseCase useCase ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(cancellationToken);
+
+            return Ok(response);
+        }
+
         [HttpGet("expenses-by-category")]
+        [PlanHistoryLimit]
         [ProducesResponseType(typeof(List<ResponseExpenseCategorySummaryJson>) , StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExpensesByCategory (
             [FromServices] IGetExpensesByCategoryUseCase useCase ,

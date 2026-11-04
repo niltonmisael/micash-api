@@ -1,4 +1,5 @@
 ﻿using MiCash.Domain.Entities;
+using MiCash.Domain.Services.Clock;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
@@ -55,8 +56,8 @@ namespace MiCash.Application.UseCases.Expenses.Delete
             await _financialCacheInvalidator
                 .InvalidateMonthAsync(
                 loggedUser.Id ,
-                expense.ExpenseDate.Month ,
-                expense.ExpenseDate.Year);
+                BrazilClock.ToBrasilia(expense.ExpenseDate).Month ,
+                BrazilClock.ToBrasilia(expense.ExpenseDate).Year);
 
         }
     }

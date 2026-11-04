@@ -1,6 +1,7 @@
-﻿using MiCash.Domain.Enums;
-using MiCash.Domain.Repositories;
+﻿using MiCash.Application.Services.Subscriptions;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Subscriptions;
+using MiCash.Domain.Services.Jobs;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -10,18 +11,18 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
     {
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBackgroundJobService _backgroundJobService;
         private readonly ILogger<SubscriptionCanceledHandler> _logger;
 
         public SubscriptionCanceledHandler (
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository ,
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
-            IUnitOfWork unitOfWork ,
+            IBackgroundJobService backgroundJobService ,
             ILogger<SubscriptionCanceledHandler> logger )
         {
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
-            _unitOfWork = unitOfWork;
+            _backgroundJobService = backgroundJobService;
             _logger = logger;
         }
 
@@ -35,9 +36,7 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             var data =
                 payload.GetProperty("data");
 
-            var pagarmeSubscriptionId =
-                data.GetProperty("id")
-                    .GetString();
+            var pagarmeSubscriptionId = WebhookPayload.GetString(data , "id");
 
             if ( string.IsNullOrWhiteSpace(
                 pagarmeSubscriptionId) ) {
@@ -61,34 +60,22 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                 return;
             }
 
-            DateTime? canceledAt = null;
+            if ( subscription.Status == SubscriptionStatus.Cancelled ) {
+                // Already closed locally (e.g. by SubscriptionCancellationJob): keep its EndsAt.
+                _logger.LogInformation(
+                    "Subscription {SubscriptionId} já cancelada." ,
+                    pagarmeSubscriptionId);
 
-            if ( data.TryGetProperty(
-                    "canceled_at" ,
-                    out var canceledAtElement) ) {
-                canceledAt =
-                    DateTime.SpecifyKind(
-                        canceledAtElement.GetDateTime() ,
-                        DateTimeKind.Utc);
+                return;
             }
 
-            subscription.Status =
-                SubscriptionStatus.Cancelled;
-
-            subscription.EndsAt =
-                canceledAt ?? DateTime.UtcNow;
-
-            subscription.CancelAtPeriodEnd =
-                false;
-
-            subscription.CancellationRequestedAt =
-                null;
-
-            subscription.CancellationScheduledFor =
-                null;
-
-            subscription.CancellationJobId =
-                null;
+            // Charges stopped. A paid period is honored (Premium until it ends, then the expiration job);
+            // otherwise the subscription ends now. Also covers cancellations made at the Pagar.me dashboard.
+            SubscriptionCancellationRules.ApplyGatewayCancellation(
+                subscription ,
+                WebhookPayload.GetUtcDateTime(data , "canceled_at") ,
+                DateTime.UtcNow ,
+                _backgroundJobService);
 
             subscription.UpdatedAt =
                 DateTime.UtcNow;
@@ -97,12 +84,11 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                 subscription ,
                 cancellationToken);
 
-            await _unitOfWork.Commit(
-                cancellationToken);
-
             _logger.LogInformation(
-                "Subscription {SubscriptionId} cancelada com sucesso." ,
-                pagarmeSubscriptionId);
+                "Subscription {SubscriptionId} cancelada no Pagar.me. Status={Status}, acesso até {EndsAt}." ,
+                pagarmeSubscriptionId ,
+                subscription.Status ,
+                subscription.EndsAt);
         }
     }
 }

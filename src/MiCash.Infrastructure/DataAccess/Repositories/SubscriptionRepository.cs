@@ -72,6 +72,30 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<Subscription>> GetActiveWithBillingDateBeforeAsync ( DateTime billingDateBefore , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Subscriptions
+                .AsNoTracking()
+                .Where(x =>
+                    x.Status == SubscriptionStatus.Active &&
+                    x.PagarmeSubscriptionId != null &&
+                    x.NextBillingDate != null &&
+                    x.NextBillingDate < billingDateBefore)
+                .OrderBy(x => x.NextBillingDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<Subscription>> GetActiveEndedBeforeAsync ( DateTime endedBefore , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Subscriptions
+                .AsNoTracking()
+                .Where(x =>
+                    x.Status == SubscriptionStatus.Active &&
+                    x.EndsAt != null &&
+                    x.EndsAt <= endedBefore)
+                .ToListAsync(cancellationToken);
+        }
+
         public void Update ( Subscription subscription , CancellationToken cancellationToken )
         {
             _dbContext.Subscriptions.Update(subscription);

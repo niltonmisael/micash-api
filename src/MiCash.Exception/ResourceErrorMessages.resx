@@ -249,6 +249,15 @@
   <data name="SUBSCRIPTION_NOT_ACTIVE" xml:space="preserve">
     <value>Your subscription is not active.</value>
   </data>
+  <data name="SUBSCRIPTION_PAYMENT_IN_PROGRESS" xml:space="preserve">
+    <value>Your payment is being processed. Wait for the confirmation before trying again.</value>
+  </data>
+  <data name="SUBSCRIPTION_BILLING_DATE_UNAVAILABLE" xml:space="preserve">
+    <value>The next billing date of the subscription could not be determined. Please try again later.</value>
+  </data>
+  <data name="SUBSCRIPTION_CANCELLATION_ALREADY_PROCESSED" xml:space="preserve">
+    <value>The cancellation was already processed and the charges were stopped. You keep Premium until the end of the paid period and can subscribe again afterwards.</value>
+  </data>
   <data name="RESOURCE_CONFLICT" xml:space="preserve">
     <value>The operation conflicted with another one in progress. Please try again.</value>
   </data>
@@ -314,5 +323,26 @@
   </data>
   <data name="NEW_PASSWORD_SAME_AS_CURRENT" xml:space="preserve">
     <value>The new password must be different from the current password.</value>
+  </data>
+  <data name="PLAN_LIMIT_FINANCIAL_GOALS" xml:space="preserve">
+    <value>The free plan allows up to {0} spending goals per month. Subscribe to Premium for unlimited goals.</value>
+  </data>
+  <data name="PLAN_LIMIT_SAVINGS_GOALS" xml:space="preserve">
+    <value>The free plan allows up to {0} savings goal(s). Subscribe to Premium for unlimited savings goals.</value>
+  </data>
+  <data name="PLAN_LIMIT_HISTORY" xml:space="preserve">
+    <value>The free plan shows the current month and the previous {0} months. Subscribe to Premium to see your whole history.</value>
+  </data>
+  <data name="PLAN_LIMIT_CHAT_MONTHLY" xml:space="preserve">
+    <value>You used your {0} messages with MI this month. Subscribe to Premium to keep chatting.</value>
+  </data>
+  <data name="PLAN_LIMIT_COPY_FINANCIAL_GOALS" xml:space="preserve">
+    <value>Copying goals to another month is a Premium feature.</value>
+  </data>
+  <data name="CHAT_DAILY_LIMIT" xml:space="preserve">
+    <value>You reached the limit of {0} messages per day with MI. Try again tomorrow.</value>
+  </data>
+  <data name="CHAT_MINUTE_LIMIT" xml:space="preserve">
+    <value>Too many messages in a short time. Wait a moment and try again.</value>
   </data>
 </root>

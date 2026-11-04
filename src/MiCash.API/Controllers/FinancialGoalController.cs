@@ -1,4 +1,5 @@
-﻿using MiCash.Application.UseCases.FinancialGoals.Alert;
+﻿using MiCash.API.Filters;
+using MiCash.Application.UseCases.FinancialGoals.Alert;
 using MiCash.Application.UseCases.FinancialGoals.Copy;
 using MiCash.Application.UseCases.FinancialGoals.Delete;
 using MiCash.Application.UseCases.FinancialGoals.GetById;
@@ -42,6 +43,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet]
+        [PlanHistoryLimit]
         [SwaggerOperation(
             Summary = "Listar metas financeiras por período" ,
             Description = "Retorna todas as metas financeiras do usuário referentes ao mês e ano informados."
@@ -104,6 +106,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("progress")]
+        [PlanHistoryLimit]
         [SwaggerOperation(
             Summary = "Progresso das metas financeiras" ,
             Description = "Compara, para cada meta do período, o valor gasto na categoria com o valor objetivo (percentual usado, saldo restante e status)."
@@ -126,6 +129,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpGet("alerts")]
+        [PlanHistoryLimit]
         [SwaggerOperation(
             Summary = "Alertas das metas financeiras" ,
             Description = "Retorna apenas as metas do período que atingiram 80% (Warning) ou ultrapassaram 100% (Exceeded) do valor objetivo."

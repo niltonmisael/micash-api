@@ -249,6 +249,15 @@
   <data name="SUBSCRIPTION_NOT_ACTIVE" xml:space="preserve">
     <value>Sua assinatura não está ativa.</value>
   </data>
+  <data name="SUBSCRIPTION_PAYMENT_IN_PROGRESS" xml:space="preserve">
+    <value>Seu pagamento está em processamento. Aguarde a confirmação antes de tentar novamente.</value>
+  </data>
+  <data name="SUBSCRIPTION_BILLING_DATE_UNAVAILABLE" xml:space="preserve">
+    <value>Não foi possível identificar a próxima cobrança da assinatura. Tente novamente mais tarde.</value>
+  </data>
+  <data name="SUBSCRIPTION_CANCELLATION_ALREADY_PROCESSED" xml:space="preserve">
+    <value>O cancelamento já foi processado e as cobranças foram encerradas. Você mantém o Premium até o fim do período pago e poderá assinar novamente depois.</value>
+  </data>
   <data name="RESOURCE_CONFLICT" xml:space="preserve">
     <value>A operação conflitou com outra em andamento. Tente novamente.</value>
   </data>
@@ -314,5 +323,26 @@
   </data>
   <data name="NEW_PASSWORD_SAME_AS_CURRENT" xml:space="preserve">
     <value>A nova senha deve ser diferente da senha atual.</value>
+  </data>
+  <data name="PLAN_LIMIT_FINANCIAL_GOALS" xml:space="preserve">
+    <value>O plano gratuito permite até {0} metas de gasto por mês. Assine o Premium para ter metas ilimitadas.</value>
+  </data>
+  <data name="PLAN_LIMIT_SAVINGS_GOALS" xml:space="preserve">
+    <value>O plano gratuito permite até {0} caixinha(s). Assine o Premium para ter caixinhas ilimitadas.</value>
+  </data>
+  <data name="PLAN_LIMIT_HISTORY" xml:space="preserve">
+    <value>O plano gratuito mostra o mês atual e os {0} meses anteriores. Assine o Premium para ver todo o seu histórico.</value>
+  </data>
+  <data name="PLAN_LIMIT_CHAT_MONTHLY" xml:space="preserve">
+    <value>Você usou as {0} mensagens do mês com a MI. Assine o Premium para continuar conversando.</value>
+  </data>
+  <data name="PLAN_LIMIT_COPY_FINANCIAL_GOALS" xml:space="preserve">
+    <value>Copiar metas para outro mês é um recurso Premium.</value>
+  </data>
+  <data name="CHAT_DAILY_LIMIT" xml:space="preserve">
+    <value>Você atingiu o limite de {0} mensagens por dia com a MI. Tente novamente amanhã.</value>
+  </data>
+  <data name="CHAT_MINUTE_LIMIT" xml:space="preserve">
+    <value>Muitas mensagens em pouco tempo. Aguarde um instante e tente novamente.</value>
   </data>
 </root>

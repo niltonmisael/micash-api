@@ -3,10 +3,12 @@ using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
+using MiCash.Application.Services.FinancialGoals;
 using MiCash.Application.UseCases.Expenses.Update;
 using MiCash.Domain.Entities;
 using MiCash.Exception.ExceptionBase;
 using MiCash.Exception;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,7 +88,7 @@ namespace UseCases.Test.Expenses.Update
             var cacheService = new RedisCacheServiceBuilder().Build();
             var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, financialInvalidator, cacheService);
+            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, financialInvalidator, cacheService, new Mock<IFinancialGoalAlertNotifier>().Object);
         }
     }
 }

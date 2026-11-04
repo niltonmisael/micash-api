@@ -8,10 +8,6 @@ namespace MiCash.Domain.Repositories.PaymentLinks
             PaymentLink paymentLink ,
             CancellationToken cancellationToken );
 
-        Task<PaymentLink?> GetByPaymentLinkIdAsync (
-            string paymentLinkId ,
-            CancellationToken cancellationToken );
-
         Task<PaymentLink?> GetByOrderCodeAsync (
             string orderCode ,
             CancellationToken cancellationToken );

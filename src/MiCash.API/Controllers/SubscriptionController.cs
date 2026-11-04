@@ -1,6 +1,7 @@
 ﻿using MiCash.Application.UseCases.Subscriptions.Cancel;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
 using MiCash.Application.UseCases.Subscriptions.History;
+using MiCash.Application.UseCases.Subscriptions.Limits;
 using MiCash.Application.UseCases.Subscriptions.Reactivate;
 using MiCash.Communication.Responses;
 using MiCash.Communication.Responses.Checkout;
@@ -23,6 +24,22 @@ namespace MiCash.API.Controllers
             CancellationToken cancellationToken )
         {
             var response = await useCase.ExecuteAsync(cancellationToken);
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Limits of the user's plan (Free or Premium) and chat usage, so the app can show "3 de 5 mensagens"
+        /// and the subscription offers before the user hits a 403 PLAN_LIMIT_REACHED.
+        /// </summary>
+        [Authorize]
+        [HttpGet("limits")]
+        [ProducesResponseType(typeof(ResponsePlanLimitsJson) , StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLimits (
+            [FromServices] IGetPlanLimitsUseCase useCase ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(cancellationToken);
 
             return Ok(response);
         }

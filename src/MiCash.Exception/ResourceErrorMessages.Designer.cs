@@ -455,6 +455,33 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("SUBSCRIPTION_NOT_ACTIVE", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Your payment is being processed..
+        /// </summary>
+        public static string SUBSCRIPTION_PAYMENT_IN_PROGRESS {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_PAYMENT_IN_PROGRESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The next billing date of the subscription could not be determined..
+        /// </summary>
+        public static string SUBSCRIPTION_BILLING_DATE_UNAVAILABLE {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_BILLING_DATE_UNAVAILABLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a The cancellation was already processed and the charges were stopped..
+        /// </summary>
+        public static string SUBSCRIPTION_CANCELLATION_ALREADY_PROCESSED {
+            get {
+                return ResourceManager.GetString("SUBSCRIPTION_CANCELLATION_ALREADY_PROCESSED", resourceCulture);
+            }
+        }
 
         /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a The operation conflicted with another one in progress. Please try again..
@@ -615,6 +642,48 @@ namespace MiCash.Exception {
         public static string TOO_MANY_REQUESTS {
             get {
                 return ResourceManager.GetString("TOO_MANY_REQUESTS", resourceCulture);
+            }
+        }
+
+        public static string PLAN_LIMIT_FINANCIAL_GOALS {
+            get {
+                return ResourceManager.GetString("PLAN_LIMIT_FINANCIAL_GOALS", resourceCulture);
+            }
+        }
+
+        public static string PLAN_LIMIT_SAVINGS_GOALS {
+            get {
+                return ResourceManager.GetString("PLAN_LIMIT_SAVINGS_GOALS", resourceCulture);
+            }
+        }
+
+        public static string PLAN_LIMIT_HISTORY {
+            get {
+                return ResourceManager.GetString("PLAN_LIMIT_HISTORY", resourceCulture);
+            }
+        }
+
+        public static string PLAN_LIMIT_CHAT_MONTHLY {
+            get {
+                return ResourceManager.GetString("PLAN_LIMIT_CHAT_MONTHLY", resourceCulture);
+            }
+        }
+
+        public static string PLAN_LIMIT_COPY_FINANCIAL_GOALS {
+            get {
+                return ResourceManager.GetString("PLAN_LIMIT_COPY_FINANCIAL_GOALS", resourceCulture);
+            }
+        }
+
+        public static string CHAT_DAILY_LIMIT {
+            get {
+                return ResourceManager.GetString("CHAT_DAILY_LIMIT", resourceCulture);
+            }
+        }
+
+        public static string CHAT_MINUTE_LIMIT {
+            get {
+                return ResourceManager.GetString("CHAT_MINUTE_LIMIT", resourceCulture);
             }
         }
     }

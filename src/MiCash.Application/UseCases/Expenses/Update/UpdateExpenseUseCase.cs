@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using MiCash.Application.Services.FinancialGoals;
 using MiCash.Communication.Requests;
+using MiCash.Domain.Services.Clock;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
@@ -18,14 +20,16 @@ namespace MiCash.Application.UseCases.Expenses.Update
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator ;
         private readonly IRedisCacheService _redisCacheService ;
+        private readonly IFinancialGoalAlertNotifier _goalAlertNotifier;
 
         public UpdateExpenseUseCase (
-            IMapper mapper, 
-            IUnitOfWork unitOfWork, 
-            IExpensesUpdateOnlyRepository repository, 
+            IMapper mapper,
+            IUnitOfWork unitOfWork,
+            IExpensesUpdateOnlyRepository repository,
             ILoggedUser loggedUser,
-            IFinancialCacheInvalidator financialCacheInvalidator, 
-            IRedisCacheService redisCacheService)
+            IFinancialCacheInvalidator financialCacheInvalidator,
+            IRedisCacheService redisCacheService,
+            IFinancialGoalAlertNotifier goalAlertNotifier)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -33,6 +37,7 @@ namespace MiCash.Application.UseCases.Expenses.Update
             _loggedUser = loggedUser;
             _financialCacheInvalidator = financialCacheInvalidator;
             _redisCacheService = redisCacheService;
+            _goalAlertNotifier = goalAlertNotifier;
         }
         public async Task Execute (long id, RequestExpenseJson request, CancellationToken cancellationToken)
         {
@@ -50,7 +55,8 @@ namespace MiCash.Application.UseCases.Expenses.Update
                     ResourceErrorMessages.EXPENSE_NOT_FOUND);
             }
 
-            var oldExpenseDate = expense.ExpenseDate;
+            // Months of the Brasília calendar (ExpenseDate is a UTC instant), same as the dashboard queries.
+            var oldExpenseDate = BrazilClock.ToBrasilia(expense.ExpenseDate);
 
             _mapper.Map(request , expense);
 
@@ -69,15 +75,20 @@ namespace MiCash.Application.UseCases.Expenses.Update
                     oldExpenseDate.Month ,
                     oldExpenseDate.Year);
 
-            if ( oldExpenseDate.Month != expense.ExpenseDate.Month ||
-                oldExpenseDate.Year != expense.ExpenseDate.Year ) {
+            var newExpenseDate = BrazilClock.ToBrasilia(expense.ExpenseDate);
+
+            if ( oldExpenseDate.Month != newExpenseDate.Month ||
+                oldExpenseDate.Year != newExpenseDate.Year ) {
 
                 await _financialCacheInvalidator
                     .InvalidateMonthAsync(
                         user.Id ,
-                        expense.ExpenseDate.Month ,
-                        expense.ExpenseDate.Year);
+                        newExpenseDate.Month ,
+                        newExpenseDate.Year);
             }
+
+            // A higher amount, another category or a move to this month can cross a goal threshold.
+            await _goalAlertNotifier.NotifyAsync(user , expense.CategoryId , expense.ExpenseDate , cancellationToken);
 
         }
 

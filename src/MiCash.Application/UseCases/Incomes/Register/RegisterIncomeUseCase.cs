@@ -8,7 +8,6 @@ using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
 using MiCash.Exception.ExceptionBase;
-using PdfSharp.Drawing;
 
 namespace MiCash.Application.UseCases.Incomes.Register
 {

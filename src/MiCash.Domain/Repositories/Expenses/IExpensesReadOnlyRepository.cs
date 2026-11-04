@@ -12,7 +12,6 @@ namespace MiCash.Domain.Repositories.Expenses
             CancellationToken cancellationToken );
 
         public Task<Expense?> GetById (User user ,long id , CancellationToken cancellationToken );
-        public Task<List<Expense>> FilterByMonth(User user, DateOnly date, CancellationToken cancellationToken);
         Task<IReadOnlyCollection<Expense>> GetByPeriodAsync (long userId , int month , int year , CancellationToken cancellationToken );
     }
 }

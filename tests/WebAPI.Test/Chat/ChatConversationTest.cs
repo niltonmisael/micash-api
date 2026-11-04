@@ -73,14 +73,27 @@ namespace WebAPI.Test.Chat
         }
 
         [Fact]
-        public async Task Without_Subscription_Cannot_Send_Or_Start_But_Can_Read ()
+        public async Task Free_Plan_Has_5_Messages_Per_Month ()
         {
-            var send = await DoPost(MESSAGE , new RequestChatMessageJson { Message = "Oi" } , _tokenWithoutSubscription);
-            send.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            (await ReadJson(send)).GetProperty("errorMessages").GetArrayLength().Should().Be(1);
-
             var start = await DoPost(CONVERSATIONS , new { } , _tokenWithoutSubscription);
-            start.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            start.StatusCode.Should().Be(HttpStatusCode.Created);
+
+            for ( var i = 1; i <= 5; i++ ) {
+                (await DoPost(MESSAGE , new RequestChatMessageJson { Message = $"Oi {i}" } , _tokenWithoutSubscription))
+                    .StatusCode.Should().Be(HttpStatusCode.OK);
+            }
+
+            var sixth = await DoPost(MESSAGE , new RequestChatMessageJson { Message = "Oi 6" } , _tokenWithoutSubscription);
+            sixth.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+            var body = await ReadJson(sixth);
+            body.GetProperty("errorCode").GetString().Should().Be("PLAN_LIMIT_REACHED");
+            body.GetProperty("errorMessages").GetArrayLength().Should().Be(1);
+            body.TryGetProperty("retryAt" , out _).Should().BeTrue();
+
+            var limits = await ReadJson(await DoGet("api/subscription/limits" , _tokenWithoutSubscription));
+            limits.GetProperty("chat").GetProperty("used").GetInt32().Should().Be(5);
+            limits.GetProperty("chat").GetProperty("remaining").GetInt32().Should().Be(0);
 
             var read = await DoGet(MESSAGES , _tokenWithoutSubscription);
             read.StatusCode.Should().Be(HttpStatusCode.OK);

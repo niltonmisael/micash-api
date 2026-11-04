@@ -7,6 +7,7 @@ using MiCash.Domain.Services.Cache;
 using MiCash.Domain.Services.Cache.Expirations;
 using MiCash.Domain.Services.FinancialGoals;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Domain.Services.Plans;
 
 namespace MiCash.Application.UseCases.FinancialGoals.Alert
 {
@@ -18,19 +19,22 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alert
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialGoalCalculator _financialGoalCalculator;
         private readonly IRedisCacheService _redisCacheService;
+        private readonly IUserPlanService _userPlanService;
 
         public GetFinancialGoalsAlertsUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
             IExpensesReadOnlyRepository expenseReadOnlyRepository ,
             ILoggedUser loggedUser,
             IFinancialGoalCalculator financialGoalCalculator ,
-            IRedisCacheService redisCacheService )
+            IRedisCacheService redisCacheService ,
+            IUserPlanService userPlanService )
         {
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _expenseReadOnlyRepository = expenseReadOnlyRepository;
             _loggedUser = loggedUser;
             _financialGoalCalculator = financialGoalCalculator;
             _redisCacheService = redisCacheService;
+            _userPlanService = userPlanService;
         }
 
         public async Task<ResponseFinancialGoalsAlertsJson> Execute (
@@ -51,7 +55,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alert
                 .GetAsync<ResponseFinancialGoalsAlertsJson>(cacheKey);
 
             if ( cached is not null ) {
-                return cached;
+                return await ForPlanAsync(cached , user , cancellationToken);
             }
 
             // DbContext is not thread-safe: queries must run sequentially.
@@ -121,7 +125,30 @@ namespace MiCash.Application.UseCases.FinancialGoals.Alert
                 response ,
                 CacheExpiration.FinancialGoals);
 
-            return response;
+            return await ForPlanAsync(response , user , cancellationToken);
+        }
+
+        /// <summary>
+        /// The cache holds every alert; the Free plan only gets the exceeded ones (the 80% warning is Premium).
+        /// A new object, so the cached instance is never changed.
+        /// </summary>
+        private async Task<ResponseFinancialGoalsAlertsJson> ForPlanAsync (
+            ResponseFinancialGoalsAlertsJson response ,
+            Domain.Entities.User user ,
+            CancellationToken cancellationToken )
+        {
+            var limits = await _userPlanService.GetLimitsAsync(user , cancellationToken);
+
+            if ( limits.GoalWarningAlerts ) {
+                return response;
+            }
+
+            return new ResponseFinancialGoalsAlertsJson
+            {
+                Alerts = response.Alerts
+                    .Where(alert => alert.Status == ( int ) FinancialGoalProgressStatus.Exceeded)
+                    .ToList()
+            };
         }
 
         private static string GenerateMessage (

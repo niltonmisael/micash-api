@@ -1,3 +1,5 @@
+using CommonTestUtilities.Plans;
+using MiCash.Domain.Services.Plans;
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
@@ -75,12 +77,35 @@ namespace UseCases.Test.FinancialGoals
                 new ExpenseReadOnlyRepositoryBuilder().GetByPeriod(user , MONTH , YEAR , expenses).Build() ,
                 LoggedUserBuilder.Build(user) ,
                 new FinancialGoalCalculator() ,
-                new FakeRedisCacheService());
+                new FakeRedisCacheService() ,
+                UserPlanServiceBuilder.Build());
 
             var response = await useCase.Execute(MONTH , YEAR , CancellationToken.None);
 
             response.Alerts.Select(a => a.CategoryId).Should().BeEquivalentTo([2L , 3L]);
             response.Alerts.Should().OnlyContain(a => !string.IsNullOrWhiteSpace(a.Message));
+        }
+
+        [Fact]
+        public async Task Free_Plan_Gets_Only_Exceeded_Alerts_And_The_Cache_Keeps_All ()
+        {
+            var user = UserBuilder.Build();
+            var (goals, expenses) = BuildScenario(user);
+            var cache = new FakeRedisCacheService();
+
+            GetFinancialGoalsAlertsUseCase UseCase ( PlanLimits plan ) => new(
+                new FinancialGoalReadOnlyRepositoryBuilder().GetByPeriod(user , MONTH , YEAR , goals).Build() ,
+                new ExpenseReadOnlyRepositoryBuilder().GetByPeriod(user , MONTH , YEAR , expenses).Build() ,
+                LoggedUserBuilder.Build(user) ,
+                new FinancialGoalCalculator() ,
+                cache ,
+                UserPlanServiceBuilder.Build(plan));
+
+            var free = await UseCase(PlanLimits.Free).Execute(MONTH , YEAR , CancellationToken.None);
+            var premium = await UseCase(PlanLimits.Premium).Execute(MONTH , YEAR , CancellationToken.None);
+
+            free.Alerts.Select(a => a.CategoryId).Should().BeEquivalentTo([3L]);
+            premium.Alerts.Select(a => a.CategoryId).Should().BeEquivalentTo([2L , 3L]);
         }
 
         [Fact]

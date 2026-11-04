@@ -27,10 +27,5 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
         {
             return _dbContext.PaymentLinks.FirstOrDefaultAsync( p => p.PagarmePaymentLinkId == paymentLinkId , cancellationToken );
         }
-
-        public Task<PaymentLink?> GetByPaymentLinkIdAsync ( string paymentLinkId , CancellationToken cancellationToken )
-        {
-            return _dbContext.PaymentLinks.FirstOrDefaultAsync( p => p.PagarmePaymentLinkId == paymentLinkId , cancellationToken );
-        }
     }
 }

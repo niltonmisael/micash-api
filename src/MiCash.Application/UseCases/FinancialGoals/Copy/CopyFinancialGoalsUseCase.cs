@@ -4,6 +4,7 @@ using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Services.Cache.FinancialInvalidator;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Domain.Services.Plans;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
@@ -16,14 +17,17 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
         private readonly ILoggedUser _loggedUser;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
+        private readonly IUserPlanService _userPlanService;
 
         public CopyFinancialGoalsUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
             IFinancialGoalWriteOnlyRepository financialGoalWriteOnlyRepository ,
             ILoggedUser loggedUser ,
             IUnitOfWork unitOfWork ,
-            IFinancialCacheInvalidator financialCacheInvalidator )
+            IFinancialCacheInvalidator financialCacheInvalidator ,
+            IUserPlanService userPlanService )
         {
+            _userPlanService = userPlanService;
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _financialGoalWriteOnlyRepository = financialGoalWriteOnlyRepository;
             _loggedUser = loggedUser;
@@ -38,6 +42,12 @@ namespace MiCash.Application.UseCases.FinancialGoals.Copy
             Validate(request);
 
             var user = await _loggedUser.Get();
+
+            var limits = await _userPlanService.GetLimitsAsync(user , cancellationToken);
+
+            if ( limits.CanCopyFinancialGoals == false ) {
+                throw new PlanLimitException(ResourceErrorMessages.PLAN_LIMIT_COPY_FINANCIAL_GOALS);
+            }
 
             var sourceGoals =
                 await _financialGoalReadOnlyRepository

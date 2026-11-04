@@ -12,14 +12,17 @@
         int month )
         => $"dashboard:daily-summary:{userId}:{year}:{month}";
 
+    public static string MonthForecast (
+        long userId ,
+        int year ,
+        int month )
+        => $"dashboard:month-forecast:{userId}:{year}:{month}";
+
     public static string ExpensesByCategory (
         long userId ,
         int year ,
         int month )
         => $"dashboard:expenses-by-category:{userId}:{year}:{month}";
-
-    public static string SubscriptionHistory ( long userId )
-        => $"subscription:history:{userId}";
 
     public static string FinancialGoalById ( long userId , long financialGoalId )
         => $"financial-goal:{userId}:{financialGoalId}";

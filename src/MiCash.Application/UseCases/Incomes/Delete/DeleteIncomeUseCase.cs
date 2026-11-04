@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using MiCash.Domain.Entities;
+﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Services.Cache;
