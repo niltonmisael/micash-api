@@ -20,6 +20,11 @@ namespace MiCash.Application.UseCases.Users.Update
                 .EmailAddress()
                 .When(user => string.IsNullOrWhiteSpace(user.Email) == false , ApplyConditionTo.CurrentValidator)
                 .WithMessage(ResourceErrorMessages.EMAIL_INVALID);
+            // Null keeps the current phone; when sent, it must be a valid mobile.
+            RuleFor(user => user.Phone!)
+                .Must(PhoneRules.IsValidMobile)
+                .When(user => user.Phone is not null)
+                .WithMessage(ResourceErrorMessages.PHONE_INVALID);
         }
     }
 }

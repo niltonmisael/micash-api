@@ -363,4 +363,10 @@
   <data name="EMAIL_CHANGE_SAME_AS_CURRENT" xml:space="preserve">
     <value>The new e-mail must be different from the current one.</value>
   </data>
+  <data name="PHONE_INVALID" xml:space="preserve">
+    <value>Enter a valid mobile number with area code.</value>
+  </data>
+  <data name="TRANSACTION_TYPE_INVALID" xml:space="preserve">
+    <value>Invalid transaction type.</value>
+  </data>
 </root>

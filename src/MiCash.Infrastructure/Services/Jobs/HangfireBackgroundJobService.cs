@@ -23,6 +23,12 @@ namespace MiCash.Infrastructure.Services.Jobs
                 x => x.ExecuteAsync(notificationId , CancellationToken.None));
         }
 
+        public string EnqueueMonthlySummary ( long userId , int year , int month )
+        {
+            return BackgroundJob.Enqueue<IMonthlySummaryJob>(
+                x => x.ExecuteAsync(userId , year , month , CancellationToken.None));
+        }
+
         public string EnqueueWelcomeEmail ( long userId )
         {
             return BackgroundJob.Enqueue<IWelcomeEmailJob>(

@@ -19,6 +19,7 @@ namespace MiCash.Infrastructure.Services.Payments
 
         private readonly HttpClient _httpClient;
         private readonly ILogger<PagarMeService> _logger;
+        private readonly string _checkoutSuccessUrl;
 
         public PagarMeService (
             HttpClient httpClient,
@@ -29,6 +30,7 @@ namespace MiCash.Infrastructure.Services.Payments
             _logger = logger;
 
             var pagarMeSettings = settings.Value;
+            _checkoutSuccessUrl = ValidSuccessUrl(pagarMeSettings.CheckoutSuccessUrl , logger);
 
             _httpClient.BaseAddress = new Uri(pagarMeSettings.BaseUrl);
             _httpClient.DefaultRequestHeaders.Authorization =
@@ -136,6 +138,10 @@ namespace MiCash.Infrastructure.Services.Payments
                     }
                 } ,
 
+                FlowSettings = string.IsNullOrWhiteSpace(_checkoutSuccessUrl)
+                    ? null
+                    : new PaymentLinkFlowSettings { SuccessUrl = _checkoutSuccessUrl } ,
+
                 CartSettings = new PaymentLinkCartSettings
                 {
                     Recurrences =
@@ -168,6 +174,31 @@ namespace MiCash.Infrastructure.Services.Payments
                 CheckoutUrl = checkout.Url,
                 OrderCode = orderCode ,
             };
+        }
+
+        /// <summary>
+        /// Pagar.me only accepts a public https address as success_url: localhost (any scheme) is refused with
+        /// 400 and would break every checkout. An invalid setting is ignored (Pagar.me shows its own page).
+        /// </summary>
+        private static string ValidSuccessUrl ( string? configured , ILogger logger )
+        {
+            if ( string.IsNullOrWhiteSpace(configured) ) {
+                return string.Empty;
+            }
+
+            var valid = Uri.TryCreate(configured , UriKind.Absolute , out var uri) &&
+                        uri.Scheme == Uri.UriSchemeHttps &&
+                        uri.IsLoopback == false &&
+                        uri.Host.Contains('.');
+
+            if ( valid == false ) {
+                logger.LogWarning(
+                    "PagarMe:CheckoutSuccessUrl ignorado ({Url}): o Pagar.me só aceita um endereço https público." ,
+                    configured);
+                return string.Empty;
+            }
+
+            return configured;
         }
 
         private async Task EnsureSuccessAsync (

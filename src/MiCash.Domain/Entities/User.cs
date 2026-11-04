@@ -22,6 +22,14 @@
         /// verification endpoints until the address is confirmed.
         /// </summary>
         public DateTime? EmailVerifiedAt { get; set; }
+        /// <summary>Monthly summary (template 05) by e-mail. On by default: it is about the user's own data.</summary>
+        public bool MonthlySummaryEmail { get; set; } = true;
+        /// <summary>Short push "Seu resumo de outubro chegou". On by default.</summary>
+        public bool MonthlySummaryPush { get; set; } = true;
+        /// <summary>News and offers by e-mail (marketing): off until the user opts in (LGPD).</summary>
+        public bool NewsEmail { get; set; }
+        /// <summary>First day of the last month whose summary was sent; keeps the monthly job idempotent.</summary>
+        public DateOnly? MonthlySummarySentFor { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

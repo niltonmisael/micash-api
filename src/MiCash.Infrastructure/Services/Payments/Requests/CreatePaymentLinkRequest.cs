@@ -24,6 +24,11 @@ namespace MiCash.Infrastructure.Services.Payments.Requests
 
         [JsonPropertyName("cart_settings")]
         public PaymentLinkCartSettings CartSettings { get; set; } = default!;
+
+        /// <summary>Optional: return URL after the checkout (not sent when null).</summary>
+        [JsonPropertyName("flow_settings")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public PaymentLinkFlowSettings? FlowSettings { get; set; }
     }
 
     public class PaymentSettings
@@ -45,6 +50,13 @@ namespace MiCash.Infrastructure.Services.Payments.Requests
     {
         [JsonPropertyName("recurrences")]
         public List<PaymentLinkRecurrence> Recurrences { get; set; } = [];
+    }
+
+    public class PaymentLinkFlowSettings
+    {
+        /// <summary>"Define a url de redirecionamento ao final do checkout para permitir o comprador retornar a loja".</summary>
+        [JsonPropertyName("success_url")]
+        public string SuccessUrl { get; set; } = string.Empty;
     }
 
     public class PaymentLinkRecurrence

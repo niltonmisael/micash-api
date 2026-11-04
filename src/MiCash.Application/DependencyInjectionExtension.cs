@@ -31,6 +31,8 @@ using MiCash.Application.UseCases.Dashboards.LatestExpenses;
 using MiCash.Application.UseCases.Dashboards.MonthlySummary;
 using MiCash.Application.UseCases.Dashboards.DailySummary;
 using MiCash.Application.UseCases.Dashboards.MonthForecast;
+using MiCash.Application.UseCases.Transactions.GetAll;
+using MiCash.Application.UseCases.Users.NotificationPreferences;
 using MiCash.Application.UseCases.Subscriptions.Limits;
 using MiCash.Domain.Services.Plans;
 using MiCash.Application.UseCases.Expenses.Delete;
@@ -128,6 +130,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IGetPlanLimitsUseCase , GetPlanLimitsUseCase>();
             services.AddScoped<IGetExpensesByCategoryUseCase , GetExpensesByCategoryUseCase>();
             services.AddScoped<IGetLatestExpensesUseCase , GetLatestExpensesUseCase>();
+            services.AddScoped<IGetTransactionsUseCase , GetTransactionsUseCase>();
+            services.AddScoped<IGetNotificationPreferencesUseCase , GetNotificationPreferencesUseCase>();
+            services.AddScoped<IUpdateNotificationPreferencesUseCase , UpdateNotificationPreferencesUseCase>();
             services.AddScoped<IGetAllPlansUseCase , GetAllPlansUseCase>();
             services.AddScoped<IGetPlanByIdUseCase , GetPlanByIdUseCase>();
             services.AddScoped<IGetCurrentSubscriptionUseCase , GetCurrentSubscriptionUseCase>();
@@ -195,6 +200,8 @@ namespace MiCash.Infrastructure
             services.AddScoped<IConfirmEmailChangeUseCase , ConfirmEmailChangeUseCase>();
             services.AddScoped<IEmailVerificationEmailJob , EmailVerificationEmailJob>();
             services.AddScoped<IUnverifiedAccountCleanupJob , UnverifiedAccountCleanupJob>();
+            services.AddScoped<IMonthlySummaryDispatchJob , MonthlySummaryDispatchJob>();
+            services.AddScoped<IMonthlySummaryJob , MonthlySummaryJob>();
             services.AddScoped<IVerifyEmailUseCase , VerifyEmailUseCase>();
             services.AddScoped<IResendEmailVerificationCodeUseCase , ResendEmailVerificationCodeUseCase>();
             services.AddScoped<IChangeVerificationEmailUseCase , ChangeVerificationEmailUseCase>();

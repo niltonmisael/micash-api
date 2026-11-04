@@ -412,6 +412,24 @@ namespace MiCash.Exception {
         }
 
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Enter a valid mobile number with area code..
+        /// </summary>
+        public static string PHONE_INVALID {
+            get {
+                return ResourceManager.GetString("PHONE_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid transaction type..
+        /// </summary>
+        public static string TRANSACTION_TYPE_INVALID {
+            get {
+                return ResourceManager.GetString("TRANSACTION_TYPE_INVALID", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Invalid year..
         /// </summary>
         public static string YEAR_INVALID {

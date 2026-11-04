@@ -48,6 +48,21 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             return await _dbContext.Users.FirstAsync(user => user.Id == id);
         }
 
+        public async Task<IReadOnlyList<long>> GetMonthlySummaryRecipientIdsAsync ( DateOnly month , long afterId , int take , CancellationToken cancellationToken )
+        {
+            return await _dbContext.Users
+                .AsNoTracking()
+                .Where(user =>
+                    user.Id > afterId &&
+                    user.EmailVerifiedAt != null &&
+                    ( user.MonthlySummaryEmail || user.MonthlySummaryPush ) &&
+                    ( user.MonthlySummarySentFor == null || user.MonthlySummarySentFor < month ))
+                .OrderBy(user => user.Id)
+                .Select(user => user.Id)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<User?> GetByIdAsync ( long userId , CancellationToken cancellationToken )
         {
             return await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);

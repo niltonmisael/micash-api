@@ -31,6 +31,14 @@ namespace CommonTestUtilities.Jobs
             return $"push-{notificationId}";
         }
 
+        public ConcurrentQueue<(long UserId, int Year, int Month)> EnqueuedMonthlySummaries { get; } = new();
+
+        public string EnqueueMonthlySummary ( long userId , int year , int month )
+        {
+            EnqueuedMonthlySummaries.Enqueue((userId, year, month));
+            return $"monthly-summary-{userId}-{year}-{month}";
+        }
+
         public ConcurrentQueue<long> EnqueuedWelcomeEmails { get; } = new();
 
         public ConcurrentQueue<long> EnqueuedPasswordResetEmails { get; } = new();

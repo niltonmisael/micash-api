@@ -19,6 +19,8 @@
 
         string EnqueueEmailChangedNotice ( long emailVerificationRequestId , string previousEmail );
 
+        string EnqueueMonthlySummary ( long userId , int year , int month );
+
         bool Delete ( string jobId );
     }
 }

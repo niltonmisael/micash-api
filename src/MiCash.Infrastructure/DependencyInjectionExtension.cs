@@ -2,6 +2,7 @@
 using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Repositories.Conversations;
 using MiCash.Domain.Repositories.Dashboards;
+using MiCash.Domain.Repositories.Transactions;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Repositories.SavingsGoals;
@@ -85,6 +86,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<IIncomesWriteOnlyRepository , IncomeRepository>();
             services.AddScoped<IIncomesReadOnlyRepository , IncomeRepository>();
             services.AddScoped<IDashboardReadOnlyRepository, DashboardRepository>();
+            services.AddScoped<ITransactionsReadOnlyRepository , TransactionRepository>();
             services.AddScoped<ICategoriesReadOnlyRepository, CategoryRepository>();
             services.AddScoped<ICategoriesWriteOnlyRepository, CategoryRepository>();
             services.AddScoped<ICategoriesUpdateOnlyRepository, CategoryRepository>();

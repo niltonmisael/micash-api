@@ -363,4 +363,10 @@
   <data name="EMAIL_CHANGE_SAME_AS_CURRENT" xml:space="preserve">
     <value>O novo e-mail deve ser diferente do e-mail atual.</value>
   </data>
+  <data name="PHONE_INVALID" xml:space="preserve">
+    <value>Informe um celular válido com DDD, ex.: (11) 98765-4321.</value>
+  </data>
+  <data name="TRANSACTION_TYPE_INVALID" xml:space="preserve">
+    <value>Tipo de transação inválido.</value>
+  </data>
 </root>

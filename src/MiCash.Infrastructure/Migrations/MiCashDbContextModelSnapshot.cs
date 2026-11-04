@@ -1038,11 +1038,27 @@ namespace MiCash.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("email_verified_at");
 
+                    b.Property<bool>("MonthlySummaryEmail")
+                        .HasColumnType("boolean")
+                        .HasColumnName("monthly_summary_email");
+
+                    b.Property<bool>("MonthlySummaryPush")
+                        .HasColumnType("boolean")
+                        .HasColumnName("monthly_summary_push");
+
+                    b.Property<DateOnly?>("MonthlySummarySentFor")
+                        .HasColumnType("date")
+                        .HasColumnName("monthly_summary_sent_for");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
+
+                    b.Property<bool>("NewsEmail")
+                        .HasColumnType("boolean")
+                        .HasColumnName("news_email");
 
                     b.Property<string>("PagarMeCustomerId")
                         .HasColumnType("text")

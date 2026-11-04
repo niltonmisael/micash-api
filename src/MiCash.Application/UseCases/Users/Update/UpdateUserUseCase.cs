@@ -7,7 +7,7 @@ using MiCash.Exception.ExceptionBase;
 namespace MiCash.Application.UseCases.Users.Update
 {
     /// <summary>
-    /// PUT api/user/update: updates the name. The e-mail field must be the current e-mail; a different one is
+    /// PUT api/user/update: updates the name and, when sent, the phone. The e-mail field must be the current e-mail; a different one is
     /// 400 EMAIL_CHANGE_REQUIRES_CONFIRMATION, because the address only changes after a code sent to it
     /// (POST api/user/email-change → POST api/user/email-change/confirm).
     /// </summary>
@@ -36,6 +36,9 @@ namespace MiCash.Application.UseCases.Users.Update
             var user = await _userUpdateOnlyRepository.GetById(loggedUser.Id);
 
             user.Name = request.Name;
+            if ( request.Phone is not null ) {
+                user.Phone = PhoneRules.Digits(request.Phone);
+            }
             user.UpdatedAt = DateTime.UtcNow;
 
             _userUpdateOnlyRepository.Update(user);

@@ -7,7 +7,10 @@ using MiCash.Communication.Responses.EmailVerification;
 using MiCash.Application.UseCases.Users.Delete;
 using MiCash.Application.UseCases.Users.Profile;
 using MiCash.Application.UseCases.Users.Register;
+using MiCash.Application.UseCases.Users.NotificationPreferences;
 using MiCash.Application.UseCases.Users.Update;
+using MiCash.Communication.Requests.Users;
+using MiCash.Communication.Responses.Users;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -101,6 +104,26 @@ namespace MiCash.API.Controllers
             var response = await useCase.Execute(request , cancellationToken);
 
             return Ok(response);
+        }
+
+        /// <summary>Monthly summary (e-mail and push) and news e-mail switches.</summary>
+        [HttpGet("notification-preferences")]
+        [Authorize]
+        [ProducesResponseType(typeof(ResponseNotificationPreferencesJson) , StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetNotificationPreferences ( [FromServices] IGetNotificationPreferencesUseCase useCase )
+        {
+            return Ok(await useCase.Execute());
+        }
+
+        [HttpPut("notification-preferences")]
+        [Authorize]
+        [ProducesResponseType(typeof(ResponseNotificationPreferencesJson) , StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateNotificationPreferences (
+            [FromServices] IUpdateNotificationPreferencesUseCase useCase ,
+            [FromBody] RequestNotificationPreferencesJson request ,
+            CancellationToken cancellationToken )
+        {
+            return Ok(await useCase.Execute(request , cancellationToken));
         }
 
         [HttpPut("change-password")]

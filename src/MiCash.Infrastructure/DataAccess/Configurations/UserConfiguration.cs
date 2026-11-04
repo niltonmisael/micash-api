@@ -59,6 +59,20 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.EmailVerifiedAt)
             .HasColumnName("email_verified_at");
 
+        // Defaults for new users come from the entity. No HasDefaultValue: with a bool, EF skips "false" on
+        // insert and the database default would win. The migration fills the existing rows (true/true/false).
+        builder.Property(x => x.MonthlySummaryEmail)
+            .HasColumnName("monthly_summary_email");
+
+        builder.Property(x => x.MonthlySummaryPush)
+            .HasColumnName("monthly_summary_push");
+
+        builder.Property(x => x.NewsEmail)
+            .HasColumnName("news_email");
+
+        builder.Property(x => x.MonthlySummarySentFor)
+            .HasColumnName("monthly_summary_sent_for");
+
         // Daily cleanup of accounts never confirmed.
         builder.HasIndex(x => x.CreatedAt)
             .HasFilter("email_verified_at IS NULL")
