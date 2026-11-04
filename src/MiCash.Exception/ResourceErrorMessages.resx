@@ -325,16 +325,16 @@
     <value>The new password must be different from the current password.</value>
   </data>
   <data name="PLAN_LIMIT_FINANCIAL_GOALS" xml:space="preserve">
-    <value>The free plan allows up to {0} spending goals per month. Subscribe to Premium for unlimited goals.</value>
+    <value>The free plan allows up to {0} spending goals per month. Unlimited goals are part of the Premium plan.</value>
   </data>
   <data name="PLAN_LIMIT_SAVINGS_GOALS" xml:space="preserve">
-    <value>The free plan allows up to {0} savings goal(s). Subscribe to Premium for unlimited savings goals.</value>
+    <value>The free plan allows up to {0} savings goal(s). Unlimited savings goals are part of the Premium plan.</value>
   </data>
   <data name="PLAN_LIMIT_HISTORY" xml:space="preserve">
-    <value>The free plan shows the current month and the previous {0} months. Subscribe to Premium to see your whole history.</value>
+    <value>The free plan shows the current month and the previous {0} months. The whole history is part of the Premium plan.</value>
   </data>
   <data name="PLAN_LIMIT_CHAT_MONTHLY" xml:space="preserve">
-    <value>You used your {0} messages with MI this month. Subscribe to Premium to keep chatting.</value>
+    <value>You used your {0} messages with MI this month. The free plan unlocks new messages next month.</value>
   </data>
   <data name="PLAN_LIMIT_COPY_FINANCIAL_GOALS" xml:space="preserve">
     <value>Copying goals to another month is a Premium feature.</value>

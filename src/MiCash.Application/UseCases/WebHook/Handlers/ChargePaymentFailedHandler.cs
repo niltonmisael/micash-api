@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories.Subscriptions;
+using MiCash.Domain.Services.Plans;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -62,17 +63,27 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
 
             var failureReason = GetFailureReason(data);
 
+            var now = DateTime.UtcNow;
+
+            // Renewal refused (it was Active, i.e. already paid once): Premium is kept for the grace period while
+            // Pagar.me retries. Counted from the first failure only, so the retries never extend it. A first charge
+            // refused (Pending) never had access and gets no grace.
+            if ( subscription.Status == SubscriptionStatus.Active ) {
+                subscription.PaymentGraceUntil = now + SubscriptionAccess.RenewalGracePeriod;
+            }
+
             // Pagar.me keeps retrying the charge; a later charge.paid makes the subscription Active again.
             subscription.Status = SubscriptionStatus.PaymentFailed;
             subscription.PagarmeChargeId = chargeId;
-            subscription.UpdatedAt = DateTime.UtcNow;
+            subscription.UpdatedAt = now;
 
             _subscriptionsUpdateOnlyRepository.Update(subscription, cancellationToken);
 
             _logger.LogWarning(
-                "Pagamento da Subscription {SubscriptionId} falhou. Motivo: {Reason}" ,
+                "Pagamento da Subscription {SubscriptionId} falhou. Motivo: {Reason}. Tolerância até {GraceUntil}." ,
                 subscriptionId ,
-                failureReason ?? "Motivo não informado");
+                failureReason ?? "Motivo não informado" ,
+                subscription.PaymentGraceUntil);
         }
 
         private static string? GetFailureReason ( JsonElement data )

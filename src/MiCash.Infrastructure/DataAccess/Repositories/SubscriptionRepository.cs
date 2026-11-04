@@ -63,6 +63,20 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        public async Task<Subscription?> GetWithAccessByUserIdAsync ( long userId , CancellationToken cancellationToken )
+        {
+            return await _dbContext
+                .Subscriptions
+                .AsNoTracking()
+                .Include(x => x.Plan)
+                .Where(x =>
+                     x.UserId == userId &&
+                     ( x.Status == SubscriptionStatus.Active || x.Status == SubscriptionStatus.PaymentFailed ))
+                .OrderByDescending(x => x.Status == SubscriptionStatus.Active)
+                .ThenByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
         public async Task<List<Subscription>> GetHistoryByUserIdAsync ( long userId , CancellationToken cancellationToken )
         {
             return await _dbContext.Subscriptions

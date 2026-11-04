@@ -11,6 +11,10 @@ namespace MiCash.API.Controllers
     [ApiController]
     public class CheckoutController : ControllerBase
     {
+        /// <summary>
+        /// Creates the Pagar.me checkout (payment link) of a plan. WEB ONLY: subscriptions are sold on the web; the
+        /// mobile apps are consumption-only and never call it nor link to it. Premium is activated by the webhooks.
+        /// </summary>
         [Authorize]
         [HttpPost]
         [ProducesResponseType(typeof(ResponseCheckoutJson) , StatusCodes.Status200OK)]

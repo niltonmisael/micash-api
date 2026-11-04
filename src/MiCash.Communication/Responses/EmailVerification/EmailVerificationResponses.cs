@@ -19,7 +19,11 @@ namespace MiCash.Communication.Responses.EmailVerification
     /// </summary>
     public class ResponseEmailVerifiedJson : ResponseRegisteredUserJson
     {
-        /// <summary>True when the user is not Premium yet (the usual case right after sign-up).</summary>
+        /// <summary>
+        /// True when the user is not Premium yet (the usual case right after sign-up). For the WEB sign-up only:
+        /// subscriptions are sold on the web, the mobile apps are consumption-only and must ignore this flag
+        /// (no offer, no link to a checkout).
+        /// </summary>
         public bool ShowPremiumOffer { get; set; }
     }
 }

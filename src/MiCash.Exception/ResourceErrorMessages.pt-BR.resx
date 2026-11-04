@@ -325,16 +325,16 @@
     <value>A nova senha deve ser diferente da senha atual.</value>
   </data>
   <data name="PLAN_LIMIT_FINANCIAL_GOALS" xml:space="preserve">
-    <value>O plano gratuito permite até {0} metas de gasto por mês. Assine o Premium para ter metas ilimitadas.</value>
+    <value>O plano gratuito permite até {0} metas de gasto por mês. Metas ilimitadas fazem parte do plano Premium.</value>
   </data>
   <data name="PLAN_LIMIT_SAVINGS_GOALS" xml:space="preserve">
-    <value>O plano gratuito permite até {0} caixinha(s). Assine o Premium para ter caixinhas ilimitadas.</value>
+    <value>O plano gratuito permite até {0} caixinha(s). Caixinhas ilimitadas fazem parte do plano Premium.</value>
   </data>
   <data name="PLAN_LIMIT_HISTORY" xml:space="preserve">
-    <value>O plano gratuito mostra o mês atual e os {0} meses anteriores. Assine o Premium para ver todo o seu histórico.</value>
+    <value>O plano gratuito mostra o mês atual e os {0} meses anteriores. O histórico completo faz parte do plano Premium.</value>
   </data>
   <data name="PLAN_LIMIT_CHAT_MONTHLY" xml:space="preserve">
-    <value>Você usou as {0} mensagens do mês com a MI. Assine o Premium para continuar conversando.</value>
+    <value>Você usou as {0} mensagens do mês com a MI. O plano gratuito libera novas mensagens no próximo mês.</value>
   </data>
   <data name="PLAN_LIMIT_COPY_FINANCIAL_GOALS" xml:space="preserve">
     <value>Copiar metas para outro mês é um recurso Premium.</value>

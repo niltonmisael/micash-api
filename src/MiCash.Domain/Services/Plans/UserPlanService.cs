@@ -11,17 +11,19 @@ namespace MiCash.Domain.Services.Plans
     }
 
     /// <summary>
-    /// Same rule as [RequireActiveSubscription]: only an Active subscription is Premium (Pending checkout,
-    /// past due, cancelled… are Free). Scoped: the subscription is read once per request.
+    /// Premium or Free by <see cref="SubscriptionAccess.HasPremium"/> (same rule as [RequireActiveSubscription]).
+    /// Only the server's records decide it; nothing the client sends matters. Scoped: read once per request.
     /// </summary>
     public sealed class UserPlanService : IUserPlanService
     {
         private readonly ISubscriptionsReadOnlyRepository _subscriptions;
+        private readonly TimeProvider _time;
         private readonly Dictionary<long , PlanLimits> _byUser = [];
 
-        public UserPlanService ( ISubscriptionsReadOnlyRepository subscriptions )
+        public UserPlanService ( ISubscriptionsReadOnlyRepository subscriptions , TimeProvider time )
         {
             _subscriptions = subscriptions;
+            _time = time;
         }
 
         public async Task<PlanLimits> GetLimitsAsync ( User user , CancellationToken cancellationToken )
@@ -30,9 +32,11 @@ namespace MiCash.Domain.Services.Plans
                 return limits;
             }
 
-            var subscription = await _subscriptions.GetCurrentByUserIdAsync(user.Id , cancellationToken);
+            var subscription = await _subscriptions.GetWithAccessByUserIdAsync(user.Id , cancellationToken);
 
-            limits = subscription?.Status == SubscriptionStatus.Active ? PlanLimits.Premium : PlanLimits.Free;
+            limits = SubscriptionAccess.HasPremium(subscription , _time.GetUtcNow().UtcDateTime)
+                ? PlanLimits.Premium
+                : PlanLimits.Free;
 
             _byUser[user.Id] = limits;
 

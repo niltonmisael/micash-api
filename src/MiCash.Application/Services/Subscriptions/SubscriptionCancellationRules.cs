@@ -56,6 +56,17 @@ namespace MiCash.Application.Services.Subscriptions
             subscription.CancellationJobId = jobs.ScheduleSubscriptionExpiration(subscription.Id , accessEndsAt);
         }
 
+        /// <summary>
+        /// Refund or chargeback: the money went back, so the paid period is not honored. Any scheduled
+        /// cancellation/expiration job is dropped and the access ends now.
+        /// </summary>
+        public static void EndNow ( Subscription subscription , DateTime now , IBackgroundJobService jobs )
+        {
+            DeleteScheduledJob(subscription , jobs);
+            Close(subscription , now);
+            subscription.PaymentGraceUntil = null;
+        }
+
         /// <summary>Ends the access: the user is Free from now on.</summary>
         public static void Close ( Subscription subscription , DateTime endedAt )
         {

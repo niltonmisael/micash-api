@@ -1,5 +1,6 @@
 using CommonTestUtilities.Jobs;
 using CommonTestUtilities.Logger;
+using CommonTestUtilities.Time;
 using FluentAssertions;
 using MiCash.Application.UseCases.WebHook;
 using MiCash.Application.UseCases.WebHook.Handlers;
@@ -12,6 +13,7 @@ using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Repositories.WebHook;
 using MiCash.Domain.Services.Payments;
 using MiCash.Domain.Services.Payments.Models;
+using MiCash.Domain.Services.Plans;
 using Moq;
 using System.Text.Json;
 
@@ -124,6 +126,14 @@ namespace UseCases.Test.Subscriptions
 
             public SubscriptionCanceledHandler Canceled ( FakeBackgroundJobService jobs ) => new(
                 Read.Object , Update.Object , jobs , new LoggerServiceBuilder<SubscriptionCanceledHandler>().Build());
+
+            public ChargeRefundedHandler Refunded ( FakeBackgroundJobService jobs , DateTime now ) => new(
+                Read.Object , Update.Object , Gateway.Object , jobs , new MutableTimeProvider(new DateTimeOffset(now)) ,
+                new LoggerServiceBuilder<ChargeRefundedHandler>().Build());
+
+            public ChargeChargedbackHandler Chargedback ( FakeBackgroundJobService jobs , DateTime now ) => new(
+                Read.Object , Update.Object , Gateway.Object , jobs , new MutableTimeProvider(new DateTimeOffset(now)) ,
+                new LoggerServiceBuilder<ChargeRefundedHandler>().Build());
         }
 
         private const string ChargeData =
@@ -275,6 +285,133 @@ namespace UseCases.Test.Subscriptions
             subscription.Status.Should().Be(SubscriptionStatus.Cancelled);
             subscription.EndsAt.Should().NotBeNull();
             subscription.CancellationJobId.Should().BeNull();
+        }
+
+        // ---------- Renewal refused: 3-day grace ----------
+
+        [Fact]
+        public async Task Refused_Renewal_Keeps_Premium_For_Three_Days_Counted_From_The_First_Failure ()
+        {
+            var subscription = new Subscription { Status = SubscriptionStatus.Active };
+            var sut = new Subscriptions(subscription);
+            var before = DateTime.UtcNow;
+
+            await sut.PaymentFailed().HandleAsync(Event("charge.payment_failed" , ChargeData) , CancellationToken.None);
+
+            subscription.Status.Should().Be(SubscriptionStatus.PaymentFailed);
+            subscription.PaymentGraceUntil.Should().BeOnOrAfter(before + SubscriptionAccess.RenewalGracePeriod)
+                .And.BeOnOrBefore(DateTime.UtcNow + SubscriptionAccess.RenewalGracePeriod);
+            SubscriptionAccess.HasPremium(subscription , DateTime.UtcNow).Should().BeTrue();
+            SubscriptionAccess.HasPremium(subscription , subscription.PaymentGraceUntil!.Value).Should().BeFalse("the grace ends after 3 days");
+
+            // Pagar.me retries and fails again: the grace is not extended.
+            var graceUntil = subscription.PaymentGraceUntil;
+            await sut.PaymentFailed().HandleAsync(Event("charge.payment_failed" , ChargeData) , CancellationToken.None);
+            subscription.PaymentGraceUntil.Should().Be(graceUntil);
+        }
+
+        [Fact]
+        public async Task Refused_First_Charge_Gets_No_Grace ()
+        {
+            var subscription = new Subscription { Status = SubscriptionStatus.Pending };
+            var sut = new Subscriptions(subscription);
+
+            await sut.PaymentFailed().HandleAsync(Event("charge.payment_failed" , ChargeData) , CancellationToken.None);
+
+            subscription.PaymentGraceUntil.Should().BeNull();
+            SubscriptionAccess.HasPremium(subscription , DateTime.UtcNow).Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task Renewal_Paid_On_Retry_Makes_It_Active_Again_And_Ends_The_Grace ()
+        {
+            var subscription = new Subscription
+            {
+                Status = SubscriptionStatus.PaymentFailed ,
+                PaymentGraceUntil = DateTime.UtcNow.AddDays(2)
+            };
+            var sut = new Subscriptions(subscription);
+
+            await sut.ChargePaid().HandleAsync(Event("charge.paid" , ChargeData) , CancellationToken.None);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Active);
+            subscription.PaymentGraceUntil.Should().BeNull();
+        }
+
+        // ---------- Refund / chargeback: Premium ends now ----------
+
+        private static readonly DateTime RefundedAt = new(2026 , 11 , 15 , 14 , 0 , 0 , DateTimeKind.Utc);
+
+        [Fact]
+        public async Task Refund_Cancels_At_PagarMe_And_Ends_Premium_Now_Even_Inside_The_Paid_Period ()
+        {
+            var subscription = new Subscription
+            {
+                Id = 10 ,
+                PagarmeSubscriptionId = "sub_1" ,
+                Status = SubscriptionStatus.Active ,
+                NextBillingDate = RefundedAt.AddDays(16) ,
+                CancelAtPeriodEnd = true ,
+                CancellationJobId = "job-1"
+            };
+            var sut = new Subscriptions(subscription);
+
+            await sut.Refunded(new FakeBackgroundJobService() , RefundedAt)
+                .HandleAsync(Event("charge.refunded" , ChargeData) , CancellationToken.None);
+
+            sut.Gateway.Verify(g => g.CancelSubscriptionAsync("sub_1" , It.IsAny<CancellationToken>()) , Times.Once);
+            subscription.Status.Should().Be(SubscriptionStatus.Cancelled);
+            subscription.EndsAt.Should().Be(RefundedAt);
+            subscription.CancellationJobId.Should().BeNull("the scheduled job is no longer needed");
+            SubscriptionAccess.HasPremium(subscription , RefundedAt).Should().BeFalse();
+            sut.Update.Verify(u => u.Update(subscription , It.IsAny<CancellationToken>()) , Times.Once);
+        }
+
+        [Fact]
+        public async Task Chargeback_Has_The_Same_Effect_As_A_Refund ()
+        {
+            var subscription = new Subscription
+            {
+                Status = SubscriptionStatus.PaymentFailed ,
+                PaymentGraceUntil = RefundedAt.AddDays(1)
+            };
+            var sut = new Subscriptions(subscription);
+            var handler = sut.Chargedback(new FakeBackgroundJobService() , RefundedAt);
+
+            handler.EventName.Should().Be("charge.chargedback");
+            await handler.HandleAsync(Event("charge.chargedback" , ChargeData) , CancellationToken.None);
+
+            subscription.Status.Should().Be(SubscriptionStatus.Cancelled);
+            subscription.PaymentGraceUntil.Should().BeNull();
+            SubscriptionAccess.HasPremium(subscription , RefundedAt).Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task Refund_Is_Retried_When_The_Gateway_Cancellation_Fails_And_Nothing_Changes ()
+        {
+            var subscription = new Subscription { Status = SubscriptionStatus.Active };
+            var sut = new Subscriptions(subscription);
+            sut.Gateway.Setup(g => g.CancelSubscriptionAsync("sub_1" , It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new HttpRequestException("down"));
+
+            var act = () => sut.Refunded(new FakeBackgroundJobService() , RefundedAt)
+                .HandleAsync(Event("charge.refunded" , ChargeData) , CancellationToken.None);
+
+            await act.Should().ThrowAsync<HttpRequestException>("the webhook answers non-2xx and Pagar.me delivers it again");
+            subscription.Status.Should().Be(SubscriptionStatus.Active);
+        }
+
+        [Fact]
+        public async Task Refund_Of_An_Already_Closed_Subscription_Is_Ignored ()
+        {
+            var subscription = new Subscription { Status = SubscriptionStatus.Cancelled };
+            var sut = new Subscriptions(subscription);
+
+            await sut.Refunded(new FakeBackgroundJobService() , RefundedAt)
+                .HandleAsync(Event("charge.refunded" , ChargeData) , CancellationToken.None);
+
+            sut.Gateway.Verify(g => g.CancelSubscriptionAsync(It.IsAny<string>() , It.IsAny<CancellationToken>()) , Times.Never);
+            sut.Update.Verify(u => u.Update(It.IsAny<Subscription>() , It.IsAny<CancellationToken>()) , Times.Never);
         }
 
         // ---------- SubscriptionCreatedHandler ----------

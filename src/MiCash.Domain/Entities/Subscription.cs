@@ -20,6 +20,12 @@ namespace MiCash.Domain.Entities
         public DateTime? StartsAt { get; set; }
         public DateTime? EndsAt { get; set; }
         public DateTime? NextBillingDate { get; set; }
+
+        /// <summary>
+        /// Renewal refused (PaymentFailed after having been Active): Premium is kept until this moment while
+        /// Pagar.me retries the charge. Set on the first failure only; cleared when a charge is paid.
+        /// </summary>
+        public DateTime? PaymentGraceUntil { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

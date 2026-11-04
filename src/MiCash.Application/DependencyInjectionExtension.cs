@@ -136,6 +136,8 @@ namespace MiCash.Infrastructure
             services.AddScoped<IPagarMeWebhookHandler , SubscriptionCanceledHandler>();
             services.AddScoped<IPagarMeWebhookHandler , ChargePaidHandler>();
             services.AddScoped<IPagarMeWebhookHandler , ChargePaymentFailedHandler>();
+            services.AddScoped<IPagarMeWebhookHandler , ChargeRefundedHandler>();
+            services.AddScoped<IPagarMeWebhookHandler , ChargeChargedbackHandler>();
             services.AddScoped<IProcessPagarMeWebhookUseCase , ProcessPagarMeWebhookUseCase>();
             services.AddScoped<ISubscriptionCancellationJob ,SubscriptionCancellationJob>();
             services.AddScoped<ISubscriptionReconciliationJob , SubscriptionReconciliationJob>();

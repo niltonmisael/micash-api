@@ -30,7 +30,7 @@ namespace MiCash.API.Controllers
 
         /// <summary>
         /// Limits of the user's plan (Free or Premium) and chat usage, so the app can show "3 de 5 mensagens"
-        /// and the subscription offers before the user hits a 403 PLAN_LIMIT_REACHED.
+        /// before the user hits a 403 PLAN_LIMIT_REACHED. Read-only entitlements, the same on web and mobile.
         /// </summary>
         [Authorize]
         [HttpGet("limits")]

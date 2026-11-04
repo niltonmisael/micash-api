@@ -7,6 +7,12 @@ namespace MiCash.Domain.Repositories.Subscriptions
         Task<Subscription?> GetActiveByUserIdAsync ( long userId , CancellationToken cancellationToken);
         Task<Subscription?> GetByIdAsync ( long id , CancellationToken cancellationToken);
         Task<Subscription?> GetCurrentByUserIdAsync ( long userId, CancellationToken cancellationToken );
+
+        /// <summary>
+        /// The subscription that may give the user Premium (with its Plan): the Active one, otherwise the latest
+        /// PaymentFailed (grace period, see SubscriptionAccess). Null when there is none.
+        /// </summary>
+        Task<Subscription?> GetWithAccessByUserIdAsync ( long userId , CancellationToken cancellationToken );
         Task<Subscription?> GetByPagarmeSubscriptionIdAsync ( string subscriptionId , CancellationToken cancellationToken );
         Task<bool> ExistsByPagarmeSubscriptionIdAsync ( string subscriptionId ,CancellationToken cancellationToken );
         Task<List<Subscription>> GetHistoryByUserIdAsync (long userId , CancellationToken cancellationToken );

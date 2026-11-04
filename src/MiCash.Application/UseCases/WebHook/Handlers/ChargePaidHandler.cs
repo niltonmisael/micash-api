@@ -84,6 +84,8 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             var wasActive = subscription.Status == SubscriptionStatus.Active;
 
             subscription.Status = SubscriptionStatus.Active;
+            // A paid retry ends the grace period of a refused renewal.
+            subscription.PaymentGraceUntil = null;
             subscription.PagarmeChargeId = chargeId;
             subscription.StartsAt ??= paidAt ?? DateTime.UtcNow;
             subscription.UpdatedAt = DateTime.UtcNow;

@@ -95,7 +95,7 @@ namespace MiCash.API.Controllers
 
         /// <summary>
         /// Confirms the e-mail with the 6-digit code. Returns NEW tokens (replace the stored ones) and
-        /// showPremiumOffer, so the app shows the Premium offer before the home screen.
+        /// showPremiumOffer (web sign-up only: the web shows the Premium offer; the mobile apps ignore it).
         /// </summary>
         [HttpPost("/verify-email")]
         [Authorize]

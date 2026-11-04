@@ -44,23 +44,48 @@ namespace UseCases.Test.Plans
             PlanLimits.Free.AllowsMonth(today , 2026 , 10).Should().BeFalse();
         }
 
+        private static readonly DateTime Now = new(2026 , 11 , 10 , 12 , 0 , 0 , DateTimeKind.Utc);
+
+        public static TheoryData<string , Subscription? , bool> AccessCases => new()
+        {
+            { "no subscription" , null , false },
+            { "active" , new Subscription { UserId = 1 , Status = SubscriptionStatus.Active } , true },
+            {
+                "canceled, still inside the paid period" ,
+                new Subscription { UserId = 1 , Status = SubscriptionStatus.Active , CancelAtPeriodEnd = true , EndsAt = Now.AddDays(20) } ,
+                true
+            },
+            { "pending checkout" , new Subscription { UserId = 1 , Status = SubscriptionStatus.Pending } , false },
+            {
+                "renewal refused, inside the 3-day grace" ,
+                new Subscription { UserId = 1 , Status = SubscriptionStatus.PaymentFailed , PaymentGraceUntil = Now.AddHours(1) } ,
+                true
+            },
+            {
+                "renewal refused, grace over" ,
+                new Subscription { UserId = 1 , Status = SubscriptionStatus.PaymentFailed , PaymentGraceUntil = Now.AddSeconds(-1) } ,
+                false
+            },
+            { "first charge refused (no grace)" , new Subscription { UserId = 1 , Status = SubscriptionStatus.PaymentFailed } , false },
+            { "cancelled / expired" , new Subscription { UserId = 1 , Status = SubscriptionStatus.Cancelled } , false },
+        };
+
         [Theory]
-        [InlineData(SubscriptionStatus.Active , true)]
-        [InlineData(SubscriptionStatus.Pending , false)]
-        [InlineData(null , false)]
-        public async Task Only_An_Active_Subscription_Is_Premium ( SubscriptionStatus? status , bool premium )
+        [MemberData(nameof(AccessCases))]
+        public async Task Premium_Comes_Only_From_The_Server_Subscription_Rule ( string scenario , Subscription? subscription , bool premium )
         {
             var repository = new Mock<ISubscriptionsReadOnlyRepository>();
-            repository.Setup(r => r.GetCurrentByUserIdAsync(1 , It.IsAny<CancellationToken>()))
-                .ReturnsAsync(status is null ? null : new Subscription { UserId = 1 , Status = status.Value });
+            repository.Setup(r => r.GetWithAccessByUserIdAsync(1 , It.IsAny<CancellationToken>()))
+                .ReturnsAsync(subscription);
 
-            var service = new UserPlanService(repository.Object);
+            var service = new UserPlanService(repository.Object , new MutableTimeProvider(new DateTimeOffset(Now)));
 
             var limits = await service.GetLimitsAsync(new User { Id = 1 } , CancellationToken.None);
             await service.GetLimitsAsync(new User { Id = 1 } , CancellationToken.None);
 
-            limits.IsPremium.Should().Be(premium);
-            repository.Verify(r => r.GetCurrentByUserIdAsync(1 , It.IsAny<CancellationToken>()) , Times.Once , "read once per request");
+            limits.IsPremium.Should().Be(premium , scenario);
+            SubscriptionAccess.HasPremium(subscription , Now).Should().Be(premium , scenario);
+            repository.Verify(r => r.GetWithAccessByUserIdAsync(1 , It.IsAny<CancellationToken>()) , Times.Once , "read once per request");
         }
 
         [Fact]

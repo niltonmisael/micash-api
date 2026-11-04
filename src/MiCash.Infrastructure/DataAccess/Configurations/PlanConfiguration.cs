@@ -25,6 +25,11 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
+            // Stored as text like every enum (Monthly / Yearly).
+            builder.Property(p => p.BillingPeriod)
+                .HasColumnName("billing_period")
+                .IsRequired();
+
             builder.Property(p => p.IsActive)
                 .HasColumnName("is_active")
                 .IsRequired();

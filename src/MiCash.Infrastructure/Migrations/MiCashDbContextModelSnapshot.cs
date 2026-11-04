@@ -531,6 +531,11 @@ namespace MiCash.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("BillingPeriod")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("billing_period");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -970,6 +975,10 @@ namespace MiCash.Infrastructure.Migrations
                     b.Property<string>("PagarmeSubscriptionId")
                         .HasColumnType("text")
                         .HasColumnName("pagarme_subscription_id");
+
+                    b.Property<DateTime?>("PaymentGraceUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_grace_until");
 
                     b.Property<long>("PlanId")
                         .HasColumnType("bigint")

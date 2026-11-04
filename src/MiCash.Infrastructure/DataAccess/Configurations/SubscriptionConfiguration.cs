@@ -38,6 +38,9 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
             builder.Property(x => x.EndsAt)
                 .HasColumnName("ends_at");
 
+            builder.Property(x => x.PaymentGraceUntil)
+                .HasColumnName("payment_grace_until");
+
             builder.Property(x => x.NextBillingDate)
                 .HasColumnName("next_billing_date");
 
