@@ -4,6 +4,8 @@ using MiCash.Application.Jobs.Subscriptions;
 using MiCash.Application.Jobs.PushNotifications;
 using MiCash.Application.Jobs.Email;
 using MiCash.Application.UseCases.Auth.PasswordReset;
+using MiCash.Application.UseCases.Auth.EmailVerification;
+using MiCash.Application.Jobs.Users;
 using MiCash.Application.Services.Email;
 using MiCash.Application.Services.FinancialGoals;
 using MiCash.Application.Services.PushNotifications;
@@ -184,6 +186,16 @@ namespace MiCash.Infrastructure
             services.AddScoped<IRequestPasswordResetUseCase , RequestPasswordResetUseCase>();
             services.AddScoped<IVerifyPasswordResetCodeUseCase , VerifyPasswordResetCodeUseCase>();
             services.AddScoped<IResetPasswordUseCase , ResetPasswordUseCase>();
+            services.AddScoped<EmailVerificationCodeIssuer>();
+            services.AddScoped<EmailVerificationCodeChecker>();
+            services.AddScoped<IEmailChangedNoticeJob , EmailChangedNoticeJob>();
+            services.AddScoped<IRequestEmailChangeUseCase , RequestEmailChangeUseCase>();
+            services.AddScoped<IConfirmEmailChangeUseCase , ConfirmEmailChangeUseCase>();
+            services.AddScoped<IEmailVerificationEmailJob , EmailVerificationEmailJob>();
+            services.AddScoped<IUnverifiedAccountCleanupJob , UnverifiedAccountCleanupJob>();
+            services.AddScoped<IVerifyEmailUseCase , VerifyEmailUseCase>();
+            services.AddScoped<IResendEmailVerificationCodeUseCase , ResendEmailVerificationCodeUseCase>();
+            services.AddScoped<IChangeVerificationEmailUseCase , ChangeVerificationEmailUseCase>();
             services.AddScoped<IPushNotificationDispatchJob , PushNotificationDispatchJob>();
             services.AddScoped<IPushReceiptCheckJob , PushReceiptCheckJob>();
         }

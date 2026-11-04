@@ -24,6 +24,20 @@ namespace MiCash.Infrastructure.DataAccess.Repositories
             _dbContext.Users.Remove(userToRemove!);
         }
 
+        public async Task<int> RemoveUnverifiedCreatedBeforeAsync ( DateTime createdBefore , int batchSize , CancellationToken cancellationToken )
+        {
+            // Same path as the account deletion (the database cascades the dependent rows).
+            var users = await _dbContext.Users
+                .Where(user => user.EmailVerifiedAt == null && user.CreatedAt < createdBefore)
+                .OrderBy(user => user.Id)
+                .Take(batchSize)
+                .ToListAsync(cancellationToken);
+
+            _dbContext.Users.RemoveRange(users);
+
+            return users.Count;
+        }
+
         public async Task<bool> ExistActiveUserWithEmail ( string email )
         {
            return await _dbContext.Users.AnyAsync(user =>  user.Email.Equals(email));

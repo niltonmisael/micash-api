@@ -27,6 +27,9 @@ namespace MiCash.Infrastructure.Security.Tokens
             {
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Sid, user.UserIdentifier.ToString()),
+                // Read by EmailVerifiedFilter without a database query. After the code is confirmed the
+                // app receives new tokens; /refresh also reissues it from the current user row.
+                new Claim(MiCashClaims.EMAIL_VERIFIED, user.EmailVerifiedAt is null ? "false" : "true"),
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

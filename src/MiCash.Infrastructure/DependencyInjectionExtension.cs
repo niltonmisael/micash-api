@@ -7,6 +7,7 @@ using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Repositories.SavingsGoals;
 using MiCash.Domain.Repositories.Incomes;
 using MiCash.Domain.Repositories.PasswordResets;
+using MiCash.Domain.Repositories.EmailVerifications;
 using MiCash.Domain.Repositories.PaymentLinks;
 using MiCash.Domain.Repositories.Plans;
 using MiCash.Domain.Repositories.PushNotifications;
@@ -116,6 +117,9 @@ namespace MiCash.Infrastructure
             services.AddScoped<IPasswordResetReadOnlyRepository , PasswordResetRepository>();
             services.AddScoped<IPasswordResetWriteOnlyRepository , PasswordResetRepository>();
             services.AddScoped<IPasswordResetUpdateOnlyRepository , PasswordResetRepository>();
+            services.AddScoped<IEmailVerificationReadOnlyRepository , EmailVerificationRepository>();
+            services.AddScoped<IEmailVerificationWriteOnlyRepository , EmailVerificationRepository>();
+            services.AddScoped<IEmailVerificationUpdateOnlyRepository , EmailVerificationRepository>();
         }
         private static void AddToken ( this IServiceCollection services , IConfiguration configuration )
         {

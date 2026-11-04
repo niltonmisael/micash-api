@@ -1,4 +1,4 @@
-﻿using CommonTestUtilities.Entities;
+using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
@@ -13,11 +13,13 @@ namespace UseCases.Test.Users.Update
     public class UpdateUserUseCaseTest
     {
         [Fact]
-        public async Task Success ()
+        public async Task Success_Updates_The_Name_With_The_Current_Email ()
         {
             var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
+            var currentEmail = user.Email;
             var request = RequestUpdateUserJsonBuilder.Build();
+            request.Email = currentEmail;
 
             var useCase = CreateUseCase(user);
 
@@ -26,7 +28,7 @@ namespace UseCases.Test.Users.Update
             await act.Should().NotThrowAsync();
 
             user.Name.Should().Be(request.Name);
-            user.Email.Should().Be(request.Email);
+            user.Email.Should().Be(currentEmail);
         }
 
         [Fact]
@@ -36,44 +38,42 @@ namespace UseCases.Test.Users.Update
             var user = UserBuilder.Build();
 
             var request = RequestUpdateUserJsonBuilder.Build();
+            request.Email = user.Email;
             request.Name = string.Empty;
 
             var useCase = CreateUseCase(user);
 
             var act = async () => await useCase.Execute(request, cancellationToken);
 
-            var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
-
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.NAME_EMPTY));
+            (await act.Should().ThrowAsync<ErrorOnValidationException>())
+                .Which.GetErrors().Should().ContainSingle(ResourceErrorMessages.NAME_EMPTY);
         }
 
         [Fact]
-        public async Task Error_Email_Already_Exist ()
+        public async Task Different_Email_Requires_The_Confirmation_Flow_And_Changes_Nothing ()
         {
-            var cancellationToken = CancellationToken.None;
             var user = UserBuilder.Build();
+            var currentEmail = user.Email;
+            var currentName = user.Name;
             var request = RequestUpdateUserJsonBuilder.Build();
-            var useCase = CreateUseCase(user , request.Email);
+            request.Email = "outro." + currentEmail;
 
-            var act = async () => await useCase.Execute(request, cancellationToken);
+            var act = () => CreateUseCase(user).Execute(request , CancellationToken.None);
 
-            var result = await act.Should().ThrowAsync<ErrorOnValidationException>();
-
-            result.Where(ex => ex.GetErrors().Count == 1 && ex.GetErrors().Contains(ResourceErrorMessages.EMAIL_ALREADY_REGISTERED));
+            var error = (await act.Should().ThrowAsync<EmailChangeRequiresConfirmationException>()).Which;
+            error.ErrorCode.Should().Be("EMAIL_CHANGE_REQUIRES_CONFIRMATION");
+            error.StatusCode.Should().Be(400);
+            user.Email.Should().Be(currentEmail);
+            user.Name.Should().Be(currentName);
         }
 
-        private UpdateUserUseCase CreateUseCase ( User user , string? email = null )
+        private static UpdateUserUseCase CreateUseCase ( User user )
         {
             var unitOfWork = UnitOfWorkBuilder.Build();
             var updateRepository = UserUpdateOnlyRepositoryBuilder.Build(user);
             var loggedUser = LoggedUserBuilder.Build(user);
-            var readRepository = new UserReadOnlyRepositoryBuilder();
 
-            if ( string.IsNullOrWhiteSpace(email) == false ) {
-                readRepository.ExistActiveUserWithEmail(email);
-            }
-
-            return new UpdateUserUseCase(loggedUser  , readRepository.Build() , unitOfWork, updateRepository);
+            return new UpdateUserUseCase(loggedUser , unitOfWork, updateRepository);
         }
     }
 }

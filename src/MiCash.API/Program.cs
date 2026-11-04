@@ -52,7 +52,11 @@ builder.Services.AddSwaggerGen(config => {
             [new OpenApiSecuritySchemeReference("Bearer" , document)] = []
         });
 });
-builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
+builder.Services.AddMvc(options => {
+    options.Filters.Add(typeof(ExceptionFilter));
+    // Global, before the subscription/plan filters: an unconfirmed e-mail is answered first.
+    options.Filters.Add(typeof(EmailVerifiedFilter));
+});
 builder.Services.AddScoped<RequireActiveSubscriptionFilter>();
 builder.Services.AddPasswordResetRateLimit();
 builder.Services.AddOpenTelemetryExtension(builder.Configuration);
@@ -143,6 +147,10 @@ if(builder.Configuration.IsTestEnvironment() == false ) {
 
     // Subscriptions: daily reconciliation with Pagar.me (safety net for lost webhooks).
     SubscriptionRecurringJobs.Register(
+        app.Services.GetRequiredService<IRecurringJobManager>());
+
+    // Accounts: daily deletion of sign-ups that never confirmed the e-mail.
+    AccountRecurringJobs.Register(
         app.Services.GetRequiredService<IRecurringJobManager>());
 }
 

@@ -287,6 +287,10 @@ namespace MiCash.Application.UseCases.Auth.PasswordReset
 
             user.PasswordHash = _encripter.Encrypt(request.NewPassword);
             user.UpdatedAt = now;
+
+            // The code reached this mailbox: that proves the address as well as /verify-email does. It also lets
+            // the real owner take back an address someone registered and never confirmed.
+            user.EmailVerifiedAt ??= now;
             _userUpdateRepository.Update(user);
 
             reset.CompletedAt = now;

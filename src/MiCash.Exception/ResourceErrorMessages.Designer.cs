@@ -686,5 +686,41 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("CHAT_MINUTE_LIMIT", resourceCulture);
             }
         }
+
+        public static string EMAIL_NOT_VERIFIED {
+            get {
+                return ResourceManager.GetString("EMAIL_NOT_VERIFIED", resourceCulture);
+            }
+        }
+
+        public static string EMAIL_ALREADY_VERIFIED {
+            get {
+                return ResourceManager.GetString("EMAIL_ALREADY_VERIFIED", resourceCulture);
+            }
+        }
+
+        public static string EMAIL_VERIFICATION_CODE_INVALID {
+            get {
+                return ResourceManager.GetString("EMAIL_VERIFICATION_CODE_INVALID", resourceCulture);
+            }
+        }
+
+        public static string EMAIL_VERIFICATION_RESEND_WAIT {
+            get {
+                return ResourceManager.GetString("EMAIL_VERIFICATION_RESEND_WAIT", resourceCulture);
+            }
+        }
+
+        public static string EMAIL_CHANGE_REQUIRES_CONFIRMATION {
+            get {
+                return ResourceManager.GetString("EMAIL_CHANGE_REQUIRES_CONFIRMATION", resourceCulture);
+            }
+        }
+
+        public static string EMAIL_CHANGE_SAME_AS_CURRENT {
+            get {
+                return ResourceManager.GetString("EMAIL_CHANGE_SAME_AS_CURRENT", resourceCulture);
+            }
+        }
     }
 }

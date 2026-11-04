@@ -37,6 +37,16 @@ namespace MiCash.Domain.Services.Email
     /// <summary>Template 03.</summary>
     public sealed record WelcomeEmail ( string Name ) : TransactionalEmail;
 
+    /// <summary>Template 06: code sent to the NEW address of an e-mail change. <see cref="Code"/> is never printed by ToString.</summary>
+    public sealed record EmailChangeConfirmationEmail ( string Name , string Code , int ValidityMinutes ) : TransactionalEmail
+    {
+        public override string ToString () => $"{nameof(EmailChangeConfirmationEmail)} {{ Code = ***, ValidityMinutes = {ValidityMinutes} }}";
+    }
+
+    /// <summary>Template 07: security notice sent to the PREVIOUS address after an e-mail change.</summary>
+    /// <param name="NewEmail">The new address; the template shows it masked (jo***@gmail.com).</param>
+    public sealed record EmailChangedNoticeEmail ( string Name , string NewEmail ) : TransactionalEmail;
+
     /// <summary>Template 04.</summary>
     /// <param name="BillingPeriod">Word after the price, e.g. "mês" → "R$ 19,90 / mês".</param>
     public sealed record PremiumUpgradeEmail (

@@ -16,6 +16,13 @@
 
         public string? PagarMeCustomerId { get; set; }
 
+        /// <summary>
+        /// When the user typed the code sent to <see cref="Email"/> (or proved the address with a password reset).
+        /// Null: the account exists, but the API answers 403 EMAIL_NOT_VERIFIED to everything except the
+        /// verification endpoints until the address is confirmed.
+        /// </summary>
+        public DateTime? EmailVerifiedAt { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

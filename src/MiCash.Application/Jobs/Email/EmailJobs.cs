@@ -1,5 +1,8 @@
+using MiCash.Application.UseCases.Auth.EmailVerification;
 using MiCash.Application.UseCases.Auth.PasswordReset;
+using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories;
+using MiCash.Domain.Repositories.EmailVerifications;
 using MiCash.Domain.Repositories.PasswordResets;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
@@ -108,6 +111,116 @@ namespace MiCash.Application.Jobs.Email
             await EmailJobSender.SendAsync(
                 () => _emails.SendAsync(reset.User.Email , email , idempotencyKey: null , cancellationToken) ,
                 _logger , "password reset" , reset.UserId);
+        }
+    }
+
+    /// <summary>
+    /// Generates the code of an e-mail verification request, stores only its hash and e-mails it (template 01).
+    /// Same retry rules as the password reset: each run makes a new code; requests replaced, used, expired, of an
+    /// already verified account or of an address the user corrected meanwhile are skipped.
+    /// </summary>
+    public sealed class EmailVerificationEmailJob : IEmailVerificationEmailJob
+    {
+        private readonly IEmailVerificationUpdateOnlyRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPasswordEncripter _encripter;
+        private readonly ITransactionalEmailService _emails;
+        private readonly TimeProvider _time;
+        private readonly ILogger<EmailVerificationEmailJob> _logger;
+
+        public EmailVerificationEmailJob (
+            IEmailVerificationUpdateOnlyRepository repository ,
+            IUnitOfWork unitOfWork ,
+            IPasswordEncripter encripter ,
+            ITransactionalEmailService emails ,
+            TimeProvider time ,
+            ILogger<EmailVerificationEmailJob> logger )
+        {
+            _repository = repository;
+            _unitOfWork = unitOfWork;
+            _encripter = encripter;
+            _emails = emails;
+            _time = time;
+            _logger = logger;
+        }
+
+        public async Task ExecuteAsync ( long emailVerificationRequestId , CancellationToken cancellationToken )
+        {
+            var now = _time.GetUtcNow().UtcDateTime;
+            var verification = await _repository.GetByIdAsync(emailVerificationRequestId , cancellationToken);
+
+            // Sign-up: account still unverified at the same address. E-mail change: not applied yet.
+            if ( verification is null || verification.IsOpen == false
+                || (verification.Purpose == EmailVerificationPurpose.SignUp && verification.User.EmailVerifiedAt is not null)
+                || EmailVerificationCodeChecker.StillApplies(verification , verification.User) == false
+                || verification.CreatedAt + EmailVerificationRules.CodeValidity <= now ) {
+                _logger.LogInformation("E-mail verification code skipped: request {RequestId} is no longer pending." , emailVerificationRequestId);
+                return;
+            }
+
+            var code = EmailVerificationRules.NewCode();
+
+            verification.CodeHash = _encripter.Encrypt(code);
+            verification.CodeSentAt = now;
+            verification.ExpiresAt = now + EmailVerificationRules.CodeValidity;
+            verification.Attempts = 0;
+
+            try {
+                await _unitOfWork.Commit(cancellationToken);
+            } catch ( ConflictException ) {
+                _logger.LogInformation("E-mail verification code skipped: request {RequestId} changed meanwhile." , emailVerificationRequestId);
+                return;
+            }
+
+            var minutes = (int)EmailVerificationRules.CodeValidity.TotalMinutes;
+
+            TransactionalEmail email = verification.Purpose == EmailVerificationPurpose.EmailChange
+                ? new EmailChangeConfirmationEmail(verification.User.Name , code , minutes)
+                : new EmailVerificationEmail(verification.User.Name , code , minutes);
+
+            await EmailJobSender.SendAsync(
+                () => _emails.SendAsync(verification.Email , email , idempotencyKey: null , cancellationToken) ,
+                _logger , "e-mail verification" , verification.UserId);
+        }
+    }
+
+    /// <summary>
+    /// Security notice to the PREVIOUS address after a confirmed e-mail change (template 07): if the owner did not
+    /// ask for it, they know right away and can contact support. The idempotency key keeps a retry from sending
+    /// it twice.
+    /// </summary>
+    public sealed class EmailChangedNoticeJob : IEmailChangedNoticeJob
+    {
+        private readonly IEmailVerificationUpdateOnlyRepository _repository;
+        private readonly ITransactionalEmailService _emails;
+        private readonly ILogger<EmailChangedNoticeJob> _logger;
+
+        public EmailChangedNoticeJob (
+            IEmailVerificationUpdateOnlyRepository repository ,
+            ITransactionalEmailService emails ,
+            ILogger<EmailChangedNoticeJob> logger )
+        {
+            _repository = repository;
+            _emails = emails;
+            _logger = logger;
+        }
+
+        public async Task ExecuteAsync ( long emailVerificationRequestId , string previousEmail , CancellationToken cancellationToken )
+        {
+            var verification = await _repository.GetByIdAsync(emailVerificationRequestId , cancellationToken);
+
+            if ( verification is null || verification.Purpose != EmailVerificationPurpose.EmailChange || verification.VerifiedAt is null ) {
+                _logger.LogInformation("E-mail changed notice skipped: request {RequestId} is not a confirmed change." , emailVerificationRequestId);
+                return;
+            }
+
+            await EmailJobSender.SendAsync(
+                () => _emails.SendAsync(
+                    previousEmail ,
+                    new EmailChangedNoticeEmail(verification.User.Name , verification.Email) ,
+                    $"email-changed-{verification.Id}" ,
+                    cancellationToken) ,
+                _logger , "e-mail changed notice" , verification.UserId);
         }
     }
 

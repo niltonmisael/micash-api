@@ -118,7 +118,8 @@ namespace WebAPI.Test
                 Email = _email ,
                 Phone = "43999999999" ,
                 PasswordHash = passwordEncripter.Encrypt(_password) ,
-                UserIdentifier = Guid.NewGuid()
+                UserIdentifier = Guid.NewGuid() ,
+                EmailVerifiedAt = DateTime.UtcNow
             };
 
             dbContext.Users.Add(user);
@@ -182,7 +183,8 @@ namespace WebAPI.Test
                 Email = "sem.assinatura@micash.com" ,
                 Phone = "43988888888" ,
                 PasswordHash = passwordEncripter.Encrypt("123456") ,
-                UserIdentifier = Guid.NewGuid()
+                UserIdentifier = Guid.NewGuid() ,
+                EmailVerifiedAt = DateTime.UtcNow
             };
 
             dbContext.Users.Add(otherUser);

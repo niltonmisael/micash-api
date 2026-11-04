@@ -345,4 +345,22 @@
   <data name="CHAT_MINUTE_LIMIT" xml:space="preserve">
     <value>Muitas mensagens em pouco tempo. Aguarde um instante e tente novamente.</value>
   </data>
+  <data name="EMAIL_NOT_VERIFIED" xml:space="preserve">
+    <value>Confirme seu e-mail para continuar. Digite o código que enviamos para o seu endereço.</value>
+  </data>
+  <data name="EMAIL_ALREADY_VERIFIED" xml:space="preserve">
+    <value>Seu e-mail já está confirmado.</value>
+  </data>
+  <data name="EMAIL_VERIFICATION_CODE_INVALID" xml:space="preserve">
+    <value>Código inválido ou expirado. Confira o código ou solicite um novo.</value>
+  </data>
+  <data name="EMAIL_VERIFICATION_RESEND_WAIT" xml:space="preserve">
+    <value>Aguarde {0} segundos para solicitar um novo código.</value>
+  </data>
+  <data name="EMAIL_CHANGE_REQUIRES_CONFIRMATION" xml:space="preserve">
+    <value>Para trocar o e-mail, use a opção "Alterar e-mail": enviaremos um código para o novo endereço.</value>
+  </data>
+  <data name="EMAIL_CHANGE_SAME_AS_CURRENT" xml:space="preserve">
+    <value>O novo e-mail deve ser diferente do e-mail atual.</value>
+  </data>
 </root>

@@ -15,6 +15,10 @@
 
         string EnqueuePasswordResetEmail ( long passwordResetRequestId );
 
+        string EnqueueEmailVerificationEmail ( long emailVerificationRequestId );
+
+        string EnqueueEmailChangedNotice ( long emailVerificationRequestId , string previousEmail );
+
         bool Delete ( string jobId );
     }
 }

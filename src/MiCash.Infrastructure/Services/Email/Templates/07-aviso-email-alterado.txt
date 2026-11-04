@@ -1,0 +1,15 @@
+O e-mail da sua conta foi alterado
+
+Olá, {{nome}}! A troca de e-mail da sua conta MiCash foi confirmada. A partir de agora, este endereço não recebe mais mensagens da conta e o login passa a ser feito com o novo e-mail.
+
+Novo e-mail: {{novo_email}}
+
+Não foi você? Fale com a gente pela Central de ajuda o quanto antes para protegermos sua conta: {{url_ajuda}}
+
+Foi você? Então está tudo certo, não é preciso fazer nada.
+
+--
+Você recebeu este aviso porque este era o e-mail da sua conta MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

@@ -77,7 +77,8 @@ namespace MiCash.Application.UseCases.Login.Refresh
             {
                 Name = user.Name ,
                 Token = newToken ,
-                RefreshToken = newRefreshToken
+                RefreshToken = newRefreshToken ,
+                EmailVerified = user.EmailVerifiedAt is not null
             };
         }
     }

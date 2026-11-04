@@ -57,6 +57,8 @@ namespace MiCash.Infrastructure.Services.Email
         public const string WELCOME = "03-boas-vindas";
         public const string PREMIUM_UPGRADE = "04-upgrade-premium";
         public const string MONTHLY_SUMMARY = "05-resumo-financeiro-mensal";
+        public const string EMAIL_CHANGE_CONFIRMATION = "06-confirmacao-novo-email";
+        public const string EMAIL_CHANGED_NOTICE = "07-aviso-email-alterado";
 
         public const int MAX_CATEGORIES = 5;
 
@@ -91,6 +93,10 @@ namespace MiCash.Infrastructure.Services.Email
                 WelcomeEmail e => (WELCOME , new EmailTemplateData().Set("nome" , FirstName(e.Name))),
                 PremiumUpgradeEmail e => (PREMIUM_UPGRADE , PremiumUpgrade(e)),
                 MonthlySummaryEmail e => (MONTHLY_SUMMARY , MonthlySummary(e)),
+                EmailChangeConfirmationEmail e => (EMAIL_CHANGE_CONFIRMATION , EmailChangeConfirmation(e)),
+                EmailChangedNoticeEmail e => (EMAIL_CHANGED_NOTICE , new EmailTemplateData()
+                    .Set("nome" , FirstName(e.Name))
+                    .Set("novo_email" , MaskEmail(e.NewEmail))),
                 _ => throw new ArgumentException($"No e-mail template for {email.GetType().Name}." , nameof(email))
             };
 
@@ -114,6 +120,31 @@ namespace MiCash.Infrastructure.Services.Email
                 .Set("nome" , FirstName(e.Name))
                 .Set("codigo" , Required(e.Code , nameof(e.Code)))
                 .Set("validade_minutos" , Minutes(e.ValidityMinutes));
+
+        private static EmailTemplateData EmailChangeConfirmation ( EmailChangeConfirmationEmail e ) =>
+            new EmailTemplateData()
+                .Set("nome" , FirstName(e.Name))
+                .Set("codigo" , Required(e.Code , nameof(e.Code)))
+                .Set("validade_minutos" , Minutes(e.ValidityMinutes));
+
+        /// <summary>
+        /// "joana.lima@gmail.com" → "jo***@gmail.com": enough for the owner to recognize it, without handing the
+        /// full new address to whoever reads the old mailbox.
+        /// </summary>
+        public static string MaskEmail ( string email )
+        {
+            var value = Required(email , nameof(email));
+            var at = value.LastIndexOf('@');
+
+            if ( at <= 0 ) {
+                return "***";
+            }
+
+            var local = value[..at];
+            var visible = local.Length <= 2 ? local[..1] : local[..2];
+
+            return $"{visible}***{value[at..]}";
+        }
 
         private static EmailTemplateData PasswordRecovery ( PasswordRecoveryEmail e ) =>
             new EmailTemplateData()

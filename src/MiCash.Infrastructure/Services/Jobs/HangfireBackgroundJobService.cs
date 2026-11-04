@@ -35,6 +35,18 @@ namespace MiCash.Infrastructure.Services.Jobs
                 x => x.ExecuteAsync(passwordResetRequestId , CancellationToken.None));
         }
 
+        public string EnqueueEmailVerificationEmail ( long emailVerificationRequestId )
+        {
+            return BackgroundJob.Enqueue<IEmailVerificationEmailJob>(
+                x => x.ExecuteAsync(emailVerificationRequestId , CancellationToken.None));
+        }
+
+        public string EnqueueEmailChangedNotice ( long emailVerificationRequestId , string previousEmail )
+        {
+            return BackgroundJob.Enqueue<IEmailChangedNoticeJob>(
+                x => x.ExecuteAsync(emailVerificationRequestId , previousEmail , CancellationToken.None));
+        }
+
         public bool Delete ( string jobId )
         {
             return BackgroundJob.Delete(jobId);

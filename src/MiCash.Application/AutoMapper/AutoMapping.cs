@@ -34,7 +34,8 @@ namespace MiCash.Application.AutoMapper
             CreateMap<Expense , ResponseExpenseJson>();
             CreateMap<Expense , ResponseRegisteredExpenseJson>();
             CreateMap<Expense , ResponseShortExpenseJson>();
-            CreateMap<User, ResponseUserProfileJson>();
+            CreateMap<User, ResponseUserProfileJson>()
+                .ForMember(dest => dest.EmailVerified , config => config.MapFrom(src => src.EmailVerifiedAt != null));
             CreateMap<Category , ResponseShortCategoryJson>();
             CreateMap<Category , ResponseCategoryJson>();
             CreateMap<Category , ResponseCategoriesJson>();

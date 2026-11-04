@@ -13,20 +13,36 @@ namespace WebAPI.Test.Users.Update
         private const string METHOD = "api/user/update";
 
         private readonly string _token;
+        private readonly string _email;
 
         public UpdateUserTest ( CustomWebApplicationFactory webApplicationFactory ) : base(webApplicationFactory)
         {
             _token = webApplicationFactory.GetToken();
+            _email = webApplicationFactory.GetEmail();
         }
 
         [Fact]
         public async Task Success ()
         {
             var request = RequestUpdateUserJsonBuilder.Build();
+            request.Email = _email;
 
             var response = await DoPut(METHOD , request , token: _token);
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task Different_Email_Is_400_With_The_Code_For_The_Change_Flow ()
+        {
+            var request = RequestUpdateUserJsonBuilder.Build();
+            request.Email = "outro.endereco@micash.com.br";
+
+            var response = await DoPut(METHOD , request , token: _token);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+            body.GetProperty("errorCode").GetString().Should().Be("EMAIL_CHANGE_REQUIRES_CONFIRMATION");
         }
 
         [Theory]

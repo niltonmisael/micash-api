@@ -3,7 +3,11 @@ using MiCash.Application.UseCases.Login.Logout;
 using MiCash.Application.UseCases.Login.Refresh;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
+using MiCash.API.Attributes;
 using MiCash.API.RateLimiting;
+using MiCash.Application.UseCases.Auth.EmailVerification;
+using MiCash.Communication.Requests.EmailVerification;
+using MiCash.Communication.Responses.EmailVerification;
 using MiCash.Application.UseCases.Auth.PasswordReset;
 using MiCash.Communication.Requests.PasswordReset;
 using MiCash.Communication.Responses.PasswordReset;
@@ -89,8 +93,68 @@ namespace MiCash.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Confirms the e-mail with the 6-digit code. Returns NEW tokens (replace the stored ones) and
+        /// showPremiumOffer, so the app shows the Premium offer before the home screen.
+        /// </summary>
+        [HttpPost("/verify-email")]
+        [Authorize]
+        [AllowUnverifiedEmail]
+        [EnableRateLimiting(PasswordResetRateLimit.EMAIL_VERIFICATION_POLICY)]
+        [ProducesResponseType(typeof(ResponseEmailVerifiedJson) , StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> VerifyEmail (
+            [FromServices] IVerifyEmailUseCase useCase ,
+            [FromBody] RequestVerifyEmailJson request ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(request , cancellationToken);
+
+            return Ok(response);
+        }
+
+        /// <summary>New code to the account e-mail. 429 with retryAt inside the 60s interval or above 5 per hour.</summary>
+        [HttpPost("/resend-email-verification-code")]
+        [Authorize]
+        [AllowUnverifiedEmail]
+        [EnableRateLimiting(PasswordResetRateLimit.EMAIL_VERIFICATION_POLICY)]
+        [ProducesResponseType(typeof(ResponseEmailVerificationCodeSentJson) , StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ResendEmailVerificationCode (
+            [FromServices] IResendEmailVerificationCodeUseCase useCase ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(cancellationToken);
+
+            return Accepted(response);
+        }
+
+        /// <summary>Corrects a mistyped e-mail before confirming it; a new code goes to the new address.</summary>
+        [HttpPut("/email-verification/email")]
+        [Authorize]
+        [AllowUnverifiedEmail]
+        [EnableRateLimiting(PasswordResetRateLimit.EMAIL_VERIFICATION_POLICY)]
+        [ProducesResponseType(typeof(ResponseEmailVerificationCodeSentJson) , StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ChangeVerificationEmail (
+            [FromServices] IChangeVerificationEmailUseCase useCase ,
+            [FromBody] RequestChangeVerificationEmailJson request ,
+            CancellationToken cancellationToken )
+        {
+            var response = await useCase.Execute(request , cancellationToken);
+
+            return Accepted(response);
+        }
+
         [HttpPost("/logout")]
         [Authorize]
+        [AllowUnverifiedEmail]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout (

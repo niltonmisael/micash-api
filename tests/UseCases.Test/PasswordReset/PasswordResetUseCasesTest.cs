@@ -326,6 +326,21 @@ namespace UseCases.Test.PasswordReset
 
             (await _cache.GetAsync<PasswordChangedData>(PasswordChangedData.Key(_user.UserIdentifier)))!
                 .ChangedAt.Should().Be(_time.UtcNow);
+
+            // The code reached the mailbox: an unverified account becomes verified.
+            _user.EmailVerifiedAt.Should().Be(_time.UtcNow);
+        }
+
+        [Fact]
+        public async Task Reset_Keeps_The_Original_Verification_Date ()
+        {
+            var verifiedAt = _time.UtcNow.AddDays(-30);
+            _user.EmailVerifiedAt = verifiedAt;
+            var token = (await Verify(await CodeSent())).ResetToken;
+
+            await Reset(token , NEW_PASSWORD);
+
+            _user.EmailVerifiedAt.Should().Be(verifiedAt);
         }
 
         [Fact]

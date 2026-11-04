@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation.Results;
+using MiCash.Application.UseCases.Auth;
+using MiCash.Application.UseCases.Auth.EmailVerification;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
 using MiCash.Domain.Repositories;
@@ -7,100 +9,84 @@ using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Security.Cryptography;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.Cache;
-using MiCash.Domain.Services.Cache.Models;
-using MiCash.Domain.Services.Jobs;
-using Microsoft.Extensions.Logging;
 using MiCash.Exception;
 using MiCash.Exception.ExceptionBase;
 
 namespace MiCash.Application.UseCases.Users.Register
 {
+    /// <summary>
+    /// Creates the account as NOT verified and queues the confirmation code to the e-mail. The user gets a
+    /// session right away (so the app can show the code screen, resend and correct the e-mail), but every other
+    /// endpoint answers 403 EMAIL_NOT_VERIFIED until /verify-email. The welcome e-mail goes after the confirmation.
+    /// </summary>
     public class RegisterUserUseCase : IRegisterUserUseCase
     {
         private readonly IMapper _mapper;
         private readonly IPasswordEncripter _passwordEncripter;
         private readonly IUserReadOnlyRepository _userReadOnlyRepository;
         private readonly IUserWriteOnlyRepository _userWriteOnlyRepository;
-        private readonly IUnitOfWork _unitOfWork; 
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IAccessTokenGenerator _tokenGenerator;
         private readonly IRefreshTokenGenerator _refreshTokenGenerator;
         private readonly IRedisCacheService _redisCacheService;
-        private readonly IBackgroundJobService _backgroundJobs;
-        private readonly ILogger<RegisterUserUseCase> _logger;
+        private readonly EmailVerificationCodeIssuer _verificationCodes;
+        private readonly TimeProvider _time;
 
         public RegisterUserUseCase (
-            IMapper mapper, 
-            IPasswordEncripter passwordEncripter, 
+            IMapper mapper,
+            IPasswordEncripter passwordEncripter,
             IUserReadOnlyRepository userReadOnlyRepository,
-            IUserWriteOnlyRepository userWriteOnlyRepository, 
-            IUnitOfWork unitOfWork, 
+            IUserWriteOnlyRepository userWriteOnlyRepository,
+            IUnitOfWork unitOfWork,
             IAccessTokenGenerator tokenGenerator,
             IRefreshTokenGenerator refreshTokenGenerator ,
             IRedisCacheService redisCacheService ,
-            IBackgroundJobService backgroundJobs ,
-            ILogger<RegisterUserUseCase> logger
+            EmailVerificationCodeIssuer verificationCodes ,
+            TimeProvider time
         )
         {
-            _backgroundJobs = backgroundJobs;
-            _logger = logger;
             _mapper = mapper;
             _passwordEncripter = passwordEncripter;
             _userReadOnlyRepository = userReadOnlyRepository;
             _userWriteOnlyRepository = userWriteOnlyRepository;
-            _unitOfWork = unitOfWork;  
+            _unitOfWork = unitOfWork;
             _tokenGenerator = tokenGenerator;
             _refreshTokenGenerator = refreshTokenGenerator;
             _redisCacheService = redisCacheService;
+            _verificationCodes = verificationCodes;
+            _time = time;
         }
 
         public async Task<ResponseRegisteredUserJson> Execute ( RequestRegisterUserJson request, CancellationToken cancellationToken )
         {
             await Validate(request);
 
+            var now = _time.GetUtcNow().UtcDateTime;
+
             var user = _mapper.Map<Domain.Entities.User>(request);
             user.PasswordHash = _passwordEncripter.Encrypt(request.Password);
             user.UserIdentifier = Guid.NewGuid();
+            user.EmailVerifiedAt = null;
 
             await _userWriteOnlyRepository.Add(user);
 
+            // Saved together with the account: there is never an unverified account without a code to confirm it.
+            var verification = await _verificationCodes.AddForNewUserAsync(user , now , cancellationToken);
+
             await _unitOfWork.Commit(cancellationToken);
 
-            EnqueueWelcomeEmail(user.Id);
+            // Sent by Hangfire (with retries); if the enqueue fails the app can ask for a new code.
+            _verificationCodes.Enqueue(verification);
 
-            var token = _tokenGenerator.Generate(user);
-
-            var refreshToken = _refreshTokenGenerator.Generate();
-
-            var refreshTokenData = new RefreshTokenData
-            {
-                UserIdentifier = user.UserIdentifier,
-                Token = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(7) ,
-                IssuedAt = DateTime.UtcNow
-            };
-
-            await _redisCacheService.SetAsync(
-                key: $"refreshToken:{refreshToken}" ,
-                value: refreshTokenData,
-                expiration: TimeSpan.FromDays(7)
-            );
+            var (token, refreshToken) = await AuthSession.IssueAsync(user , _tokenGenerator , _refreshTokenGenerator , _redisCacheService);
 
             return new ResponseRegisteredUserJson
             {
                 Name = user.Name ,
                 Token = token ,
                 RefreshToken = refreshToken ,
+                EmailVerified = false
             };
-        }
-
-        // Sent by Hangfire (with retries): the account is already saved and a failure here never undoes it.
-        private void EnqueueWelcomeEmail ( long userId )
-        {
-            try {
-                _backgroundJobs.EnqueueWelcomeEmail(userId);
-            } catch ( System.Exception ex ) {
-                _logger.LogError(ex , "Could not enqueue the welcome e-mail of user {UserId}." , userId);
-            }
         }
 
         private async Task Validate (RequestRegisterUserJson request)

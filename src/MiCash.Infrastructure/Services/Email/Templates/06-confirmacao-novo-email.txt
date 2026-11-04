@@ -1,0 +1,17 @@
+Confirme seu novo e-mail
+
+Olá, {{nome}}! Recebemos um pedido para usar este endereço na sua conta MiCash. Digite o código abaixo no aplicativo para confirmar a troca de e-mail.
+
+Seu código: {{codigo}}
+
+Este código é válido por {{validade_minutos}} minutos e só pode ser usado uma vez.
+
+Por segurança, não compartilhe este código com ninguém. A equipe do MiCash nunca pede seu código.
+
+Não pediu essa troca? Pode ignorar este e-mail com tranquilidade: nenhuma conta será alterada sem o código.
+
+--
+Você recebeu este e-mail porque alguém pediu para usar este endereço em uma conta MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

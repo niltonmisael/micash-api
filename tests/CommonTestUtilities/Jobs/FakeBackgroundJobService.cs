@@ -57,6 +57,32 @@ namespace CommonTestUtilities.Jobs
             return $"password-reset-{passwordResetRequestId}";
         }
 
+        public ConcurrentQueue<long> EnqueuedEmailVerificationEmails { get; } = new();
+
+        public string EnqueueEmailVerificationEmail ( long emailVerificationRequestId )
+        {
+            if ( ThrowOnEnqueue ) {
+                throw new InvalidOperationException("Hangfire storage unavailable.");
+            }
+
+            EnqueuedEmailVerificationEmails.Enqueue(emailVerificationRequestId);
+
+            return $"email-verification-{emailVerificationRequestId}";
+        }
+
+        public ConcurrentQueue<(long RequestId, string PreviousEmail)> EnqueuedEmailChangedNotices { get; } = new();
+
+        public string EnqueueEmailChangedNotice ( long emailVerificationRequestId , string previousEmail )
+        {
+            if ( ThrowOnEnqueue ) {
+                throw new InvalidOperationException("Hangfire storage unavailable.");
+            }
+
+            EnqueuedEmailChangedNotices.Enqueue((emailVerificationRequestId, previousEmail));
+
+            return $"email-changed-{emailVerificationRequestId}";
+        }
+
         public bool Delete ( string jobId ) => true;
     }
 }

@@ -17,7 +17,9 @@ namespace WebAPI.Test.Services.Email
             EmailTemplateRenderer.PASSWORD_RECOVERY ,
             EmailTemplateRenderer.WELCOME ,
             EmailTemplateRenderer.PREMIUM_UPGRADE ,
-            EmailTemplateRenderer.MONTHLY_SUMMARY
+            EmailTemplateRenderer.MONTHLY_SUMMARY ,
+            EmailTemplateRenderer.EMAIL_CHANGE_CONFIRMATION ,
+            EmailTemplateRenderer.EMAIL_CHANGED_NOTICE
         ];
 
         private static readonly EmailTemplateOptions Links = new()
@@ -35,13 +37,45 @@ namespace WebAPI.Test.Services.Email
             { new PasswordRecoveryEmail("Maria Souza" , "771204" , 30) , "Recuperação de senha · MiCash" },
             { new WelcomeEmail("Maria Souza") , "Bem-vindo ao MiCash" },
             { Premium() , "Seu plano Premium está ativo · MiCash" },
-            { Summary() , "Seu resumo financeiro de outubro de 2026 · MiCash" }
+            { Summary() , "Seu resumo financeiro de outubro de 2026 · MiCash" },
+            { new EmailChangeConfirmationEmail("Maria Souza" , "305118" , 15) , "Confirme seu novo e-mail · MiCash" },
+            { new EmailChangedNoticeEmail("Maria Souza" , "maria.nova@gmail.com") , "O e-mail da sua conta foi alterado · MiCash" }
         };
+
+        // ---------- Templates 06 and 07 (e-mail change) ----------
+
+        [Fact]
+        public void Email_Change_Code_Goes_In_Template_06 ()
+        {
+            var rendered = Renderer().Render(new EmailChangeConfirmationEmail("Maria Souza" , "305118" , 15));
+
+            rendered.HtmlBody.Should().Contain("305118").And.Contain("Maria").And.Contain("15 minutos");
+            rendered.TextBody.Should().Contain("Seu código: 305118");
+            new EmailChangeConfirmationEmail("Maria" , "305118" , 15).ToString().Should().NotContain("305118");
+        }
+
+        [Fact]
+        public void Changed_Notice_Shows_The_New_Address_Masked ()
+        {
+            var rendered = Renderer().Render(new EmailChangedNoticeEmail("Maria Souza" , "maria.nova@gmail.com"));
+
+            rendered.HtmlBody.Should().Contain("ma***@gmail.com").And.NotContain("maria.nova@gmail.com");
+            rendered.TextBody.Should().Contain("Novo e-mail: ma***@gmail.com");
+        }
+
+        [Theory]
+        [InlineData("maria.nova@gmail.com" , "ma***@gmail.com")]
+        [InlineData("jo@micash.com.br" , "j***@micash.com.br")]
+        [InlineData("a@b.com" , "a***@b.com")]
+        public void Email_Mask ( string email , string expected )
+        {
+            EmailTemplateRenderer.MaskEmail(email).Should().Be(expected);
+        }
 
         // ---------- Templates embedded in the assembly (what "dotnet publish" ships) ----------
 
         [Fact]
-        public void All_Five_Templates_Are_Embedded_In_Html_And_Text ()
+        public void All_Templates_Are_Embedded_In_Html_And_Text ()
         {
             var available = EmailTemplateEngine.AvailableTemplates();
 
@@ -51,7 +85,7 @@ namespace WebAPI.Test.Services.Email
                 EmailTemplateEngine.Load($"{template}.html").Should().StartWith("<!DOCTYPE html>");
             }
 
-            available.Should().HaveCount(10);
+            available.Should().HaveCount(14);
         }
 
         [Fact]

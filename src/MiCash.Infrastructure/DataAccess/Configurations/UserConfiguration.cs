@@ -56,6 +56,14 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.PagarMeCustomerId)
             .HasColumnName("pagarme_customer_id");
 
+        builder.Property(x => x.EmailVerifiedAt)
+            .HasColumnName("email_verified_at");
+
+        // Daily cleanup of accounts never confirmed.
+        builder.HasIndex(x => x.CreatedAt)
+            .HasFilter("email_verified_at IS NULL")
+            .HasDatabaseName("ix_users_unverified_created_at");
+
         //Relationship
         builder.HasMany(x => x.Categories)
             .WithOne(x => x.User)

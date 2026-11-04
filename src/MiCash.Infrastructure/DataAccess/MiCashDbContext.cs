@@ -26,6 +26,7 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<PushNotification> PushNotifications { get; set; }
         public DbSet<PushNotificationDelivery> PushNotificationDeliveries { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
+        public DbSet<EmailVerificationRequest> EmailVerificationRequests { get; set; }
 
 
         protected override void OnModelCreating ( ModelBuilder modelBuilder )

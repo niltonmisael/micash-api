@@ -15,6 +15,8 @@ namespace MiCash.API.RateLimiting
     {
         public const string POLICY = "password-reset";
 
+        public const string EMAIL_VERIFICATION_POLICY = "email-verification";
+
         public const int PERMIT_LIMIT = 20;
 
         public static readonly TimeSpan Window = TimeSpan.FromMinutes(10);
@@ -25,6 +27,17 @@ namespace MiCash.API.RateLimiting
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
                 options.AddPolicy(POLICY , context => RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown" ,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = PERMIT_LIMIT ,
+                        Window = Window ,
+                        QueueLimit = 0
+                    }));
+
+                // Registration and e-mail verification (each one may send a code): same per-IP limit,
+                // own counter, on top of the per-account limits of the use cases.
+                options.AddPolicy(EMAIL_VERIFICATION_POLICY , context => RateLimitPartition.GetFixedWindowLimiter(
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown" ,
                     _ => new FixedWindowRateLimiterOptions
                     {

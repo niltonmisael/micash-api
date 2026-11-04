@@ -74,7 +74,9 @@ namespace MiCash.Application.UseCases.Auth.Login
             {
                 Name = user.Name ,
                 Token = token,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken ,
+                // False: the app goes to the "confirm your e-mail" screen (login itself is allowed).
+                EmailVerified = user.EmailVerifiedAt is not null
             };
              
         }
