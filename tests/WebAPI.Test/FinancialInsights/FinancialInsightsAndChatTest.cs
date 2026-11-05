@@ -8,7 +8,7 @@ namespace WebAPI.Test.FinancialInsights
 {
     public class FinancialInsightsAndChatTest : MiCashClassFixture
     {
-        private const string INSIGHTS = "api/FinancialInsights";
+        private const string INSIGHTS = "api/financial-insights";
         private const string CHAT = "api/Chat/message";
 
         private readonly string _token;

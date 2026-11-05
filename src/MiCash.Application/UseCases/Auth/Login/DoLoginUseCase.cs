@@ -41,14 +41,15 @@ namespace MiCash.Application.UseCases.Auth.Login
             var user = await _repository.GetUserByEmail ( request.Email );
 
             if ( user == null ) {
-                _logger.LogWarning("Login failed. User not found for email {Email}" , request.Email);
+                // No e-mail in the logs (personal data, LGPD): the user id is enough to investigate.
+                _logger.LogWarning("Login failed: user not found.");
                 throw new InvalidLoginException();
             }
 
             var passwordMatch = _passwordEncryption.Verify(request.Password, user.PasswordHash);
 
             if ( passwordMatch == false ) {
-                _logger.LogWarning("Invalid password for email {Email}" , request.Email);
+                _logger.LogWarning("Login failed: invalid password for user {UserIdentifier}." , user.UserIdentifier);
                 throw new InvalidLoginException();
             }
 
@@ -69,7 +70,7 @@ namespace MiCash.Application.UseCases.Auth.Login
                 value: refreshTokenData,
                 expiration: TimeSpan.FromDays(7));
 
-            _logger.LogInformation("User {Email} logged in successfully." , request.Email);
+            _logger.LogInformation("User {UserIdentifier} logged in successfully." , user.UserIdentifier);
             return new ResponseRegisteredUserJson
             {
                 Name = user.Name ,

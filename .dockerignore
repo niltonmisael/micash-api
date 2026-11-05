@@ -1,11 +1,11 @@
-bin/
-obj/
+**/bin/
+**/obj/
 .git/
 .gitignore
 Dockerfile
 docker-compose.yml
 tests/
-.vs/
+**/.vs/
 
 # =========================
 # Git
@@ -16,9 +16,9 @@ tests/
 # =========================
 # Visual Studio
 # =========================
-.vs/
-bin/
-obj/
+**/.vs/
+**/bin/
+**/obj/
 
 # =========================
 # VSCode / Rider
@@ -46,9 +46,9 @@ logs/
 # =========================
 # Environment
 # =========================
-.env
-.env.local
-.env.production
+**/.env
+**/.env.local
+**/.env.production
 
 # =========================
 # Docker Compose Override

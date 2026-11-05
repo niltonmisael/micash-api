@@ -1,6 +1,7 @@
 using Hangfire;
 using MiCash.API.Extensions;
 using MiCash.API.Filters;
+using MiCash.API.HealthChecks;
 using MiCash.API.Middleware;
 using MiCash.API.RateLimiting;
 using MiCash.Infrastructure;
@@ -26,6 +27,8 @@ builder.Services.AddApplication();
 builder.Services.AddHangfireJobs(builder.Configuration);
 builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddApiHealthChecks(builder.Configuration);
+builder.Services.AddProxyForwardedHeaders();
 
 var app = builder.Build();
 
@@ -34,6 +37,9 @@ if ( app.Environment.IsDevelopment() ) {
     app.UseHangfireDashboard("/hangfire");
 }
 
+// Health first: it checks the real TCP peer (loopback), before forwarded headers can replace it.
+app.UseApiHealthChecks();
+app.UseForwardedHeaders();
 app.UseSerilogRequestLogging();
 app.UseCulture();
 app.UseCorsPolicy();

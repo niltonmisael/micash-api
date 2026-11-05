@@ -22,6 +22,7 @@ namespace MiCash.API.Controllers
     public class AuthController : ControllerBase
     {
         [HttpPost("/login")]
+        [EnableRateLimiting(PasswordResetRateLimit.LOGIN_POLICY)]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login ( 
@@ -34,6 +35,7 @@ namespace MiCash.API.Controllers
         }
 
         [HttpPost("/refresh")]
+        [EnableRateLimiting(PasswordResetRateLimit.REFRESH_POLICY)]
         [ProducesResponseType(typeof(ResponseRegisteredUserJson) , StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> RefreshToken ( 

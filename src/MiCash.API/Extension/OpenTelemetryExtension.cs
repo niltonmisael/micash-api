@@ -1,4 +1,5 @@
-﻿using OpenTelemetry.Metrics;
+﻿using Npgsql;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -41,19 +42,20 @@ public static class OpenTelemetryExtensions
             .WithTracing(tracing => {
                 tracing
 
+                    // http.route is filled by ASP.NET Core with the route template (/api/expenses/{id}).
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
 
-                        options.EnrichWithHttpRequest = ( activity , request ) =>
-                        {
-                            activity.SetTag("http.route" , request.Path);
-                        };
+                        // Docker's HEALTHCHECK calls /health every 30s: no trace for it.
+                        options.Filter = context =>
+                            context.Request.Path.StartsWithSegments("/health") == false;
                     })
 
                     .AddHttpClientInstrumentation()
 
-                    .AddSqlClientInstrumentation()
+                    // PostgreSQL queries as child spans of the request.
+                    .AddNpgsql()
 
                     .AddOtlpExporter(options => {
                         options.Endpoint =
@@ -69,6 +71,9 @@ public static class OpenTelemetryExtensions
                     .AddHttpClientInstrumentation()
 
                     .AddRuntimeInstrumentation()
+
+                    // PostgreSQL metrics (command duration, connection pool).
+                    .AddNpgsqlInstrumentation()
 
                     .AddOtlpExporter(options => {
                         options.Endpoint =

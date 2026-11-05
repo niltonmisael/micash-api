@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace MiCash.API.Filters
 {
-    public class ExceptionFilter : IExceptionFilter
+    public class ExceptionFilter ( ILogger<ExceptionFilter> logger ) : IExceptionFilter
     {
         public void OnException ( ExceptionContext context )
         {
@@ -18,7 +18,7 @@ namespace MiCash.API.Filters
 
                 ThrowUnkownError( context );
             }
-            
+
         }
 
         private void HandleProjectException (ExceptionContext context)
@@ -38,6 +38,12 @@ namespace MiCash.API.Filters
 
         private void ThrowUnkownError ( ExceptionContext context )
         {
+            // The client only gets the generic message; the real error (with stack trace) goes to the log (Loki).
+            logger.LogError(context.Exception ,
+                "Unhandled exception on {Method} {Path}" ,
+                context.HttpContext.Request.Method ,
+                context.HttpContext.Request.Path);
+
             var errorResponse = new ResponseErrorJson(ResourceErrorMessages.UNKNOWN_ERROR);
 
             context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;

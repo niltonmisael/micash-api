@@ -4,6 +4,7 @@ server:
   http_listen_port: 3100
 
 common:
+  instance_addr: 127.0.0.1
   path_prefix: /loki
 
   storage:
@@ -14,25 +15,19 @@ common:
   replication_factor: 1
 
   ring:
-    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
 
+# Loki 3: tsdb + schema v13 (boltdb-shipper/v11 are deprecated).
 schema_config:
   configs:
     - from: 2024-01-01
-      store: boltdb-shipper
+      store: tsdb
       object_store: filesystem
-      schema: v11
-
+      schema: v13
       index:
         prefix: index_
         period: 24h
 
-storage_config:
-  boltdb_shipper:
-    active_index_directory: /loki/index
-    cache_location: /loki/index_cache
-
-  filesystem:
-    directory: /loki/chunks
+analytics:
+  reporting_enabled: false

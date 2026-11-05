@@ -55,7 +55,8 @@ namespace MiCash.Infrastructure.Services.Email
 
                 var id = response.Content.ToString();
 
-                _logger.LogInformation("E-mail sent via Resend. EmailId: {EmailId}, Recipient: {Recipient}" , id , recipient);
+                // No recipient in the logs (personal data, LGPD): the EmailId finds the message in the Resend dashboard.
+                _logger.LogInformation("E-mail sent via Resend. EmailId: {EmailId}" , id);
 
                 return id;
 

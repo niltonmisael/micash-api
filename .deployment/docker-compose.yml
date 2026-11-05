@@ -1,7 +1,77 @@
 services:
 
+  api:
+    build:
+      context: ..
+      dockerfile: .deployment/Dockerfile
+    image: micash-api
+    container_name: micash-api
+
+    # Local run: Development reads appsettings.Development.json (dev keys, Pagar.me sandbox, Serilog).
+    # Only the addresses change, from localhost to the services of this compose.
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=micashdb;Username=postgres;Password=postgres
+      Redis__ConnectionString: redis:6379
+      OpenTelemetry__OtlpEndpoint: http://otel-collector:4317
+      Serilog__WriteTo__1__Args__uri: http://loki:3100
+
+    # Open on the local network so the mobile app on a phone (same Wi-Fi) reaches http://<pc-ip>:8080.
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+      loki:
+        condition: service_started
+
+    # Health: the HEALTHCHECK comes from the Dockerfile (GET /health from inside the container).
+    # Traefik only routes to it once the container is healthy.
+    restart: unless-stopped
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.micash-api.rule=Host(`api.localhost`)
+      - traefik.http.routers.micash-api.entrypoints=web
+      - traefik.http.services.micash-api.loadbalancer.server.port=8080
+
+    networks:
+      - micash-network
+
+
+  traefik:
+    image: traefik:v3.7
+    container_name: micash-traefik
+
+    command:
+      - --providers.docker=true
+      # Only containers with traefik.enable=true are published.
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      # Local dashboard (no auth): http://localhost:8081
+      - --api.dashboard=true
+      - --api.insecure=true
+
+    ports:
+      - "80:80"
+      - "127.0.0.1:8081:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    restart: unless-stopped
+
+    networks:
+      - micash-network
+
+
   postgres:
-    image: postgres:15
+    image: postgres:17-alpine
     container_name: micash-postgres
 
     environment:
@@ -9,8 +79,9 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: micashdb
 
+    # Host only (admin tools / SSH tunnel); the API uses postgres:5432 on the compose network.
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5432:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -28,11 +99,12 @@ services:
 
 
   redis:
-    image: redis:7
+    image: redis:8.10-alpine
     container_name: micash-redis
 
+    # Host only: Redis has no password, it must never be reachable from outside.
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
     volumes:
       - redis_data:/data
@@ -52,7 +124,7 @@ services:
 
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.102.1
+    image: otel/opentelemetry-collector-contrib:0.164.0
     container_name: micash-otel-collector
 
     command:
@@ -76,7 +148,7 @@ services:
 
 
   grafana:
-    image: grafana/grafana:11.1.0
+    image: grafana/grafana:13.3.0
     container_name: micash-grafana
 
     ports:
@@ -88,6 +160,8 @@ services:
 
     volumes:
       - grafana_data:/var/lib/grafana
+      # Prometheus, Loki and Tempo data sources created automatically.
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
 
     depends_on:
       - loki
@@ -101,7 +175,7 @@ services:
 
 
   prometheus:
-    image: prom/prometheus:v2.53.0
+    image: prom/prometheus:v3.15.1
     container_name: micash-prometheus
 
     ports:
@@ -118,7 +192,7 @@ services:
 
 
   loki:
-    image: grafana/loki:2.9.8
+    image: grafana/loki:3.7.9
     container_name: micash-loki
 
     ports:
@@ -137,7 +211,7 @@ services:
 
 
   tempo:
-    image: grafana/tempo:2.5.0
+    image: grafana/tempo:3.1.1
     container_name: micash-tempo
 
     ports:

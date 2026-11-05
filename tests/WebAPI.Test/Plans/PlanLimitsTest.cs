@@ -29,7 +29,7 @@ namespace WebAPI.Test.Plans
         [InlineData("api/dashboard/expenses-by-category")]
         [InlineData("api/financial-goal/progress")]
         [InlineData("api/financial-goal/alerts")]
-        [InlineData("api/FinancialInsights")]
+        [InlineData("api/financial-insights")]
         public async Task Free_History_Is_Limited_To_3_Previous_Months ( string route )
         {
             var (oldYear, oldMonth) = MonthsAgo(4);

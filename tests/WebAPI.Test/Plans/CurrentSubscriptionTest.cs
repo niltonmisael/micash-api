@@ -80,7 +80,7 @@ namespace WebAPI.Test.Plans
                 .Should().BeOneOf(HttpStatusCode.MethodNotAllowed , HttpStatusCode.NotFound);
 
             // A webhook without Pagar.me's credentials is refused before reaching any handler.
-            using var forged = new HttpRequestMessage(HttpMethod.Post , "api/PagarMeWebhook")
+            using var forged = new HttpRequestMessage(HttpMethod.Post , "api/pagar-me-webhook")
             {
                 Content = JsonContent.Create(new { id = "hook_forged" , type = "charge.paid" , data = new { id = "ch_x" } })
             };
