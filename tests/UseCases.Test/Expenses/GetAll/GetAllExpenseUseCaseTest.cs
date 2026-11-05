@@ -1,6 +1,5 @@
 ﻿using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
 using MiCash.Application.UseCases.Expenses.GetAll;
@@ -33,10 +32,9 @@ namespace UseCases.Test.Expenses.GetAll
         //private GetAllExpensesUseCase CreateUseCase ( User user, List<Expense> expenses)
         //{
         //    var repository = new ExpenseReadOnlyRepositoryBuilder().GetAll(user, expenses).Build();
-        //    var mapper = MapperBuilder.Build();
         //    var loggedUser = LoggedUserBuilder.Build(user);
 
-        //    return new GetAllExpensesUseCase(repository , mapper , loggedUser);
+        //    return new GetAllExpensesUseCase(repository , loggedUser);
         //}
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Requests.Categories;
 using MiCash.Domain.Entities;
 using MiCash.Domain.Repositories;
@@ -11,20 +11,17 @@ namespace MiCash.Application.UseCases.Categories.Create
 {
     public class CreateCaterogyUseCase : ICreateCaterogyUseCase
     {
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly ICategoriesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCacheService _redisCacheService;
 
         public CreateCaterogyUseCase (
-            IMapper mapper,
             ILoggedUser loggedUser,
             ICategoriesWriteOnlyRepository repository,
             IUnitOfWork unitOfWork,
             IRedisCacheService redisCacheService)
         {
-            _mapper = mapper;
             _loggedUser = loggedUser;
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -38,7 +35,7 @@ namespace MiCash.Application.UseCases.Categories.Create
 
             var loggedUser = await _loggedUser.Get();
 
-            var category = _mapper.Map<Domain.Entities.Category>(request);
+            var category = request.ToEntity();
             category.UserId = loggedUser.Id;
 
             await _repository.Create(category);

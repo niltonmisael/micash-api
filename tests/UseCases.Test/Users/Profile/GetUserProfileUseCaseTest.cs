@@ -1,6 +1,5 @@
 ﻿using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using FluentAssertions;
 using MiCash.Application.UseCases.Users.Profile;
 using MiCash.Domain.Entities;
@@ -32,10 +31,9 @@ namespace UseCases.Test.Users.Profile
 
         private GetUserProfileUseCase CreateUseCase (User user)
         {
-            var mapper = MapperBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
 
-            return new GetUserProfileUseCase(loggedUser, mapper);
+            return new GetUserProfileUseCase(loggedUser);
         }
     }
 }

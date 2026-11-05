@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Responses.Plans;
 using MiCash.Domain.Repositories.Plans;
 using MiCash.Domain.Services.Cache;
@@ -11,16 +11,13 @@ namespace MiCash.Application.UseCases.Plans.GetAll
     public class GetAllPlansUseCase : IGetAllPlansUseCase
     {
         private readonly IPlansReadOnlyRepository _plansReadOnlyRepository;
-        private readonly IMapper _mapper;
         private readonly IRedisCacheService _redisCacheService;
 
         public GetAllPlansUseCase (
             IPlansReadOnlyRepository plansReadOnlyRepository,
-            IMapper mapper,
             IRedisCacheService redisCacheService)
         {
             _plansReadOnlyRepository = plansReadOnlyRepository;
-            _mapper = mapper;
             _redisCacheService = redisCacheService;
         }
 
@@ -41,7 +38,7 @@ namespace MiCash.Application.UseCases.Plans.GetAll
                 throw new NotFoundException(ResourceErrorMessages.PLAN_NOT_FOUND);
             }
 
-            var response = _mapper.Map<IEnumerable<ResponsePlansJson>>(plans);
+            var response = plans.Select(plan => plan.ToListItemResponse()).ToList();
 
             await _redisCacheService.SetAsync(
                 cacheKey, 

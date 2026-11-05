@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Application.Services.FinancialGoals;
 using MiCash.Communication.Requests;
 using MiCash.Domain.Services.Clock;
@@ -14,7 +14,6 @@ namespace MiCash.Application.UseCases.Expenses.Update
 {
     public class UpdateExpenseUseCase : IUpdateExpenseUseCase
     {
-        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IExpensesUpdateOnlyRepository _repository;
         private readonly ILoggedUser _loggedUser;
@@ -23,7 +22,6 @@ namespace MiCash.Application.UseCases.Expenses.Update
         private readonly IFinancialGoalAlertNotifier _goalAlertNotifier;
 
         public UpdateExpenseUseCase (
-            IMapper mapper,
             IUnitOfWork unitOfWork,
             IExpensesUpdateOnlyRepository repository,
             ILoggedUser loggedUser,
@@ -31,7 +29,6 @@ namespace MiCash.Application.UseCases.Expenses.Update
             IRedisCacheService redisCacheService,
             IFinancialGoalAlertNotifier goalAlertNotifier)
         {
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
             _repository = repository;
             _loggedUser = loggedUser;
@@ -58,7 +55,7 @@ namespace MiCash.Application.UseCases.Expenses.Update
             // Months of the Brasília calendar (ExpenseDate is a UTC instant), same as the dashboard queries.
             var oldExpenseDate = BrazilClock.ToBrasilia(expense.ExpenseDate);
 
-            _mapper.Map(request , expense);
+            request.ApplyTo(expense);
 
             _repository.Update(expense , cancellationToken);
 

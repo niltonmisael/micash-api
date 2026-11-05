@@ -3,7 +3,6 @@ using MiCash.Domain.Services.Plans;
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
 using FluentAssertions;
@@ -129,7 +128,6 @@ namespace UseCases.Test.FinancialGoals
                 ( goalReadOnlyRepository ?? new FinancialGoalReadOnlyRepositoryBuilder() ).Build() ,
                 new CategoriesReadOnlyRepositoryBuilder().GetById(user , category).Build() ,
                 LoggedUserBuilder.Build(user) ,
-                MapperBuilder.Build() ,
                 UnitOfWorkBuilder.Build() ,
                 new FinancialCacheInvalidatorBuilder().Build() ,
                 UserPlanServiceBuilder.Build(plan));

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Requests.FinancialGoals;
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Entities;
@@ -19,7 +19,6 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
         private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
         private readonly ICategoriesReadOnlyRepository _categoriesReadOnlyRepository;
         private readonly ILoggedUser _loggedUser;
-        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
         private readonly IUserPlanService _userPlanService;
@@ -29,7 +28,6 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
             ICategoriesReadOnlyRepository categoriesReadOnlyRepository ,
             ILoggedUser loggedUser ,
-            IMapper mapper ,
             IUnitOfWork unitOfWork ,
             IFinancialCacheInvalidator financialCacheInvalidator ,
             IUserPlanService userPlanService )
@@ -39,7 +37,6 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _categoriesReadOnlyRepository = categoriesReadOnlyRepository;
             _loggedUser = loggedUser;
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
             _financialCacheInvalidator = financialCacheInvalidator;
         }
@@ -77,7 +74,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
                 }
             }
 
-            var financialGoal = _mapper.Map<FinancialGoal>(request);
+            var financialGoal = request.ToEntity();
             financialGoal.UserId = user.Id;
 
             await _financialGoalWriteOnlyRepository.AddAsync(financialGoal , cancellationToken);
@@ -89,7 +86,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.Register
                     financialGoal.Month ,
                     financialGoal.Year);
 
-            return _mapper.Map<ResponseRegisteredFinancialGoalJson>(financialGoal);
+            return financialGoal.ToRegisteredResponse();
         }
 
         private static void Validate ( RequestRegisterFinancialGoal request )

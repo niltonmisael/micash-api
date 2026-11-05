@@ -1,5 +1,4 @@
-﻿using MiCash.Application.AutoMapper;
-using MiCash.Application.AI.PromptBuilders;
+﻿using MiCash.Application.AI.PromptBuilders;
 using MiCash.Application.Jobs.Subscriptions;
 using MiCash.Application.Jobs.PushNotifications;
 using MiCash.Application.Jobs.Email;
@@ -88,15 +87,8 @@ namespace MiCash.Infrastructure
         public static void AddApplication (this IServiceCollection services)
         {
             AddUseCase(services);
-            AddAutoMapping(services);
         }
 
-        private static void AddAutoMapping (IServiceCollection services)
-        {
-            services.AddAutoMapper(config => {
-                config.AddMaps(typeof(AutoMapping).Assembly);
-            });
-        }
         private static void AddUseCase (IServiceCollection services)
         {
             services.AddScoped<IRegisterExpenseUseCase , RegisterExpenseUseCase>();

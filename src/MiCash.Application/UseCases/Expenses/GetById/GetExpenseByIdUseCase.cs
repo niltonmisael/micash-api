@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Responses;
 using MiCash.Domain.Repositories.Expenses;
 using MiCash.Domain.Services.Cache;
@@ -12,18 +12,15 @@ namespace MiCash.Application.UseCases.Expenses.GetById
     public class GetExpenseByIdUseCase : IGetExpenseByIdUseCase
     {
         private readonly IExpensesReadOnlyRepository _repository;
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly IRedisCacheService _redisCacheService;
 
         public GetExpenseByIdUseCase (
             IExpensesReadOnlyRepository repository, 
-            IMapper mapper, 
             ILoggedUser loggedUser,
             IRedisCacheService redisCacheService)
         {
             _repository = repository;
-            _mapper = mapper;
             _loggedUser = loggedUser;
             _redisCacheService = redisCacheService;
         }
@@ -46,7 +43,7 @@ namespace MiCash.Application.UseCases.Expenses.GetById
                 throw new NotFoundException(ResourceErrorMessages.EXPENSE_NOT_FOUND);
             }
 
-            var response = _mapper.Map<ResponseExpenseJson>(result);
+            var response = result.ToResponse();
 
             await _redisCacheService.SetAsync(
                 cacheKey, 

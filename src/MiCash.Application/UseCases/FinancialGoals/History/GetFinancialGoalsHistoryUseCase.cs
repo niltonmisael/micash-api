@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Pagination;
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Repositories.FinancialGoals;
@@ -12,16 +12,13 @@ namespace MiCash.Application.UseCases.FinancialGoals.History
 
         private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
         private readonly ILoggedUser _loggedUser;
-        private readonly IMapper _mapper;
 
         public GetFinancialGoalsHistoryUseCase (
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository ,
-            ILoggedUser loggedUser ,
-            IMapper mapper)
+            ILoggedUser loggedUser)
         {
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
             _loggedUser = loggedUser;
-            _mapper = mapper;
         }
 
         public async Task<ResponsePagedJson<ResponseFinancialGoalJson>> Execute (
@@ -43,7 +40,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.History
 
             var response = new ResponsePagedJson<ResponseFinancialGoalJson>
             {
-                Data = _mapper.Map<IReadOnlyList<ResponseFinancialGoalJson>>( result.Goals) ,
+                Data = result.Goals.Select(goal => goal.ToResponse()).ToList() ,
 
                 Page = page ,
 

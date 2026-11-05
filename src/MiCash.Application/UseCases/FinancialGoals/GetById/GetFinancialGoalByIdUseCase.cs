@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Responses.FinancialGoals;
 using MiCash.Domain.Repositories.FinancialGoals;
 using MiCash.Domain.Services.Cache;
@@ -13,18 +13,15 @@ namespace MiCash.Application.UseCases.FinancialGoals.GetById
     {
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialGoalReadOnlyRepository _financialGoalReadOnlyRepository;
-        private readonly IMapper _mapper;
         private readonly IRedisCacheService _redisCacheService;
 
         public GetFinancialGoalByIdUseCase (
             ILoggedUser loggedUser,
             IFinancialGoalReadOnlyRepository financialGoalReadOnlyRepository,
-            IMapper mapper,
             IRedisCacheService redisCacheService )
         {
             _loggedUser = loggedUser;
             _financialGoalReadOnlyRepository = financialGoalReadOnlyRepository;
-            _mapper = mapper;
             _redisCacheService = redisCacheService;
         }
         public async Task<ResponseFinancialGoalJson> Execute (
@@ -57,8 +54,7 @@ namespace MiCash.Application.UseCases.FinancialGoals.GetById
                     ResourceErrorMessages.FINANCIAL_GOAL_NOT_FOUND);
             }
 
-            var response = _mapper.Map<ResponseFinancialGoalJson>(
-                financialGoal);
+            var response = financialGoal.ToResponse();
 
             await _redisCacheService.SetAsync(
                 cacheKey ,

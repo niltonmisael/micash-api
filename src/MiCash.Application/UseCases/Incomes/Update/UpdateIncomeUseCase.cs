@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Requests.Incomes;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Incomes;
@@ -15,7 +15,6 @@ namespace MiCash.Application.UseCases.Incomes.Update
         private readonly IIncomesUpdateOnlyRepository _incomesUpdateOnlyRepository;
         private readonly IIncomesReadOnlyRepository _incomesReadOnlyRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
         private readonly IRedisCacheService _redisCacheService;
@@ -24,7 +23,6 @@ namespace MiCash.Application.UseCases.Incomes.Update
             IIncomesUpdateOnlyRepository incomesUpdateOnlyRepository ,
             IIncomesReadOnlyRepository incomesReadOnlyRepository ,
             IUnitOfWork unitOfWork ,
-            IMapper mapper ,
             ILoggedUser loggedUser ,
             IFinancialCacheInvalidator financialCacheInvalidator ,
             IRedisCacheService redisCacheService )
@@ -32,7 +30,6 @@ namespace MiCash.Application.UseCases.Incomes.Update
             _incomesUpdateOnlyRepository = incomesUpdateOnlyRepository;
             _incomesReadOnlyRepository = incomesReadOnlyRepository;
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _loggedUser = loggedUser;
             _financialCacheInvalidator = financialCacheInvalidator;
             _redisCacheService = redisCacheService;
@@ -59,7 +56,7 @@ namespace MiCash.Application.UseCases.Incomes.Update
 
             var oldReceivedAt = income.ReceivedAt;
 
-            _mapper.Map(request , income);
+            request.ApplyTo(income);
 
             await _incomesUpdateOnlyRepository
                 .UpdateAsync(

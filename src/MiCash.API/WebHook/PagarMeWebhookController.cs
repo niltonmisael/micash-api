@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace MiCash.API.WebHook
 {
-    [Route("api/[controller]")]
+    [Route("api/pagar-me-webhook")]
     [ApiController]
     public class PagarMeWebhookController : ControllerBase
     {

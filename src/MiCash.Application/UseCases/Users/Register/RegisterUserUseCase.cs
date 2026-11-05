@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using FluentValidation.Results;
 using MiCash.Application.UseCases.Auth;
 using MiCash.Application.UseCases.Auth.EmailVerification;
@@ -21,7 +21,6 @@ namespace MiCash.Application.UseCases.Users.Register
     /// </summary>
     public class RegisterUserUseCase : IRegisterUserUseCase
     {
-        private readonly IMapper _mapper;
         private readonly IPasswordEncripter _passwordEncripter;
         private readonly IUserReadOnlyRepository _userReadOnlyRepository;
         private readonly IUserWriteOnlyRepository _userWriteOnlyRepository;
@@ -33,7 +32,6 @@ namespace MiCash.Application.UseCases.Users.Register
         private readonly TimeProvider _time;
 
         public RegisterUserUseCase (
-            IMapper mapper,
             IPasswordEncripter passwordEncripter,
             IUserReadOnlyRepository userReadOnlyRepository,
             IUserWriteOnlyRepository userWriteOnlyRepository,
@@ -45,7 +43,6 @@ namespace MiCash.Application.UseCases.Users.Register
             TimeProvider time
         )
         {
-            _mapper = mapper;
             _passwordEncripter = passwordEncripter;
             _userReadOnlyRepository = userReadOnlyRepository;
             _userWriteOnlyRepository = userWriteOnlyRepository;
@@ -63,7 +60,7 @@ namespace MiCash.Application.UseCases.Users.Register
 
             var now = _time.GetUtcNow().UtcDateTime;
 
-            var user = _mapper.Map<Domain.Entities.User>(request);
+            var user = request.ToEntity();
             user.PasswordHash = _passwordEncripter.Encrypt(request.Password);
             user.UserIdentifier = Guid.NewGuid();
             user.EmailVerifiedAt = null;

@@ -1,7 +1,6 @@
 ﻿using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
 using MiCash.Application.UseCases.Expenses.GetById;
@@ -52,11 +51,10 @@ namespace UseCases.Test.Expenses.GetById
         private GetExpenseByIdUseCase CreateUseCase (User user, Expense? expense = null)
         {
             var repository = new ExpenseReadOnlyRepositoryBuilder().GetById(user, expense).Build();
-            var mapper = MapperBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
 
-            return new GetExpenseByIdUseCase(repository, mapper, loggedUser, cacheService);
+            return new GetExpenseByIdUseCase(repository, loggedUser, cacheService);
         }
     }
 }

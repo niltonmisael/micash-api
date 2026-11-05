@@ -1,7 +1,6 @@
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Cryptography;
 using CommonTestUtilities.Jobs;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
 using CommonTestUtilities.Token;
@@ -110,7 +109,6 @@ namespace UseCases.Test.Users.Register
 
         private RegisterUserUseCase CreateUseCase ( string? email = null , FakeBackgroundJobService? jobs = null )
         {
-            var mapper = MapperBuilder.Build();
             var passwordEncripter = new PasswordEncrypterBuilder().Build();
             var writeRepository = UserWriteOnlyRepositoryBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
@@ -129,7 +127,6 @@ namespace UseCases.Test.Users.Register
                 NullLogger<EmailVerificationCodeIssuer>.Instance);
 
             return new RegisterUserUseCase(
-                mapper, 
                 passwordEncripter, 
                 readRepository.Build(), 
                 writeRepository , 

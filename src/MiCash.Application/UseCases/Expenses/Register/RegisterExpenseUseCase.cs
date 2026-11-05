@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Application.Services.FinancialGoals;
 using MiCash.Communication.Requests;
 using MiCash.Communication.Responses;
@@ -17,7 +17,6 @@ namespace MiCash.Application.UseCases.Expenses.Register
     {
         private readonly IExpensesWriteOnlyRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly IRedisCacheService _cacheService;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
@@ -26,7 +25,6 @@ namespace MiCash.Application.UseCases.Expenses.Register
         public RegisterExpenseUseCase (
             IExpensesWriteOnlyRepository repository,
             IUnitOfWork unitOfWork,
-            IMapper mapper,
             ILoggedUser loggedUser,
             IRedisCacheService cacheService,
             IFinancialCacheInvalidator financialCacheInvalidator,
@@ -34,7 +32,6 @@ namespace MiCash.Application.UseCases.Expenses.Register
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _loggedUser = loggedUser;
             _cacheService = cacheService;
             _financialCacheInvalidator = financialCacheInvalidator;
@@ -47,9 +44,8 @@ namespace MiCash.Application.UseCases.Expenses.Register
 
             var loggedUser = await _loggedUser.Get();
 
-            var expense = _mapper.Map<Expense>(request);
+            var expense = request.ToEntity();
             expense.UserId = loggedUser.Id;
-            expense.Status = ( Domain.Enums.ExpenseStatus )  request.ExpenseStatus ;
 
             await _repository.Add(expense, cancellationToken);
 
@@ -64,7 +60,7 @@ namespace MiCash.Application.UseCases.Expenses.Register
             // Push when this expense takes its category goal to 80% (Premium) or 100%.
             await _goalAlertNotifier.NotifyAsync(loggedUser , expense.CategoryId , expense.ExpenseDate , cancellationToken);
 
-            return _mapper.Map<ResponseRegisteredExpenseJson>(expense);
+            return expense.ToRegisteredResponse();
 
         }
 

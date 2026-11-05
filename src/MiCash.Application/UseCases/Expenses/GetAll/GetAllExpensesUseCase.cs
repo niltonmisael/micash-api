@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Pagination;
 using MiCash.Communication.Responses;
 using MiCash.Domain.Repositories.Expenses;
@@ -9,12 +9,10 @@ namespace MiCash.Application.UseCases.Expenses.GetAll
     public class GetAllExpensesUseCase : IGetAllExpensesUseCase
     {
         private readonly IExpensesReadOnlyRepository _repository;
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
-        public GetAllExpensesUseCase (IExpensesReadOnlyRepository repository, IMapper mapper, ILoggedUser loggedUser)
+        public GetAllExpensesUseCase (IExpensesReadOnlyRepository repository, ILoggedUser loggedUser)
         {
             _repository = repository;
-            _mapper = mapper;
             _loggedUser = loggedUser;
 
         }
@@ -32,7 +30,7 @@ namespace MiCash.Application.UseCases.Expenses.GetAll
 
             return new ResponsePagedJson<ResponseShortExpenseJson>
             {
-                Data = _mapper.Map<IReadOnlyList<ResponseShortExpenseJson>>(result.Data) ,
+                Data = result.Data.Select(expense => expense.ToShortResponse()).ToList() ,
                 Page = request.Page ,
                 PageSize = request.PageSize ,
                 TotalRecords = result.TotalRecords

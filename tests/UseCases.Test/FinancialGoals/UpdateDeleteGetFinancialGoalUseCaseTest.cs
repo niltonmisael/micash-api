@@ -1,7 +1,6 @@
 using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
 using FluentAssertions;
@@ -150,7 +149,6 @@ namespace UseCases.Test.FinancialGoals
             return new GetFinancialGoalByIdUseCase(
                 LoggedUserBuilder.Build(user) ,
                 new FinancialGoalReadOnlyRepositoryBuilder().GetById(user , goal).Build() ,
-                MapperBuilder.Build() ,
                 new FakeRedisCacheService());
         }
     }

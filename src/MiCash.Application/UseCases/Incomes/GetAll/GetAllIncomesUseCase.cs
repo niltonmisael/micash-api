@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Pagination;
 using MiCash.Communication.Responses.Incomes;
 using MiCash.Domain.Repositories.Incomes;
@@ -10,16 +10,13 @@ namespace MiCash.Application.UseCases.Incomes.GetAll
     {
         private readonly IIncomesReadOnlyRepository _repository;
         private readonly ILoggedUser _loggedUser;
-        private readonly IMapper _mapper;
 
         public GetAllIncomesUseCase (
             IIncomesReadOnlyRepository repository,
-            ILoggedUser loggedUser,
-            IMapper mapper)
+            ILoggedUser loggedUser)
         {
             _repository = repository;
             _loggedUser = loggedUser;
-            _mapper = mapper;
         }
         public async Task<ResponsePagedJson<ResponseIncomeJson>> Execute ( Communication.Pagination.RequestPaginationJson request , CancellationToken cancellationToken )
         {
@@ -29,7 +26,7 @@ namespace MiCash.Application.UseCases.Incomes.GetAll
 
             return new ResponsePagedJson<ResponseIncomeJson>
             {
-                Data = _mapper.Map<IReadOnlyList<ResponseIncomeJson>>(result.Data) ,
+                Data = result.Data.Select(income => income.ToResponse()).ToList() ,
                 Page = request.Page ,
                 PageSize = request.PageSize ,
                 TotalRecords = result.TotalRecords

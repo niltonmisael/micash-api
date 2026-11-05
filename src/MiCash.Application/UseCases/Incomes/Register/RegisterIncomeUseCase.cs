@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Requests.Incomes;
 using MiCash.Communication.Responses.Incomes;
 using MiCash.Domain.Entities;
@@ -16,20 +16,17 @@ namespace MiCash.Application.UseCases.Incomes.Register
         private readonly IIncomesWriteOnlyRepository _incomesWriteOnlyRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggedUser _loggedUser;
-        private readonly IMapper _mapper;
         private readonly IFinancialCacheInvalidator _financialCacheInvalidator;
 
         public RegisterIncomeUseCase (
             IIncomesWriteOnlyRepository incomesWriteOnlyRepository,
             IUnitOfWork unitOfWork,
             ILoggedUser loggedUser,
-            IMapper mapper,
             IFinancialCacheInvalidator financialCacheInvalidator)
         {
             _incomesWriteOnlyRepository = incomesWriteOnlyRepository;
             _unitOfWork = unitOfWork;
             _loggedUser = loggedUser;
-            _mapper = mapper;
             _financialCacheInvalidator = financialCacheInvalidator;
         }
         public async Task<ResponseRegisteredIncomeJson> Execute ( RequestIncomeJson request , CancellationToken cancellationToken )
@@ -38,8 +35,7 @@ namespace MiCash.Application.UseCases.Incomes.Register
 
             var loggedUser = await _loggedUser.Get();
 
-            var income = _mapper.Map<Income>(request);
-            income.Category = ( Domain.Enums.IncomeCategory )  request.IncomeCategory ;
+            var income = request.ToEntity();
             income.UserId = loggedUser.Id;
 
             await _incomesWriteOnlyRepository.Add(income , cancellationToken);
@@ -51,7 +47,7 @@ namespace MiCash.Application.UseCases.Incomes.Register
                 income.ReceivedAt.Month ,
                 income.ReceivedAt.Year);
 
-            return _mapper.Map<ResponseRegisteredIncomeJson>(income);
+            return income.ToRegisteredResponse();
         }
 
         private void Validate ( RequestIncomeJson request )

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MiCash.Application.Mappers;
 using MiCash.Communication.Responses.Categories;
 using MiCash.Domain.Repositories.Categories;
 using MiCash.Domain.Services.Cache;
@@ -9,18 +9,15 @@ namespace MiCash.Application.UseCases.Categories.GetAll
 {
     public class GetAllCategoryUseCase : IGetAllCategoryUseCase
     {
-        private readonly IMapper _mapper;
         private readonly ILoggedUser _loggedUser;
         private readonly ICategoriesReadOnlyRepository _repostory;
         private readonly IRedisCacheService _redisCacheService;
 
         public GetAllCategoryUseCase (
-            IMapper mapper,
             ILoggedUser loggedUser,
             ICategoriesReadOnlyRepository repostory,
             IRedisCacheService redisCacheService)
         {
-            _mapper = mapper;
             _loggedUser = loggedUser;
             _repostory = repostory;
             _redisCacheService = redisCacheService;
@@ -41,7 +38,7 @@ namespace MiCash.Application.UseCases.Categories.GetAll
 
             var response =  new ResponseCategoriesJson
             {
-                Categories = _mapper.Map<IEnumerable<ResponseShortCategoryJson>>(result)
+                Categories = result.Select(category => category.ToShortResponse()).ToList()
             };
 
             await _redisCacheService.SetAsync(

@@ -1,6 +1,5 @@
 ﻿using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using FluentAssertions;
 using MiCash.Application.Services.FinancialGoals;
@@ -82,13 +81,12 @@ namespace UseCases.Test.Expenses.Update
         private UpdateExpenseUseCase CreateUseCase ( User user , Expense? expense = null )
         {
             var repository = new ExpensesUpdateOnlyRepositoryBuilder().GetById(user , expense).Build();
-            var mapper = MapperBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
             var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new UpdateExpenseUseCase(mapper , unitOfWork , repository , loggedUser, financialInvalidator, cacheService, new Mock<IFinancialGoalAlertNotifier>().Object);
+            return new UpdateExpenseUseCase(unitOfWork , repository , loggedUser, financialInvalidator, cacheService, new Mock<IFinancialGoalAlertNotifier>().Object);
         }
     }
 }

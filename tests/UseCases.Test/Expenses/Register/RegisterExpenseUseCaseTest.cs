@@ -1,7 +1,6 @@
 ﻿using CommonTestUtilities.Cache;
 using CommonTestUtilities.Entities;
 using CommonTestUtilities.LoggedUser;
-using CommonTestUtilities.Mapper;
 using CommonTestUtilities.Repositories;
 using CommonTestUtilities.Requests;
 using FluentAssertions;
@@ -64,13 +63,12 @@ namespace UseCases.Test.Expenses.Register
         private RegisterExpenseUseCase CreateUseCase(User user , Mock<IFinancialGoalAlertNotifier>? goalAlertNotifier = null )
         {
             var repository = ExpenseWriteOnlyRepositoryBuilder.Build();
-            var mapper = MapperBuilder.Build();
             var unitOfWork = UnitOfWorkBuilder.Build();
             var loggedUser = LoggedUserBuilder.Build(user);
             var cacheService = new RedisCacheServiceBuilder().Build();
             var financialInvalidator = new FinancialCacheInvalidatorBuilder().Build();
 
-            return new RegisterExpenseUseCase(repository,unitOfWork, mapper, loggedUser, cacheService, financialInvalidator, ( goalAlertNotifier ?? new Mock<IFinancialGoalAlertNotifier>() ).Object);
+            return new RegisterExpenseUseCase(repository,unitOfWork, loggedUser, cacheService, financialInvalidator, ( goalAlertNotifier ?? new Mock<IFinancialGoalAlertNotifier>() ).Object);
         }
     }
 }
