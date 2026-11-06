@@ -25,6 +25,9 @@ builder.Services.AddOpenTelemetryExtension(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddHangfireJobs(builder.Configuration);
+if ( builder.Configuration.IsTestEnvironment() == false ) {
+    builder.Services.AddHangfireProcessingServer();
+}
 builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddApiHealthChecks(builder.Configuration);

@@ -15,8 +15,13 @@ public static class HangfireExtension
             });
         });
 
-        services.AddHangfireServer();
+        return services;
+    }
 
+    /// <summary>Registers the background processing server for hosts that should execute jobs.</summary>
+    public static IServiceCollection AddHangfireProcessingServer ( this IServiceCollection services )
+    {
+        services.AddHangfireServer();
         return services;
     }
 
