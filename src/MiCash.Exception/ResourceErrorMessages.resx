@@ -369,4 +369,7 @@
   <data name="TRANSACTION_TYPE_INVALID" xml:space="preserve">
     <value>Invalid transaction type.</value>
   </data>
+  <data name="ACCOUNT_DELETION_SUBSCRIPTION_CANCEL_FAILED" xml:space="preserve">
+    <value>We could not cancel your subscription right now. Try deleting the account again in a few moments.</value>
+  </data>
 </root>

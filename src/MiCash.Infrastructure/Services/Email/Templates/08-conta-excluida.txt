@@ -1,0 +1,15 @@
+Sua conta foi excluída
+
+Olá, {{nome}}! Como você pediu, sua conta MiCash foi excluída. Suas movimentações, categorias, metas e conversas com a MI foram apagadas e não podem ser recuperadas.
+
+Se você tinha o Premium, a assinatura foi cancelada e não haverá novas cobranças.
+
+Não foi você? Fale com a gente pela Central de ajuda o quanto antes: {{url_ajuda}}
+
+Obrigado por ter usado o MiCash. Se quiser voltar, é só criar uma conta nova.
+
+--
+Você recebeu este aviso porque este era o e-mail da sua conta MiCash.
+Central de ajuda: {{url_ajuda}}
+Política de privacidade: {{url_privacidade}}
+© {{ano}} MiCash. Controle financeiro pessoal.

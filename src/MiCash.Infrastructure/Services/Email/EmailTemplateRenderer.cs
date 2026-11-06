@@ -59,6 +59,7 @@ namespace MiCash.Infrastructure.Services.Email
         public const string MONTHLY_SUMMARY = "05-resumo-financeiro-mensal";
         public const string EMAIL_CHANGE_CONFIRMATION = "06-confirmacao-novo-email";
         public const string EMAIL_CHANGED_NOTICE = "07-aviso-email-alterado";
+        public const string ACCOUNT_DELETED = "08-conta-excluida";
 
         public const int MAX_CATEGORIES = 5;
 
@@ -97,6 +98,7 @@ namespace MiCash.Infrastructure.Services.Email
                 EmailChangedNoticeEmail e => (EMAIL_CHANGED_NOTICE , new EmailTemplateData()
                     .Set("nome" , FirstName(e.Name))
                     .Set("novo_email" , MaskEmail(e.NewEmail))),
+                AccountDeletedEmail e => (ACCOUNT_DELETED , new EmailTemplateData().Set("nome" , FirstName(e.Name))),
                 _ => throw new ArgumentException($"No e-mail template for {email.GetType().Name}." , nameof(email))
             };
 

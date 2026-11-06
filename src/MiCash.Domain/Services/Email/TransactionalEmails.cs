@@ -47,6 +47,9 @@ namespace MiCash.Domain.Services.Email
     /// <param name="NewEmail">The new address; the template shows it masked (jo***@gmail.com).</param>
     public sealed record EmailChangedNoticeEmail ( string Name , string NewEmail ) : TransactionalEmail;
 
+    /// <summary>Template 08: sent to the account address right after the account was deleted.</summary>
+    public sealed record AccountDeletedEmail ( string Name ) : TransactionalEmail;
+
     /// <summary>Template 04.</summary>
     /// <param name="BillingPeriod">Word after the price, e.g. "mês" → "R$ 19,90 / mês".</param>
     public sealed record PremiumUpgradeEmail (

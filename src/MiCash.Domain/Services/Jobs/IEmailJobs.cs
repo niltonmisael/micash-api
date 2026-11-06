@@ -33,6 +33,15 @@ namespace MiCash.Domain.Services.Jobs
         Task ExecuteAsync ( long emailVerificationRequestId , string previousEmail , CancellationToken cancellationToken );
     }
 
+    public interface IAccountDeletedEmailJob
+    {
+        /// <summary>
+        /// Tells the owner that the account was deleted. The user no longer exists, so the address and name travel
+        /// with the job. Throws on temporary provider failures so Hangfire retries.
+        /// </summary>
+        Task ExecuteAsync ( long userId , string email , string name , CancellationToken cancellationToken );
+    }
+
     public interface IUnverifiedAccountCleanupJob
     {
         /// <summary>Deletes accounts that never confirmed the e-mail within the allowed period (recurring).</summary>

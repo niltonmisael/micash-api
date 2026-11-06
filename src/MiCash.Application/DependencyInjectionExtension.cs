@@ -188,6 +188,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<EmailVerificationCodeIssuer>();
             services.AddScoped<EmailVerificationCodeChecker>();
             services.AddScoped<IEmailChangedNoticeJob , EmailChangedNoticeJob>();
+            services.AddScoped<IAccountDeletedEmailJob , AccountDeletedEmailJob>();
             services.AddScoped<IRequestEmailChangeUseCase , RequestEmailChangeUseCase>();
             services.AddScoped<IConfirmEmailChangeUseCase , ConfirmEmailChangeUseCase>();
             services.AddScoped<IEmailVerificationEmailJob , EmailVerificationEmailJob>();

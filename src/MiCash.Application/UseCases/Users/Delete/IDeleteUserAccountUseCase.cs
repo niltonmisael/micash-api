@@ -1,7 +1,9 @@
-﻿namespace MiCash.Application.UseCases.Users.Delete
+using MiCash.Communication.Requests.Users;
+
+namespace MiCash.Application.UseCases.Users.Delete
 {
     public interface IDeleteUserAccountUseCase
     {
-        Task Execute (CancellationToken cancellationToken);
+        Task Execute ( RequestDeleteAccountJson request , CancellationToken cancellationToken );
     }
 }

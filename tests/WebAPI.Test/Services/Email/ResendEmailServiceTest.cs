@@ -83,7 +83,8 @@ namespace WebAPI.Test.Services.Email
                 m.Should().NotContain(SECRET_CODE);
                 m.Should().NotContain(RECIPIENT);
             });
-            _logger.Messages.Should().Contain(m => m.Contains("j***@gmail.com"));
+            // The success log carries only the provider id; the masked recipient appears only on failures.
+            _logger.Messages.Should().Contain(m => m.Contains("EmailId"));
         }
 
         [Theory]

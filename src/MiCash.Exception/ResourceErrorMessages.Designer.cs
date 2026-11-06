@@ -740,5 +740,14 @@ namespace MiCash.Exception {
                 return ResourceManager.GetString("EMAIL_CHANGE_SAME_AS_CURRENT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a We could not cancel your subscription right now. Try deleting the account again in a few moments..
+        /// </summary>
+        public static string ACCOUNT_DELETION_SUBSCRIPTION_CANCEL_FAILED {
+            get {
+                return ResourceManager.GetString("ACCOUNT_DELETION_SUBSCRIPTION_CANCEL_FAILED", resourceCulture);
+            }
+        }
     }
 }

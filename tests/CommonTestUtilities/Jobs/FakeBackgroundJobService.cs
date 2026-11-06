@@ -91,6 +91,19 @@ namespace CommonTestUtilities.Jobs
             return $"email-changed-{emailVerificationRequestId}";
         }
 
+        public ConcurrentQueue<(long UserId, string Email, string Name)> EnqueuedAccountDeletedEmails { get; } = new();
+
+        public string EnqueueAccountDeletedEmail ( long userId , string email , string name )
+        {
+            if ( ThrowOnEnqueue ) {
+                throw new InvalidOperationException("Hangfire storage unavailable.");
+            }
+
+            EnqueuedAccountDeletedEmails.Enqueue((userId, email, name));
+
+            return $"account-deleted-{userId}";
+        }
+
         public bool Delete ( string jobId ) => true;
     }
 }

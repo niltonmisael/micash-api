@@ -140,15 +140,25 @@ namespace MiCash.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes the account. Requires the current password; a subscription still billing is canceled at Pagar.me
+        /// first (503 if Pagar.me fails, and nothing is deleted).
+        /// </summary>
         [HttpDelete("delete")]
         [Authorize]
         [AllowUnverifiedEmail]
+        // Same per-IP limit as the login: the password check must not become a way to guess it.
+        [EnableRateLimiting(PasswordResetRateLimit.LOGIN_POLICY)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeleteProfile ( 
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ResponseErrorJson) , StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> DeleteProfile (
             [FromServices] IDeleteUserAccountUseCase useCase,
+            [FromBody] RequestDeleteAccountJson request,
             CancellationToken cancellationToken)
         {
-            await useCase.Execute(cancellationToken);
+            await useCase.Execute(request , cancellationToken);
 
             return NoContent();
         }

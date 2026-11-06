@@ -224,6 +224,29 @@ namespace MiCash.Application.Jobs.Email
         }
     }
 
+    /// <summary>
+    /// Notice to the account address after the account was deleted (template 08): if the owner did not do it, they
+    /// know right away. The idempotency key keeps a retry from sending it twice.
+    /// </summary>
+    public sealed class AccountDeletedEmailJob : IAccountDeletedEmailJob
+    {
+        private readonly ITransactionalEmailService _emails;
+        private readonly ILogger<AccountDeletedEmailJob> _logger;
+
+        public AccountDeletedEmailJob ( ITransactionalEmailService emails , ILogger<AccountDeletedEmailJob> logger )
+        {
+            _emails = emails;
+            _logger = logger;
+        }
+
+        public async Task ExecuteAsync ( long userId , string email , string name , CancellationToken cancellationToken )
+        {
+            await EmailJobSender.SendAsync(
+                () => _emails.SendAsync(email , new AccountDeletedEmail(name) , $"account-deleted-{userId}" , cancellationToken) ,
+                _logger , "account deleted" , userId);
+        }
+    }
+
     internal static class EmailJobSender
     {
         /// <summary>

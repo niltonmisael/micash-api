@@ -38,7 +38,8 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
             builder.HasOne(x => x.User)
                 .WithMany(x => x.Conversations)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                // Deleting the account deletes the chat history too (it was Restrict, which blocked the deletion).
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(x => x.Messages)
                 .WithOne(x => x.Conversation)

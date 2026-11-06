@@ -1,6 +1,7 @@
 ﻿using MiCash.Domain.Entities;
 using MiCash.Domain.Security.Tokens;
 using MiCash.Domain.Services.LoggedUser;
+using MiCash.Exception.ExceptionBase;
 using MiCash.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -33,10 +34,12 @@ namespace MiCash.Infrastructure.Services.LoggedUser
 
             var identifier = jwtSecurityToken.Claims.First(claim => claim.Type == ClaimTypes.Sid).Value;
 
+            // A valid token of an account deleted meanwhile (another device): 401, never a 500.
             return await _dbContext
                 .Users
                 .AsNoTracking()
-                .FirstAsync(user => user.UserIdentifier == Guid.Parse(identifier));
+                .FirstOrDefaultAsync(user => user.UserIdentifier == Guid.Parse(identifier))
+                ?? throw new InvalidTokenException();
         }
     }
 }

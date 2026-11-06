@@ -1118,7 +1118,7 @@ namespace MiCash.Infrastructure.Migrations
                     b.HasOne("MiCash.Domain.Entities.User", "User")
                         .WithMany("Conversations")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");

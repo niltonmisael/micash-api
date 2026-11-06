@@ -369,4 +369,7 @@
   <data name="TRANSACTION_TYPE_INVALID" xml:space="preserve">
     <value>Tipo de transação inválido.</value>
   </data>
+  <data name="ACCOUNT_DELETION_SUBSCRIPTION_CANCEL_FAILED" xml:space="preserve">
+    <value>Não foi possível cancelar sua assinatura agora. Tente excluir a conta novamente em instantes.</value>
+  </data>
 </root>

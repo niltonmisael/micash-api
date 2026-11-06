@@ -19,6 +19,9 @@
 
         string EnqueueEmailChangedNotice ( long emailVerificationRequestId , string previousEmail );
 
+        /// <summary>Deletion notice; the account is already gone, so the address and name go with the job.</summary>
+        string EnqueueAccountDeletedEmail ( long userId , string email , string name );
+
         string EnqueueMonthlySummary ( long userId , int year , int month );
 
         bool Delete ( string jobId );

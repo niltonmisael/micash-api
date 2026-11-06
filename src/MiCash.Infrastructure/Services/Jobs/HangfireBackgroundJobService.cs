@@ -53,6 +53,12 @@ namespace MiCash.Infrastructure.Services.Jobs
                 x => x.ExecuteAsync(emailVerificationRequestId , previousEmail , CancellationToken.None));
         }
 
+        public string EnqueueAccountDeletedEmail ( long userId , string email , string name )
+        {
+            return BackgroundJob.Enqueue<IAccountDeletedEmailJob>(
+                x => x.ExecuteAsync(userId , email , name , CancellationToken.None));
+        }
+
         public bool Delete ( string jobId )
         {
             return BackgroundJob.Delete(jobId);
