@@ -81,5 +81,66 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Deploy será habilitado após configurarmos os Secrets
-  # e a autenticação da VPS com o GHCR.
+  deploy:
+    name: Deploy na VPS
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+
+    steps:
+      - name: Atualiza API na VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            cd /opt/micash/api
+
+            export MICASH_API_TAG='${{ github.ref_name }}'
+
+            echo "Baixando imagem ${MICASH_API_TAG}..."
+            docker compose -f docker-compose.prod.yml pull api
+
+            echo "Atualizando container da API..."
+            docker compose -f docker-compose.prod.yml up -d --no-deps api
+
+            echo "Aguardando API ficar saudável..."
+
+            for i in $(seq 1 36); do
+              STATUS=$(docker inspect \
+                --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+                micash-api 2>/dev/null || true)
+
+              echo "Status: ${STATUS}"
+
+              if [ "$STATUS" = "healthy" ]; then
+                break
+              fi
+
+              if [ "$STATUS" = "unhealthy" ]; then
+                docker logs --tail 100 micash-api
+                exit 1
+              fi
+
+              sleep 5
+            done
+
+            if [ "$STATUS" != "healthy" ]; then
+              docker logs --tail 100 micash-api
+              echo "A API não ficou saudável dentro do tempo esperado."
+              exit 1
+            fi
+
+            echo "Validando endpoint HTTPS..."
+
+            curl --fail --silent --show-error \
+              --retry 6 \
+              --retry-delay 5 \
+              --retry-connrefused \
+              https://api.micash.com.br/health
+
+            echo "Deploy concluído com sucesso!"
