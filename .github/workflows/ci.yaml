@@ -63,7 +63,7 @@ jobs:
   docker:
     name: Build da imagem Docker
     # On PR/push it validates the Dockerfile; the CD skips it (it builds the image itself).
-    if: ${{ inputs.build-image != false }}
+    if: ${{ github.event_name != 'workflow_call' || inputs.build-image != false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
