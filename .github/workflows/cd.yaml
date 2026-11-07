@@ -245,3 +245,50 @@ jobs:
             echo "DEPLOY CONCLUÍDO COM SUCESSO!"
             echo "Versão instalada: ${NEW_TAG}"
             echo "=========================================="
+
+  promote-main:
+    name: Promove versão para main
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout commit implantado
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Valida e promove commit para main
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          echo "Versão implantada: ${RELEASE_TAG}"
+          echo "Commit implantado: ${RELEASE_SHA}"
+
+          git fetch origin main
+
+          echo "Verificando se main permite atualização por fast-forward..."
+
+          if ! git merge-base --is-ancestor origin/main "$RELEASE_SHA"; then
+            echo "ERRO: main possui histórico divergente."
+            echo "A promoção automática foi interrompida."
+            exit 1
+          fi
+
+          echo "Promovendo commit implantado para main..."
+
+          git push origin "${RELEASE_SHA}:refs/heads/main"
+
+          echo "=========================================="
+          echo "PROMOÇÃO CONCLUÍDA!"
+          echo "Branch: main"
+          echo "Tag: ${RELEASE_TAG}"
+          echo "Commit: ${RELEASE_SHA}"
+          echo "=========================================="
