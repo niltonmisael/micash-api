@@ -7,78 +7,72 @@ namespace MiCash.API.Extensions;
 
 public static class OpenTelemetryExtensions
 {
-    public static IServiceCollection AddOpenTelemetryExtension (
-        this IServiceCollection services ,
-        IConfiguration configuration )
+    public static IServiceCollection AddOpenTelemetryExtension(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        var isInMemoryTest =
-        configuration.GetValue<bool>("InMemoryTest");
+        var isInMemoryTest = configuration.GetValue<bool>("InMemoryTest");
 
-        if ( isInMemoryTest ) {
+        if (isInMemoryTest)
             return services;
-        }
 
-        var serviceName =
-            configuration["OpenTelemetry:ServiceName"];
+        var serviceName = configuration["OpenTelemetry:ServiceName"];
 
-        var otlpEndpoint =
-            configuration["OpenTelemetry:OtlpEndpoint"];
+        if (string.IsNullOrWhiteSpace(serviceName))
+            serviceName = "micash-api";
+
+        var otlpEndpoint = configuration["OpenTelemetry:OtlpEndpoint"];
+
+        var hasOtlpEndpoint = !string.IsNullOrWhiteSpace(otlpEndpoint);
 
         services.AddOpenTelemetry()
-
-            .ConfigureResource(resource => {
+            .ConfigureResource(resource =>
+            {
                 resource
                     .AddService(
-                        serviceName: serviceName! ,
+                        serviceName: serviceName,
                         serviceVersion: "1.0.0")
-                    .AddAttributes(new Dictionary<string , object>
+                    .AddAttributes(new Dictionary<string, object>
                     {
                         ["environment"] =
-                            configuration["ASPNETCORE_ENVIRONMENT"]
-                            ?? "Development"
+                            configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production"
                     });
             })
-
-            .WithTracing(tracing => {
+            .WithTracing(tracing =>
+            {
                 tracing
-
-                    // http.route is filled by ASP.NET Core with the route template (/api/expenses/{id}).
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
-
-                        // Docker's HEALTHCHECK calls /health every 30s: no trace for it.
                         options.Filter = context =>
-                            context.Request.Path.StartsWithSegments("/health") == false;
+                            !context.Request.Path.StartsWithSegments("/health");
                     })
-
                     .AddHttpClientInstrumentation()
+                    .AddNpgsql();
 
-                    // PostgreSQL queries as child spans of the request.
-                    .AddNpgsql()
-
-                    .AddOtlpExporter(options => {
-                        options.Endpoint =
-                            new Uri(otlpEndpoint!);
+                if (hasOtlpEndpoint)
+                {
+                    tracing.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(otlpEndpoint!);
                     });
+                }
             })
-
-            .WithMetrics(metrics => {
+            .WithMetrics(metrics =>
+            {
                 metrics
-
                     .AddAspNetCoreInstrumentation()
-
                     .AddHttpClientInstrumentation()
-
                     .AddRuntimeInstrumentation()
+                    .AddNpgsqlInstrumentation();
 
-                    // PostgreSQL metrics (command duration, connection pool).
-                    .AddNpgsqlInstrumentation()
-
-                    .AddOtlpExporter(options => {
-                        options.Endpoint =
-                            new Uri(otlpEndpoint!);
+                if (hasOtlpEndpoint)
+                {
+                    metrics.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(otlpEndpoint!);
                     });
+                }
             });
 
         return services;
