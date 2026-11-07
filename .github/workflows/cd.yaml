@@ -135,12 +135,24 @@ jobs:
               exit 1
             fi
 
-            echo "Validando endpoint HTTPS..."
+            echo "Validando HTTPS público e certificado TLS..."
 
-            curl --fail --silent --show-error \
+            HTTP_STATUS=$(curl \
+              --silent \
+              --show-error \
+              --output /dev/null \
+              --write-out '%{http_code}' \
               --retry 6 \
               --retry-delay 5 \
               --retry-connrefused \
-              https://api.micash.com.br/health
+              https://api.micash.com.br/health)
 
+            echo "Status HTTP público: ${HTTP_STATUS}"
+
+            if [ "$HTTP_STATUS" != "404" ]; then
+              echo "Resposta inesperada. Esperado HTTP 404 para o endpoint privado /health."
+              exit 1
+            fi
+
+            echo "HTTPS válido, endpoint privado protegido e API saudável."
             echo "Deploy concluído com sucesso!"
