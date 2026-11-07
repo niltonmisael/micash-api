@@ -48,7 +48,6 @@ app.UseCulture();
 app.UseCorsPolicy();
 app.UseHttpsRedirection();
 app.UseAuthentication();
-//app.UseHttpsRedirection(); provavelmente usar quando cmc a usar o NGINX
 app.UseAuthorization();
 app.UseRateLimiter();
 

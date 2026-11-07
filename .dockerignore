@@ -54,3 +54,34 @@ logs/
 # Docker Compose Override
 # =========================
 docker-compose.override.yml
+
+# Git
+.git
+.gitignore
+
+# .NET
+**/bin/
+**/obj/
+
+# IDEs
+**/.vs/
+.vscode/
+.idea/
+
+# Testes
+tests/
+
+# Arquivos de ambiente e segredos
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+logs/
+*.log
+
+# Dados persistentes
+.deployment/data/
+
+# Arquivos locais de Docker Compose
+docker-compose.override.yml

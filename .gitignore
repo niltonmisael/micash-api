@@ -554,3 +554,14 @@ logs/
 .env
 .env.local
 .env.production
+
+# =========================
+# ASP.NET Core - Environment Settings
+# =========================
+
+# Configurações exclusivas de produção e teste
+**/appsettings.Production.json
+
+# Arquivos de ambiente locais
+.env.*
+!.env.example

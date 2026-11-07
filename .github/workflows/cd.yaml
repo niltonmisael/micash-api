@@ -1,15 +1,15 @@
+
 name: CD
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 permissions:
   contents: read
   packages: write
 
-# Two tags at once publish in order, never in parallel.
 concurrency:
   group: cd
   cancel-in-progress: false
@@ -18,8 +18,23 @@ env:
   IMAGE_NAME: micash-api
 
 jobs:
+  validate-version:
+    name: Valida versão
+    runs-on: ubuntu-latest
+    steps:
+      - name: Valida formato SemVer
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Tag inválida: $VERSION"
+            echo "Formato esperado: v1.0.0"
+            exit 1
+          fi
+
   tests:
     name: Testes
+    needs: validate-version
     uses: ./.github/workflows/ci.yaml
     with:
       build-image: false
@@ -44,7 +59,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Tags (v1.2.3 and latest) and OCI labels: links the package to the repo, commit and version.
       - name: Metadata da imagem
         id: meta
         uses: docker/metadata-action@v5
@@ -67,27 +81,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Deploy to the VPS: enable once the server exists. Secrets to create in the repo:
-  # VPS_HOST, VPS_USER, VPS_SSH_KEY. On the VPS, the production compose must use
-  # image: ghcr.io/niltonmisael/micash-api:${MICASH_API_TAG}.
-  #
-  # deploy:
-  #   name: Deploy na VPS
-  #   needs: publish
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   environment: production
-  #
-  #   steps:
-  #     - name: Atualiza containers via SSH
-  #       uses: appleboy/ssh-action@v1
-  #       with:
-  #         host: ${{ secrets.VPS_HOST }}
-  #         username: ${{ secrets.VPS_USER }}
-  #         key: ${{ secrets.VPS_SSH_KEY }}
-  #         script: |
-  #           cd /opt/micash
-  #           export MICASH_API_TAG=${{ github.ref_name }}
-  #           docker compose -f docker-compose.prod.yml pull api
-  #           docker compose -f docker-compose.prod.yml up -d api
-  #           docker image prune -f
+  # Deploy será habilitado após configurarmos os Secrets
+  # e a autenticação da VPS com o GHCR.
