@@ -85,7 +85,7 @@ jobs:
     name: Deploy na VPS
     needs: publish
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment: production
 
     steps:
@@ -95,43 +95,128 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 15m
           script: |
-            set -e
+            set -Eeuo pipefail
 
             cd /opt/micash/api
 
-            export MICASH_API_TAG='${{ github.ref_name }}'
+            PREVIOUS_IMAGE=$(docker inspect \
+              --format '{{.Config.Image}}' micash-api)
 
-            echo "Baixando imagem ${MICASH_API_TAG}..."
+            IMAGE_PREFIX="ghcr.io/niltonmisael/micash-api:"
+
+            if [[ "$PREVIOUS_IMAGE" != "$IMAGE_PREFIX"* ]]; then
+              echo "Não foi possível identificar a imagem anterior."
+              echo "Imagem encontrada: ${PREVIOUS_IMAGE}"
+              exit 1
+            fi
+
+            PREVIOUS_TAG="${PREVIOUS_IMAGE##*:}"
+            NEW_TAG='${{ github.ref_name }}'
+
+            DEPLOY_STARTED=false
+            DEPLOY_SUCCESS=false
+
+            echo "Versão anterior: ${PREVIOUS_TAG}"
+            echo "Nova versão: ${NEW_TAG}"
+
+            wait_for_healthy() {
+              local status=""
+
+              for i in $(seq 1 36); do
+                status=$(docker inspect \
+                  --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+                  micash-api 2>/dev/null || true)
+
+                echo "Status da API: ${status}"
+
+                if [ "$status" = "healthy" ]; then
+                  return 0
+                fi
+
+                if [ "$status" = "unhealthy" ] || [ "$status" = "exited" ]; then
+                  return 1
+                fi
+
+                sleep 5
+              done
+
+              return 1
+            }
+
+            rollback_on_exit() {
+              ORIGINAL_EXIT_CODE=$?
+
+              trap - EXIT
+
+              if [ "$DEPLOY_STARTED" = true ] && [ "$DEPLOY_SUCCESS" != true ]; then
+                echo "=========================================="
+                echo "FALHA NO DEPLOY. INICIANDO ROLLBACK."
+                echo "Restaurando versão: ${PREVIOUS_TAG}"
+                echo "=========================================="
+
+                set +e
+
+                export MICASH_API_TAG="$PREVIOUS_TAG"
+
+                if docker compose -f docker-compose.prod.yml pull api &&
+                   docker compose -f docker-compose.prod.yml up -d --no-deps api; then
+
+                  echo "Aguardando versão anterior ficar saudável..."
+
+                  if wait_for_healthy; then
+                    echo "Validando HTTPS após rollback..."
+
+                    HTTP_STATUS=$(curl \
+                      --silent \
+                      --show-error \
+                      --output /dev/null \
+                      --write-out '%{http_code}' \
+                      --retry 6 \
+                      --retry-delay 5 \
+                      --retry-connrefused \
+                      https://api.micash.com.br/health)
+
+                    if [ "$HTTP_STATUS" = "404" ]; then
+                      echo "Rollback concluído com sucesso."
+                      echo "Versão restaurada: ${PREVIOUS_TAG}"
+                    else
+                      echo "Rollback restaurou o container, mas HTTPS retornou ${HTTP_STATUS}."
+                      docker logs --tail 100 micash-api
+                    fi
+                  else
+                    echo "ERRO CRÍTICO: versão anterior não ficou saudável."
+                    docker logs --tail 100 micash-api
+                  fi
+                else
+                  echo "ERRO CRÍTICO: não foi possível restaurar a imagem anterior."
+                  docker logs --tail 100 micash-api
+                fi
+              fi
+
+              exit "$ORIGINAL_EXIT_CODE"
+            }
+
+            trap rollback_on_exit EXIT
+
+            echo "Baixando imagem ${NEW_TAG}..."
+
+            export MICASH_API_TAG="$NEW_TAG"
+
             docker compose -f docker-compose.prod.yml pull api
 
             echo "Atualizando container da API..."
+
+            DEPLOY_STARTED=true
+
             docker compose -f docker-compose.prod.yml up -d --no-deps api
 
             echo "Aguardando API ficar saudável..."
 
-            for i in $(seq 1 36); do
-              STATUS=$(docker inspect \
-                --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
-                micash-api 2>/dev/null || true)
-
-              echo "Status: ${STATUS}"
-
-              if [ "$STATUS" = "healthy" ]; then
-                break
-              fi
-
-              if [ "$STATUS" = "unhealthy" ]; then
-                docker logs --tail 100 micash-api
-                exit 1
-              fi
-
-              sleep 5
-            done
-
-            if [ "$STATUS" != "healthy" ]; then
+            if ! wait_for_healthy; then
+              echo "A nova versão não ficou saudável."
               docker logs --tail 100 micash-api
-              echo "A API não ficou saudável dentro do tempo esperado."
               exit 1
             fi
 
@@ -150,9 +235,13 @@ jobs:
             echo "Status HTTP público: ${HTTP_STATUS}"
 
             if [ "$HTTP_STATUS" != "404" ]; then
-              echo "Resposta inesperada. Esperado HTTP 404 para o endpoint privado /health."
+              echo "Resposta inesperada no endpoint privado."
               exit 1
             fi
 
-            echo "HTTPS válido, endpoint privado protegido e API saudável."
-            echo "Deploy concluído com sucesso!"
+            DEPLOY_SUCCESS=true
+
+            echo "=========================================="
+            echo "DEPLOY CONCLUÍDO COM SUCESSO!"
+            echo "Versão instalada: ${NEW_TAG}"
+            echo "=========================================="
