@@ -56,6 +56,7 @@ using MiCash.Application.UseCases.SavingsGoals.GetById;
 using MiCash.Application.UseCases.SavingsGoals.Movements;
 using MiCash.Application.UseCases.SavingsGoals.Register;
 using MiCash.Application.UseCases.SavingsGoals.Update;
+using MiCash.Application.UseCases.Subscriptions.Cancel;
 using MiCash.Application.UseCases.Subscriptions.GetCurrent;
 using MiCash.Application.UseCases.Subscriptions.History;
 using MiCash.Application.UseCases.Subscriptions.Limits;
@@ -141,6 +142,7 @@ namespace MiCash.Infrastructure
             services.AddScoped<ISubscriptionReconciliationJob , SubscriptionReconciliationJob>();
             services.AddScoped<ISubscriptionExpirationJob , SubscriptionExpirationJob>();
             services.AddScoped<IReactivateSubscriptionUseCase, ReactivateSubscriptionUseCase>();
+            services.AddScoped<ICancelSubscriptionUseCase, CancelSubscriptionUseCase>();
             services.AddScoped<IRegisterFinancialGoalUseCase , RegisterFinancialGoalUseCase>();
             services.AddScoped<ICopyFinancialGoalsUseCase, CopyFinancialGoalsUseCase>();
             services.AddScoped<IDeleteFinancialGoalUseCase, DeleteFinancialGoalUseCase>();

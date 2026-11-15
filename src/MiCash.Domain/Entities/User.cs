@@ -14,8 +14,6 @@
 
         public Guid UserIdentifier { get; set; } = Guid.NewGuid();
 
-        public string? PagarMeCustomerId { get; set; }
-
         /// <summary>
         /// When the user typed the code sent to <see cref="Email"/> (or proved the address with a password reset).
         /// Null: the account exists, but the API answers 403 EMAIL_NOT_VERIFIED to everything except the
@@ -42,6 +40,9 @@
         public ICollection<Income> Incomes { get; set; } = [];
 
         public ICollection<Subscription> Subscriptions { get; set; } = [];
+
+        /// <summary>Everyone who paid (or pays) this user's subscriptions; the user may be one of them.</summary>
+        public ICollection<PaymentCustomer> PaymentCustomers { get; set; } = [];
 
         public ICollection<FinancialGoal> FinancialGoals { get; set; } = [];
 

@@ -1,4 +1,5 @@
 ﻿using MiCash.Domain.Enums;
+using MiCash.Domain.Repositories.Payments;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Services.Plans;
 using Microsoft.Extensions.Logging;
@@ -10,15 +11,18 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
     {
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
+        private readonly IPaymentTransactionRepository _transactions;
         private readonly ILogger<ChargePaymentFailedHandler> _logger;
 
         public ChargePaymentFailedHandler (
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository ,
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
+            IPaymentTransactionRepository transactions ,
             ILogger<ChargePaymentFailedHandler> logger )
         {
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
+            _transactions = transactions;
             _logger = logger;
         }
 
@@ -53,6 +57,8 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                     $"Subscription {subscriptionId} ainda não registrada.");
             }
 
+            await ChargeWebhook.RecordAsync(_transactions , subscription , data , PaymentTransactionStatus.Failed , DateTime.UtcNow , cancellationToken);
+
             if ( subscription.Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired ) {
                 _logger.LogInformation(
                     "Subscription {SubscriptionId} já encerrada. Ignorando charge.payment_failed." ,
@@ -74,7 +80,6 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
 
             // Pagar.me keeps retrying the charge; a later charge.paid makes the subscription Active again.
             subscription.Status = SubscriptionStatus.PaymentFailed;
-            subscription.PagarmeChargeId = chargeId;
             subscription.UpdatedAt = now;
 
             _subscriptionsUpdateOnlyRepository.Update(subscription, cancellationToken);

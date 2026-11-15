@@ -36,6 +36,15 @@ namespace WebAPI.Test.Plans
         }
 
         [Fact]
+        public async Task Cancel_Without_An_Active_Subscription_Is_Not_Found ()
+        {
+            // Regression: the use case was never registered and the route answered 500 to everyone.
+            var response = await DoDelete("api/subscription/cancel" , _factory.GetTokenWithoutSubscription());
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
         public async Task Pending_Checkout_Is_Not_Premium ()
         {
             var current = await ReadJson(await DoGet("api/subscription/current" , _factory.GetTokenWithoutSubscription()));
