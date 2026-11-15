@@ -16,9 +16,6 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(x => x.UserIdentifier)
             .IsUnique();
 
-        builder.HasIndex(x => x.PagarMeCustomerId)
-            .IsUnique();
-
         builder.Property(x => x.Id)
             .HasColumnName("id");
 
@@ -52,9 +49,6 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.UpdatedAt)
             .HasColumnName("updated_at")
             .IsRequired();
-
-        builder.Property(x => x.PagarMeCustomerId)
-            .HasColumnName("pagarme_customer_id");
 
         builder.Property(x => x.EmailVerifiedAt)
             .HasColumnName("email_verified_at");

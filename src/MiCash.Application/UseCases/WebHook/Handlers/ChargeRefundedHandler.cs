@@ -1,5 +1,6 @@
 using MiCash.Application.Services.Subscriptions;
 using MiCash.Domain.Enums;
+using MiCash.Domain.Repositories.Payments;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Services.Jobs;
 using MiCash.Domain.Services.Payments;
@@ -22,6 +23,7 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
         private readonly IPaymentGateway _paymentGateway;
         private readonly IBackgroundJobService _backgroundJobService;
+        private readonly IPaymentTransactionRepository _transactions;
         private readonly TimeProvider _time;
         private readonly ILogger<ChargeRefundedHandler> _logger;
 
@@ -30,6 +32,7 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
             IPaymentGateway paymentGateway ,
             IBackgroundJobService backgroundJobService ,
+            IPaymentTransactionRepository transactions ,
             TimeProvider time ,
             ILogger<ChargeRefundedHandler> logger )
         {
@@ -37,11 +40,14 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
             _paymentGateway = paymentGateway;
             _backgroundJobService = backgroundJobService;
+            _transactions = transactions;
             _time = time;
             _logger = logger;
         }
 
         public virtual string EventName => "charge.refunded";
+
+        protected virtual PaymentTransactionStatus TransactionStatus => PaymentTransactionStatus.Refunded;
 
         public async Task HandleAsync ( JsonElement payload , CancellationToken cancellationToken )
         {
@@ -67,6 +73,14 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
 
                 return;
             }
+
+            await ChargeWebhook.RecordAsync(
+                _transactions ,
+                subscription ,
+                data ,
+                TransactionStatus ,
+                _time.GetUtcNow().UtcDateTime ,
+                cancellationToken);
 
             if ( subscription.Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired ) {
                 _logger.LogInformation("{EventType} {ChargeId}: Subscription {SubscriptionId} já encerrada." , EventName , chargeId , subscriptionId);
@@ -100,12 +114,15 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
             IPaymentGateway paymentGateway ,
             IBackgroundJobService backgroundJobService ,
+            IPaymentTransactionRepository transactions ,
             TimeProvider time ,
             ILogger<ChargeRefundedHandler> logger )
-            : base(subscriptionsReadOnlyRepository , subscriptionsUpdateOnlyRepository , paymentGateway , backgroundJobService , time , logger)
+            : base(subscriptionsReadOnlyRepository , subscriptionsUpdateOnlyRepository , paymentGateway , backgroundJobService , transactions , time , logger)
         {
         }
 
         public override string EventName => "charge.chargedback";
+
+        protected override PaymentTransactionStatus TransactionStatus => PaymentTransactionStatus.Chargedback;
     }
 }

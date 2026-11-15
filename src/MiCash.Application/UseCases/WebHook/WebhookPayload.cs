@@ -29,6 +29,13 @@ namespace MiCash.Application.UseCases.WebHook
             return value?.ValueKind == JsonValueKind.String ? value.Value.GetString() : null;
         }
 
+        public static long? GetLong ( JsonElement element , params string[] path )
+        {
+            var value = Get(element , path);
+
+            return value?.ValueKind == JsonValueKind.Number && value.Value.TryGetInt64(out var number) ? number : null;
+        }
+
         /// <summary>
         /// ISO-8601 date as UTC. Offsets ("Z", "-03:00") are honored; a value without offset is taken as UTC.
         /// Never depends on the server's time zone.

@@ -52,11 +52,8 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 .HasColumnName("updated_at")
                 .IsRequired();
 
-            builder.Property(x => x.PagarmeCustomerId)
-                .HasColumnName("pagarme_customer_id");
-
-            builder.Property(x => x.PagarmeChargeId)
-                .HasColumnName("pagarme_charge_id");
+            builder.Property(x => x.PaymentCustomerId)
+                .HasColumnName("payment_customer_id");
 
             builder.Property(x => x.CancelAtPeriodEnd)
                 .HasColumnName("cancel_at_period_end");
@@ -81,7 +78,16 @@ namespace MiCash.Infrastructure.DataAccess.Configurations
                 .HasForeignKey(x => x.PlanId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // NO ACTION (checked at the end of the statement), not RESTRICT: deleting the account cascades both
+            // payment_customers and subscriptions in the same statement. A payer is never deleted on its own.
+            builder.HasOne(x => x.PaymentCustomer)
+                .WithMany(c => c.Subscriptions)
+                .HasForeignKey(x => x.PaymentCustomerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // Indexes
+            builder.HasIndex(x => x.PaymentCustomerId);
+
             builder.HasIndex(x => x.UserId);
 
             builder.HasIndex(x => x.PlanId);

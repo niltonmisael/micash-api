@@ -1,5 +1,6 @@
 ﻿using MiCash.Application.Services.Subscriptions;
 using MiCash.Domain.Enums;
+using MiCash.Domain.Repositories.Payments;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Services.Payments;
 using Microsoft.Extensions.Logging;
@@ -16,17 +17,20 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
         private readonly ISubscriptionsReadOnlyRepository _subscriptionsReadOnlyRepository;
         private readonly ISubscriptionsUpdateOnlyRepository _subscriptionsUpdateOnlyRepository;
         private readonly IPaymentGateway _paymentGateway;
+        private readonly IPaymentTransactionRepository _transactions;
         private readonly ILogger<ChargePaidHandler> _logger;
 
         public ChargePaidHandler (
             ISubscriptionsReadOnlyRepository subscriptionsReadOnlyRepository ,
             ISubscriptionsUpdateOnlyRepository subscriptionsUpdateOnlyRepository ,
             IPaymentGateway paymentGateway ,
+            IPaymentTransactionRepository transactions ,
             ILogger<ChargePaidHandler> logger )
         {
             _subscriptionsReadOnlyRepository = subscriptionsReadOnlyRepository;
             _subscriptionsUpdateOnlyRepository = subscriptionsUpdateOnlyRepository;
             _paymentGateway = paymentGateway;
+            _transactions = transactions;
             _logger = logger;
         }
 
@@ -60,6 +64,8 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
                     $"Subscription {subscriptionId} ainda não registrada.");
             }
 
+            await ChargeWebhook.RecordAsync(_transactions , subscription , data , PaymentTransactionStatus.Paid , DateTime.UtcNow , cancellationToken);
+
             if ( subscription.Status is SubscriptionStatus.Cancelled or SubscriptionStatus.Expired ) {
                 _logger.LogWarning(
                     "Cobrança {ChargeId} paga para a Subscription {SubscriptionId} já encerrada ({Status}). Verificar estorno." ,
@@ -86,7 +92,6 @@ namespace MiCash.Application.UseCases.WebHook.Handlers
             subscription.Status = SubscriptionStatus.Active;
             // A paid retry ends the grace period of a refused renewal.
             subscription.PaymentGraceUntil = null;
-            subscription.PagarmeChargeId = chargeId;
             subscription.StartsAt ??= paidAt ?? DateTime.UtcNow;
             subscription.UpdatedAt = DateTime.UtcNow;
 

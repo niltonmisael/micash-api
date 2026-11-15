@@ -1,5 +1,6 @@
 ﻿using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.Categories;
+using MiCash.Domain.Repositories.Payments;
 using MiCash.Domain.Repositories.Conversations;
 using MiCash.Domain.Repositories.Dashboards;
 using MiCash.Domain.Repositories.Transactions;
@@ -96,6 +97,8 @@ namespace MiCash.Infrastructure
             services.AddScoped<ISubscriptionsWriteOnlyRepository, SubscriptionRepository>();
             services.AddScoped<IWebhookAuthenticator ,WebhookAuthenticator>();
             services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
+            services.AddScoped<IPaymentCustomerRepository, PaymentRepository>();
+            services.AddScoped<IPaymentTransactionRepository, PaymentRepository>();
             services.AddScoped<IBackgroundJobService ,HangfireBackgroundJobService>();
             services.AddScoped<IProcessedWebhookRepository, ProcessedWebhookRepository>();
             services.AddScoped<IFinancialGoalReadOnlyRepository, FinancialGoalRepository>();

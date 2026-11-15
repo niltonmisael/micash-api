@@ -11,8 +11,12 @@ namespace MiCash.Domain.Entities
         public Plan Plan { get; set; } = default!;
         public string? PagarmeSubscriptionId { get; set; }
         public SubscriptionStatus Status { get; set; }
-        public string? PagarmeCustomerId { get; set; }
-        public string? PagarmeChargeId { get; set; }
+        /// <summary>
+        /// Payer used in this contracting. Fixed for the life of the subscription: a new payer means a new
+        /// subscription. Null only for legacy rows whose gateway customer was never reported.
+        /// </summary>
+        public long? PaymentCustomerId { get; set; }
+        public PaymentCustomer? PaymentCustomer { get; set; }
         public bool CancelAtPeriodEnd { get; set; }
         public string? CancellationJobId { get; set; }
         public DateTime? CancellationScheduledFor { get; set; }
@@ -28,5 +32,7 @@ namespace MiCash.Domain.Entities
         public DateTime? PaymentGraceUntil { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<PaymentTransaction> Transactions { get; set; } = [];
     }
 }

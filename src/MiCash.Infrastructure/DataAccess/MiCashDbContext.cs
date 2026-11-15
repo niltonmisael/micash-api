@@ -16,6 +16,8 @@ namespace MiCash.Infrastructure.DataAccess
         public DbSet<Plan> Plans { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<PaymentLink> PaymentLinks { get; set; }
+        public DbSet<PaymentCustomer> PaymentCustomers { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<ProcessedWebhook> ProcessedWebhooks { get; set; }
         public DbSet<FinancialGoal> FinancialGoals { get; set; }
         public DbSet<Conversation> Conversations { get; set; }

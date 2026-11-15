@@ -8,6 +8,7 @@ using MiCash.Domain.Entities;
 using MiCash.Domain.Enums;
 using MiCash.Domain.Repositories;
 using MiCash.Domain.Repositories.PaymentLinks;
+using MiCash.Domain.Repositories.Payments;
 using MiCash.Domain.Repositories.Subscriptions;
 using MiCash.Domain.Repositories.Users;
 using MiCash.Domain.Repositories.WebHook;
@@ -111,6 +112,7 @@ namespace UseCases.Test.Subscriptions
             public Mock<ISubscriptionsReadOnlyRepository> Read { get; } = new();
             public Mock<ISubscriptionsUpdateOnlyRepository> Update { get; } = new();
             public Mock<IPaymentGateway> Gateway { get; } = new();
+            public FakePayments Payments { get; } = new();
 
             public Subscriptions ( Subscription? subscription )
             {
@@ -119,21 +121,47 @@ namespace UseCases.Test.Subscriptions
             }
 
             public ChargePaidHandler ChargePaid () => new(
-                Read.Object , Update.Object , Gateway.Object , new LoggerServiceBuilder<ChargePaidHandler>().Build());
+                Read.Object , Update.Object , Gateway.Object , Payments , new LoggerServiceBuilder<ChargePaidHandler>().Build());
 
             public ChargePaymentFailedHandler PaymentFailed () => new(
-                Read.Object , Update.Object , new LoggerServiceBuilder<ChargePaymentFailedHandler>().Build());
+                Read.Object , Update.Object , Payments , new LoggerServiceBuilder<ChargePaymentFailedHandler>().Build());
 
             public SubscriptionCanceledHandler Canceled ( FakeBackgroundJobService jobs ) => new(
                 Read.Object , Update.Object , jobs , new LoggerServiceBuilder<SubscriptionCanceledHandler>().Build());
 
             public ChargeRefundedHandler Refunded ( FakeBackgroundJobService jobs , DateTime now ) => new(
-                Read.Object , Update.Object , Gateway.Object , jobs , new MutableTimeProvider(new DateTimeOffset(now)) ,
+                Read.Object , Update.Object , Gateway.Object , jobs , Payments , new MutableTimeProvider(new DateTimeOffset(now)) ,
                 new LoggerServiceBuilder<ChargeRefundedHandler>().Build());
 
             public ChargeChargedbackHandler Chargedback ( FakeBackgroundJobService jobs , DateTime now ) => new(
-                Read.Object , Update.Object , Gateway.Object , jobs , new MutableTimeProvider(new DateTimeOffset(now)) ,
+                Read.Object , Update.Object , Gateway.Object , jobs , Payments , new MutableTimeProvider(new DateTimeOffset(now)) ,
                 new LoggerServiceBuilder<ChargeRefundedHandler>().Build());
+        }
+
+        /// <summary>In-memory payers and transactions: the handlers rely on finding what they added earlier.</summary>
+        private sealed class FakePayments : IPaymentCustomerRepository, IPaymentTransactionRepository
+        {
+            public List<PaymentCustomer> Customers { get; } = [];
+            public List<PaymentTransaction> Transactions { get; } = [];
+
+            public Task<PaymentCustomer?> GetAsync ( long userId , string provider , string externalCustomerId , CancellationToken cancellationToken ) =>
+                Task.FromResult(Customers.FirstOrDefault(c =>
+                    c.UserId == userId && c.Provider == provider && c.ExternalCustomerId == externalCustomerId));
+
+            public Task AddAsync ( PaymentCustomer customer , CancellationToken cancellationToken )
+            {
+                Customers.Add(customer);
+                return Task.CompletedTask;
+            }
+
+            public Task<PaymentTransaction?> GetByExternalChargeIdAsync ( string externalChargeId , CancellationToken cancellationToken ) =>
+                Task.FromResult(Transactions.FirstOrDefault(t => t.ExternalChargeId == externalChargeId));
+
+            public Task AddAsync ( PaymentTransaction transaction , CancellationToken cancellationToken )
+            {
+                Transactions.Add(transaction);
+                return Task.CompletedTask;
+            }
         }
 
         private const string ChargeData =
@@ -145,7 +173,6 @@ namespace UseCases.Test.Subscriptions
             var subscription = new Subscription
             {
                 Status = SubscriptionStatus.Active ,
-                PagarmeChargeId = "ch_1" ,
                 StartsAt = new DateTime(2026 , 11 , 3 , 0 , 0 , 0 , DateTimeKind.Utc) ,
                 NextBillingDate = new DateTime(2026 , 12 , 3 , 0 , 0 , 0 , DateTimeKind.Utc)
             };
@@ -156,7 +183,7 @@ namespace UseCases.Test.Subscriptions
             await sut.ChargePaid().HandleAsync(Event("charge.paid" , ChargeData) , CancellationToken.None);
 
             subscription.NextBillingDate.Should().Be(new DateTime(2027 , 1 , 3 , 0 , 0 , 0 , DateTimeKind.Utc));
-            subscription.PagarmeChargeId.Should().Be("ch_2");
+            sut.Payments.Transactions.Should().ContainSingle(t => t.ExternalChargeId == "ch_2" && t.Status == PaymentTransactionStatus.Paid);
             subscription.Status.Should().Be(SubscriptionStatus.Active);
             sut.Update.Verify(u => u.Update(subscription , It.IsAny<CancellationToken>()) , Times.Once);
         }
@@ -414,48 +441,122 @@ namespace UseCases.Test.Subscriptions
             sut.Update.Verify(u => u.Update(It.IsAny<Subscription>() , It.IsAny<CancellationToken>()) , Times.Never);
         }
 
+        [Fact]
+        public async Task Each_Charge_Is_One_Transaction_Of_Its_Subscription_Never_Duplicated ()
+        {
+            var subscription = new Subscription { Id = 10 , PagarmeSubscriptionId = "sub_1" , Status = SubscriptionStatus.Active };
+            var sut = new Subscriptions(subscription);
+
+            await sut.ChargePaid().HandleAsync(
+                Event("charge.paid" , """{ "id": "ch_2", "amount": 1990, "paid_at": "2026-12-03T10:00:00Z", "invoice": { "subscriptionId": "sub_1" } }""") ,
+                CancellationToken.None);
+            // Same charge delivered again, then a new renewal.
+            await sut.ChargePaid().HandleAsync(Event("charge.paid" , ChargeData) , CancellationToken.None);
+            await sut.ChargePaid().HandleAsync(
+                Event("charge.paid" , """{ "id": "ch_3", "amount": 1990, "invoice": { "subscriptionId": "sub_1" } }""") ,
+                CancellationToken.None);
+            await sut.Refunded(new FakeBackgroundJobService() , RefundedAt)
+                .HandleAsync(Event("charge.refunded" , ChargeData) , CancellationToken.None);
+
+            sut.Payments.Transactions.Should().HaveCount(2).And.OnlyContain(t => t.SubscriptionId == 10 && t.AmountCents == 1990);
+            var refunded = sut.Payments.Transactions.Single(t => t.ExternalChargeId == "ch_2");
+            refunded.Status.Should().Be(PaymentTransactionStatus.Refunded);
+            refunded.PaidAt.Should().Be(new DateTime(2026 , 12 , 3 , 10 , 0 , 0 , DateTimeKind.Utc));
+            refunded.RefundedAt.Should().Be(RefundedAt);
+        }
+
         // ---------- SubscriptionCreatedHandler ----------
+
+        /// <summary>Payment links pl_7* belong to user 7, pl_8* to user 8.</summary>
+        private sealed class Contracting
+        {
+            public FakePayments Payments { get; } = new();
+            public List<Subscription> Added { get; } = [];
+
+            public SubscriptionCreatedHandler Build ()
+            {
+                var write = new Mock<ISubscriptionsWriteOnlyRepository>();
+                var links = new Mock<IPaymentLinkRepository>();
+                var users = new Mock<IUserReadOnlyRepository>();
+
+                links.Setup(l => l.GetByPagarmePaymentLinkIdAsync(It.IsAny<string>() , It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(( string id , CancellationToken _ ) => new PaymentLink { UserId = id.StartsWith("pl_8") ? 8 : 7 , PlanId = 2 });
+                users.Setup(u => u.GetByIdAsync(It.IsAny<long>() , It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(( long id , CancellationToken _ ) => new User { Id = id });
+                write.Setup(w => w.AddAsync(It.IsAny<Subscription>() , It.IsAny<CancellationToken>()))
+                    .Callback<Subscription , CancellationToken>(( s , _ ) => Added.Add(s))
+                    .Returns(Task.CompletedTask);
+
+                return new SubscriptionCreatedHandler(
+                    Payments ,
+                    users.Object ,
+                    write.Object ,
+                    new Mock<ISubscriptionsReadOnlyRepository>().Object ,
+                    links.Object ,
+                    new LoggerServiceBuilder<SubscriptionCreatedHandler>().Build());
+            }
+
+            public Task Created ( string subscriptionId , string paymentLinkId , string customerId , string name = "Pagador" ) =>
+                Build().HandleAsync(
+                    Event("subscription.created" , $$"""
+                        { "id": "{{subscriptionId}}", "code": "{{paymentLinkId}}",
+                          "customer": { "id": "{{customerId}}", "name": "{{name}}", "email": "{{customerId}}@mail.com" } }
+                        """) ,
+                    CancellationToken.None);
+        }
 
         [Fact]
         public async Task Subscription_Created_Stores_Gateway_Dates_As_Utc_Regardless_Of_Server_Time_Zone ()
         {
-            var read = new Mock<ISubscriptionsReadOnlyRepository>();
-            var write = new Mock<ISubscriptionsWriteOnlyRepository>();
-            var links = new Mock<IPaymentLinkRepository>();
-            var users = new Mock<IUserReadOnlyRepository>();
-            Subscription? added = null;
+            var sut = new Contracting();
 
-            links.Setup(l => l.GetByPagarmePaymentLinkIdAsync("pl_1" , It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new PaymentLink { UserId = 7 , PlanId = 2 });
-            users.Setup(u => u.GetByIdAsync(7 , It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new User { Id = 7 });
-            write.Setup(w => w.AddAsync(It.IsAny<Subscription>() , It.IsAny<CancellationToken>()))
-                .Callback<Subscription , CancellationToken>(( s , _ ) => added = s)
-                .Returns(Task.CompletedTask);
-
-            var handler = new SubscriptionCreatedHandler(
-                new Mock<IUserUpdateOnlyRepository>().Object ,
-                users.Object ,
-                write.Object ,
-                read.Object ,
-                links.Object ,
-                new LoggerServiceBuilder<SubscriptionCreatedHandler>().Build());
-
-            await handler.HandleAsync(
+            await sut.Build().HandleAsync(
                 Event("subscription.created" , """
                     {
-                      "id": "sub_1", "code": "pl_1", "customer": { "id": "cus_1" },
+                      "id": "sub_1", "code": "pl_7", "customer": { "id": "cus_1" },
                       "start_at": "2026-11-03T00:00:00Z", "next_billing_at": "2026-12-02T21:00:00-03:00"
                     }
                     """) ,
                 CancellationToken.None);
 
-            added.Should().NotBeNull();
-            added!.Status.Should().Be(SubscriptionStatus.Pending);
+            var added = sut.Added.Should().ContainSingle().Subject;
+            added.Status.Should().Be(SubscriptionStatus.Pending);
             added.UserId.Should().Be(7);
             added.StartsAt.Should().Be(new DateTime(2026 , 11 , 3 , 0 , 0 , 0 , DateTimeKind.Utc));
             added.StartsAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
             added.NextBillingDate.Should().Be(new DateTime(2026 , 12 , 3 , 0 , 0 , 0 , DateTimeKind.Utc));
+        }
+
+        [Fact]
+        public async Task A_New_Payer_Gets_Its_Own_Row_And_The_Previous_Subscription_Keeps_Its_Payer ()
+        {
+            var sut = new Contracting();
+
+            await sut.Created("sub_1" , "pl_7a" , "cus_marta" , "Marta");
+            sut.Added[0].Status = SubscriptionStatus.Cancelled;   // cancelled later
+            await sut.Created("sub_2" , "pl_7b" , "cus_gui" , "Guilherme");
+
+            sut.Payments.Customers.Should().HaveCount(2).And.OnlyContain(c => c.UserId == 7);
+            sut.Added[0].PaymentCustomer!.ExternalCustomerId.Should().Be("cus_marta");
+            sut.Added[0].PaymentCustomer!.Name.Should().Be("Marta");
+            sut.Added[1].PaymentCustomer!.ExternalCustomerId.Should().Be("cus_gui");
+        }
+
+        [Fact]
+        public async Task A_Returning_Payer_Is_Reused_And_May_Also_Pay_For_Another_User ()
+        {
+            var sut = new Contracting();
+
+            await sut.Created("sub_1" , "pl_7a" , "cus_marta");
+            await sut.Created("sub_2" , "pl_7b" , "cus_gui");
+            await sut.Created("sub_3" , "pl_7c" , "cus_marta");
+            // Same gateway customer paying for a second account (used to break the unique users.pagarme_customer_id).
+            await sut.Created("sub_4" , "pl_8a" , "cus_marta");
+
+            sut.Payments.Customers.Should().HaveCount(3);
+            sut.Added[2].PaymentCustomer.Should().BeSameAs(sut.Added[0].PaymentCustomer);
+            sut.Added[3].PaymentCustomer!.UserId.Should().Be(8);
+            sut.Added[3].PaymentCustomer.Should().NotBeSameAs(sut.Added[0].PaymentCustomer);
         }
     }
 }
